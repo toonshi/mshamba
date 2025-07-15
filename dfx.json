@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "mshamba_backend": {
+      "main": "src/mshamba_backend/main.mo",
+      "type": "motoko"
+    },
+    "mshamba_frontend": {
+      "dependencies": [
+        "mshamba_backend"
+      ],
+      "source": [
+        "src/mshamba_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "mshamba_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
