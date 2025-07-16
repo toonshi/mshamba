@@ -2,32 +2,32 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import HashMap "mo:base/HashMap";
+import Iter "mo:base/Iter";
 import Types "types";
 import Utils "utils";
-import Iter "mo:base/Iter";
 
-// import Array "mo:base/Array";
-// import Int "mo:base/Int";
-// import Time "mo:base/Time";
-
-actor {
+module {
   public type FarmShare = Types.FarmShare;
   public type Result<T> = Utils.Result<T>;
 
-  // Store shares by composite key: farmId#owner
-  var ledger = HashMap.HashMap<Text, FarmShare>(200, Text.equal, Text.hash);
-
   // Composite key generator
-  func makeKey(farmId: Text, owner: Principal) : Text {
+  public func makeKey(farmId: Text, owner: Principal) : Text {
     farmId # "#" # Principal.toText(owner)
   };
 
-  // Add or update shares for a user
-  public shared ({ caller }) func addShares(
+  // Create new ledger
+  public func newLedger() : HashMap.HashMap<Text, FarmShare> {
+    HashMap.HashMap<Text, FarmShare>(200, Text.equal, Text.hash)
+  };
+
+  // Add or update shares
+  public func addShares(
+    caller: Principal,
     farmId: Text,
     sharesToAdd: Nat,
-    pricePerShare: Nat
-  ) : async Result<FarmShare> {
+    pricePerShare: Nat,
+    ledger: HashMap.HashMap<Text, FarmShare>
+  ) : Result<FarmShare> {
     let key = makeKey(farmId, caller);
     let entry = ledger.get(key);
 
@@ -55,20 +55,27 @@ actor {
     };
 
     ledger.put(key, updated);
-    return #ok(updated);
+    #ok(updated)
   };
 
-  // Query your shareholding in a specific farm
-  public query ({ caller }) func mySharesIn(farmId: Text) : async Result<FarmShare> {
+  // View specific farm shares
+  public func mySharesIn(
+    caller: Principal,
+    farmId: Text,
+    ledger: HashMap.HashMap<Text, FarmShare>
+  ) : Result<FarmShare> {
     let key = makeKey(farmId, caller);
     switch (ledger.get(key)) {
-      case (?share) return #ok(share);
-      case null return #err("No shares owned");
+      case (?share) #ok(share);
+      case null #err("No shares owned");
     }
   };
 
-  // List all shares held by a user (across all farms)
-  public query ({ caller }) func myAllShares() : async [FarmShare] {
+  // View all shares owned by the caller
+  public func myAllShares(
+    caller: Principal,
+    ledger: HashMap.HashMap<Text, FarmShare>
+  ) : [FarmShare] {
     let ownedShares = Iter.filter<(Text, FarmShare)>(
       ledger.entries(),
       func ((_, share)) = share.owner == caller

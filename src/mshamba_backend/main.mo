@@ -1,13 +1,26 @@
-import Farms "farms";
+import Principal "mo:base/Principal";
+import Text "mo:base/Text";
+import Float "mo:base/Float";
+import Nat "mo:base/Nat";
+import Farms "lib/farms";
 import Profiles "lib/profiles";
 import Land "lib/land";
 import Token "lib/token";
+import Investments "lib/investments";
 import Types "lib/types";
 import Utils "lib/utils";
 
 actor Mshamba {
 
-  // ----- Profiles -----
+  // ------ MODULE STATE ------
+  var farmStore = Farms.newFarmStore();
+  var profileStore = Profiles.newProfileStore();
+  var landStore = Land.newLandStore();
+  var tokenLedger = Token.newLedger();
+  var investments = Investments.newInvestmentStore();
+  var investorIndex = Investments.newInvestorIndex();
+
+  // ------ PROFILES ------
   public shared ({ caller }) func upsertProfile(
     name: Text,
     email: Text,
@@ -15,22 +28,22 @@ actor Mshamba {
     bio: Text,
     location: Text
   ) : async Utils.Result<Types.UserProfile> {
-    await Profiles.upsertProfile({ caller })(name, email, role, bio, location)
+    Profiles.upsertProfile(caller, name, email, role, bio, location, profileStore)
   };
 
   public query ({ caller }) func myProfile() : async Utils.Result<Types.UserProfile> {
-    Profiles.myProfile({ caller })
+    Profiles.myProfile(caller, profileStore)
   };
 
   public query func getProfileOf(p: Principal) : async Utils.Result<Types.UserProfile> {
-    Profiles.getProfileOf(p)
+    Profiles.getProfileOf(p, profileStore)
   };
 
   public query func listUsers() : async [Types.UserProfile] {
-    Profiles.listUsers()
+    Profiles.listUsers(profileStore)
   };
 
-  // ----- Farms -----
+  // ------ FARMS ------
   public shared ({ caller }) func createFarm(
     name: Text,
     description: Text,
@@ -39,61 +52,83 @@ actor Mshamba {
     totalShares: Nat,
     sharePrice: Nat
   ) : async Utils.Result<Types.Farm> {
-    await Farms.createFarm({ caller })(name, description, location, fundingGoal, totalShares, sharePrice)
+    Farms.createFarm(caller, name, description, location, fundingGoal, totalShares, sharePrice, farmStore)
   };
 
   public query func getFarm(farmId: Text) : async Utils.Result<Types.Farm> {
-    Farms.getFarm(farmId)
+    Farms.getFarm(farmId, farmStore)
   };
 
   public query func listFarms() : async [Types.Farm] {
-    Farms.listFarms()
+    Farms.listFarms(farmStore)
   };
 
-  public shared ({ caller }) func investInFarm(farmId: Text, amount: Nat) : async Utils.Result<Types.Farm> {
-    await Farms.investInFarm({ caller })(farmId, amount)
+  public shared ({ caller }) func investInFarm(
+    farmId: Text,
+    amount: Nat
+  ) : async Utils.Result<Types.Farm> {
+    Farms.investInFarm(caller, farmId, amount, farmStore)
   };
 
-  // ----- Land Listings -----
+  // ------ LAND ------
   public shared ({ caller }) func registerLand(
     location: Text,
     sizeInAcres: Float,
     leaseRatePerMonth: Nat
   ) : async Utils.Result<Types.LandListing> {
-    await Land.registerLand({ caller })(location, sizeInAcres, leaseRatePerMonth)
+    Land.registerLand(caller, location, sizeInAcres, leaseRatePerMonth, landStore)
   };
 
   public query func getLand(landId: Text) : async Utils.Result<Types.LandListing> {
-    Land.getLand(landId)
+    Land.getLand(landId, landStore)
   };
 
   public query func listAvailableLand() : async [Types.LandListing] {
-    Land.listAvailableLand()
+    Land.listAvailableLand(landStore)
   };
 
   public query ({ caller }) func myLand() : async [Types.LandListing] {
-    Land.myLand({ caller })
+    Land.myLand(caller, landStore)
   };
 
-  public shared ({ caller }) func markAsLeased(landId: Text) : async Utils.Result<Types.LandListing> {
-    await Land.markAsLeased({ caller })(landId)
+  public shared ({ caller }) func markAsLeased(
+    landId: Text
+  ) : async Utils.Result<Types.LandListing> {
+    Land.markAsLeased(caller, landId, landStore)
   };
 
-  // ----- Share Tokens -----
+  // ------ SHARES ------
   public shared ({ caller }) func addShares(
     farmId: Text,
     sharesToAdd: Nat,
     pricePerShare: Nat
   ) : async Utils.Result<Types.FarmShare> {
-    await Token.addShares({ caller })(farmId, sharesToAdd, pricePerShare)
+    Token.addShares(caller, farmId, sharesToAdd, pricePerShare, tokenLedger)
   };
 
   public query ({ caller }) func mySharesIn(farmId: Text) : async Utils.Result<Types.FarmShare> {
-    Token.mySharesIn({ caller })(farmId)
+    Token.mySharesIn(caller, farmId, tokenLedger)
   };
 
   public query ({ caller }) func myAllShares() : async [Types.FarmShare] {
-    Token.myAllShares({ caller })
+    Token.myAllShares(caller, tokenLedger)
   };
 
-}
+  // ------ INVESTMENTS ------
+  public shared ({ caller }) func recordInvestment(
+    farmId: Text,
+    amount: Nat,
+    sharesReceived: Nat,
+    pricePerShare: Nat
+  ) : async Utils.Result<Types.Investment> {
+    Investments.recordInvestment(caller, farmId, amount, sharesReceived, pricePerShare, investments, investorIndex)
+  };
+
+  public query func getInvestment(id: Text) : async Utils.Result<Types.Investment> {
+    Investments.getInvestment(id, investments)
+  };
+
+  public query ({ caller }) func listMyInvestments() : async [Types.Investment] {
+    Investments.listMyInvestments(caller, investments, investorIndex)
+  };
+};

@@ -1,27 +1,29 @@
-// import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Float "mo:base/Float";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
 import HashMap "mo:base/HashMap";
-// import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import Types "types";
 import Utils "utils";
 
-actor {
+module {
   public type LandListing = Types.LandListing;
   public type Result<T> = Utils.Result<T>;
 
-  // Land storage: key = landId
-  var lands = HashMap.HashMap<Text, LandListing>(100, Text.equal, Text.hash);
+  // Create new land listing store
+  public func newLandStore() : HashMap.HashMap<Text, LandListing> {
+    HashMap.HashMap<Text, LandListing>(100, Text.equal, Text.hash)
+  };
 
-  // Register a piece of land
-  public shared ({ caller }) func registerLand(
+  // Register new land
+  public func registerLand(
+    caller: Principal,
+    lands: HashMap.HashMap<Text, LandListing>,
     location: Text,
     sizeInAcres: Float,
     leaseRatePerMonth: Nat
-  ) : async Result<LandListing> {
+  ) : Result<LandListing> {
     let landId = "land-" # Int.toText(Time.now());
 
     let listing: LandListing = {
@@ -35,19 +37,24 @@ actor {
     };
 
     lands.put(landId, listing);
-    return #ok(listing);
+    #ok(listing)
   };
 
-  // View a land listing by ID
-  public query func getLand(landId: Text) : async Result<LandListing> {
+  // View land by ID
+  public func getLand(
+    landId: Text,
+    lands: HashMap.HashMap<Text, LandListing>
+  ) : Result<LandListing> {
     switch (lands.get(landId)) {
-      case (?land) return #ok(land);
-      case null return #err("Land not found");
+      case (?land) #ok(land);
+      case null #err("Land not found");
     }
   };
 
   // List all available land
-  public query func listAvailableLand() : async [LandListing] {
+  public func listAvailableLand(
+    lands: HashMap.HashMap<Text, LandListing>
+  ) : [LandListing] {
     let available = Iter.filter<(Text, LandListing)>(
       lands.entries(),
       func ((_, l)) = l.isAvailable
@@ -61,8 +68,11 @@ actor {
     )
   };
 
-  // List all land owned by the current user
-  public query ({ caller }) func myLand() : async [LandListing] {
+  // List land owned by a principal
+  public func listOwnedLand(
+    lands: HashMap.HashMap<Text, LandListing>,
+    caller: Principal
+  ) : [LandListing] {
     let mine = Iter.filter<(Text, LandListing)>(
       lands.entries(),
       func ((_, l)) = l.owner == caller
@@ -76,19 +86,22 @@ actor {
     )
   };
 
-  // Mark land as leased (not available)
-  public shared ({ caller }) func markAsLeased(landId: Text) : async Result<LandListing> {
+  // Mark land as leased
+  public func markAsLeased(
+    caller: Principal,
+    landId: Text,
+    lands: HashMap.HashMap<Text, LandListing>
+  ) : Result<LandListing> {
     switch (lands.get(landId)) {
       case (?land) {
         if (land.owner != caller) {
           return #err("Only the owner can update this listing");
         };
-
         let updated = { land with isAvailable = false };
         lands.put(landId, updated);
-        return #ok(updated);
+        #ok(updated)
       };
-      case null return #err("Land not found");
+      case null #err("Land not found");
     }
   };
 }

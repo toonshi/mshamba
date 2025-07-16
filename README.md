@@ -1,15 +1,103 @@
 # `mshamba`
 
-Welcome to your new `mshamba` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+# 🌾 Mshamba
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+**Mshamba** is a decentralized platform for tokenizing agricultural projects on the Internet Computer Protocol (ICP). It enables urban investors to invest directly in farms, allows landowners to lease unused land, and empowers farmers to raise capital transparently without predatory loans. It also facilitates cooperation across the entire agricultural supply chain.
 
-To learn more before you start working with `mshamba`, see the following documentation available online:
+---
 
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Motoko Programming Language Guide](https://internetcomputer.org/docs/current/motoko/main/motoko)
-- [Motoko Language Quick Reference](https://internetcomputer.org/docs/current/motoko/main/language-manual)
+## 🧠 Project Architecture Overview
+
+The project is structured into modular components, each handling a distinct domain of the system:
+
+---
+
+### 1. `main.mo` — Central Controller
+
+- Acts as the orchestrator.
+- Connects all modules: profiles, farms, tokens, land, investments.
+- Routes API calls from the frontend or other actors.
+
+---
+
+### 2. `profiles.mo` — User Identity & Roles
+
+Manages user profiles across all roles:
+- Stores: name, email, role, bio, location, joinedAt, wallet address.
+- Functions:
+  - `upsertProfile`: create or update your profile.
+  - `myProfile`: view your own profile.
+  - `getProfileOf`: view another user's profile.
+  - `listUsers`: get all registered users.
+
+---
+
+### 3. `farms.mo` — Farm Project Management
+
+Handles creation and funding of farms:
+- Tracks: farm name, description, owner, funding goal, shares, status, investors.
+- Functions:
+  - `createFarm`: farmer posts a project.
+  - `getFarm`: retrieve a specific farm.
+  - `listFarms`: all farms in the system.
+  - `listFarmsByOwner`: farms owned by the caller.
+  - `investInFarm`: fund a farm.
+
+---
+
+### 4. `tokens.mo` — Share Ledger (Farm Shares)
+
+Manages ownership of farm shares (similar to stocks):
+- Uses a composite key: `farmId#Principal`.
+- Tracks: how many shares a user owns, at what average price.
+- Functions:
+  - `addShares`: assign shares to a user.
+  - `mySharesIn`: check shares in a single farm.
+  - `myAllShares`: view all shareholdings.
+
+---
+
+### 5. `land.mo` — Land Listings & Leasing
+
+Manages leasing of unused land:
+- Stores: location, size, rate per month, availability, owner.
+- Functions:
+  - `registerLand`: post a land listing.
+  - `getLand`: view a land post.
+  - `listAvailableLand`: view all leasable land.
+  - `myLand`: view your own listings.
+  - `markAsLeased`: update availability.
+
+---
+
+### 6. `investments.mo` — Investment Journal
+
+Logs every funding transaction:
+- Tracks: amount, price per share, shares received, timestamp.
+- Functions:
+  - `recordInvestment`: log a farm investment.
+  - `getInvestment`: fetch a specific investment.
+  - `listMyInvestments`: view all personal investment records.
+
+---
+
+### 7. `types.mo` — Shared Type Definitions
+
+Defines global data types:
+- `Farm`, `UserProfile`, `FarmShare`, `Investment`, `LandListing`, `Role`, etc.
+- `Result<T>`: standard way to return success or error.
+
+---
+
+### 8. `utils.mo` — Helper Utilities
+
+Defines:
+```motoko
+public type Result<T> = {
+  #ok: T;
+  #err: Text;
+};
+
 
 If you want to start working on your project right away, you might want to try the following commands:
 

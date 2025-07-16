@@ -26,3 +26,15 @@ This module lets you:
 | *(Optional later)* | Close, update, or manage farms over time               |
 
 
+
+Summary
+| Area            | Stack / Tooling                                      |
+| --------------- | ---------------------------------------------------- |
+| Smart contract  | Motoko                                               |
+| Backend modules | `farms`, `land`, `profiles`, `tokens`, `investments` |
+| Actor interface | `main.mo` (controller)                               |
+| Storage         | In-memory `HashMap`                                  |
+| Platform        | Internet Computer (DFINITY)                          |
+| Deployment      | `dfx deploy` + Candid                                |
+| Access control  | `Principal`-based `caller` checks                    |
+| Token logic     | Internal ledger (no external token yet)              |
