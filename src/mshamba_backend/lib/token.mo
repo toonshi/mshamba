@@ -2,12 +2,13 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import HashMap "mo:base/HashMap";
-import Array "mo:base/Array";
-import Iter "mo:base/Iter";
-import Int "mo:base/Int";
-import Time "mo:base/Time";
 import Types "types";
 import Utils "utils";
+import Iter "mo:base/Iter";
+
+// import Array "mo:base/Array";
+// import Int "mo:base/Int";
+// import Time "mo:base/Time";
 
 actor {
   public type FarmShare = Types.FarmShare;
@@ -16,6 +17,7 @@ actor {
   // Store shares by composite key: farmId#owner
   var ledger = HashMap.HashMap<Text, FarmShare>(200, Text.equal, Text.hash);
 
+  // Composite key generator
   func makeKey(farmId: Text, owner: Principal) : Text {
     farmId # "#" # Principal.toText(owner)
   };
@@ -35,6 +37,7 @@ actor {
         let newAvg = (
           (share.avgBuyPrice * share.sharesOwned) + (pricePerShare * sharesToAdd)
         ) / totalShares;
+
         {
           share with
           sharesOwned = totalShares;
@@ -66,7 +69,16 @@ actor {
 
   // List all shares held by a user (across all farms)
   public query ({ caller }) func myAllShares() : async [FarmShare] {
-    let all = Iter.toArray(HashMap.vals(ledger));
-    Array.filter<FarmShare>(all, func (s) { s.owner == caller })
+    let ownedShares = Iter.filter<(Text, FarmShare)>(
+      ledger.entries(),
+      func ((_, share)) = share.owner == caller
+    );
+
+    Iter.toArray(
+      Iter.map<(Text, FarmShare), FarmShare>(
+        ownedShares,
+        func ((_, share)) = share
+      )
+    )
   };
 }

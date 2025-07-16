@@ -1,10 +1,10 @@
-import Principal "mo:base/Principal";
+// import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Float "mo:base/Float";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
 import HashMap "mo:base/HashMap";
-import Array "mo:base/Array";
+// import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import Types "types";
 import Utils "utils";
@@ -48,14 +48,32 @@ actor {
 
   // List all available land
   public query func listAvailableLand() : async [LandListing] {
-    let all = Iter.toArray(HashMap.vals(lands));
-    Array.filter<LandListing>(all, func (l) { l.isAvailable })
+    let available = Iter.filter<(Text, LandListing)>(
+      lands.entries(),
+      func ((_, l)) = l.isAvailable
+    );
+
+    Iter.toArray(
+      Iter.map<(Text, LandListing), LandListing>(
+        available,
+        func ((_, l)) = l
+      )
+    )
   };
 
   // List all land owned by the current user
   public query ({ caller }) func myLand() : async [LandListing] {
-    let all = Iter.toArray(HashMap.vals(lands));
-    Array.filter<LandListing>(all, func (l) { l.owner == caller })
+    let mine = Iter.filter<(Text, LandListing)>(
+      lands.entries(),
+      func ((_, l)) = l.owner == caller
+    );
+
+    Iter.toArray(
+      Iter.map<(Text, LandListing), LandListing>(
+        mine,
+        func ((_, l)) = l
+      )
+    )
   };
 
   // Mark land as leased (not available)
