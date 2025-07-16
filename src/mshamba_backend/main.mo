@@ -28,7 +28,7 @@ actor Mshamba {
     bio: Text,
     location: Text
   ) : async Utils.Result<Types.UserProfile> {
-    Profiles.upsertProfile(caller, name, email, role, bio, location, profileStore)
+    Profiles.upsertProfile(caller, profileStore, name, email, role, bio, location)
   };
 
   public query ({ caller }) func myProfile() : async Utils.Result<Types.UserProfile> {
@@ -52,7 +52,7 @@ actor Mshamba {
     totalShares: Nat,
     sharePrice: Nat
   ) : async Utils.Result<Types.Farm> {
-    Farms.createFarm(caller, name, description, location, fundingGoal, totalShares, sharePrice, farmStore)
+    Farms.createFarm(caller, farmStore, name, description, location, fundingGoal, totalShares, sharePrice)
   };
 
   public query func getFarm(farmId: Text) : async Utils.Result<Types.Farm> {
@@ -76,7 +76,7 @@ actor Mshamba {
     sizeInAcres: Float,
     leaseRatePerMonth: Nat
   ) : async Utils.Result<Types.LandListing> {
-    Land.registerLand(caller, location, sizeInAcres, leaseRatePerMonth, landStore)
+    Land.registerLand(caller, landStore, location, sizeInAcres, leaseRatePerMonth)
   };
 
   public query func getLand(landId: Text) : async Utils.Result<Types.LandListing> {
@@ -88,7 +88,7 @@ actor Mshamba {
   };
 
   public query ({ caller }) func myLand() : async [Types.LandListing] {
-    Land.myLand(caller, landStore)
+    Land.listOwnedLand(landStore, caller)
   };
 
   public shared ({ caller }) func markAsLeased(
