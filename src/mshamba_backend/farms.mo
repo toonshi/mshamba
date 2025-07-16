@@ -3,12 +3,13 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Int "mo:base/Int";
 import HashMap "mo:base/HashMap";
-import Types "types";
-import Utils "utils";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Types "lib/types";
+import Utils "lib/utils";
 
 actor {
+
   public type Farm = Types.Farm;
   public type FarmStatus = Types.FarmStatus;
   public type Result<T> = Utils.Result<T>;
@@ -99,4 +100,5 @@ actor {
       case null { return #err("Farm not found"); };
     }
   };
+
 }
