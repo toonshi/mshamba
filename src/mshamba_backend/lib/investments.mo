@@ -85,4 +85,22 @@ public func listMyInvestments(
   )
 };
 
+// List all investments by any principal (for admin/global analytics)
+public func listInvestmentsByInvestor(
+  investor: Principal,
+  investments: HashMap.HashMap<Text, Investment>,
+  investorIndex: HashMap.HashMap<Principal, [Text]>
+) : [Investment] {
+  let ids = switch (investorIndex.get(investor)) {
+    case (?list) list;
+    case null [];
+  };
+  Array.mapFilter<Text, Investment>(
+    ids,
+    func(id: Text): ?Investment {
+      investments.get(id)
+    }
+  )
+}
+
 }

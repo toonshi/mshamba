@@ -44,6 +44,7 @@ module {
     createdAt : Int;
     status : FarmStatus;
     investors : [Principal];
+    valuationHistory : [(Int, Nat)]; // (timestamp, value)
   };
 
   //  Primary Investment Tracking

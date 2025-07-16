@@ -44,6 +44,7 @@ module {
       createdAt = Time.now();
       status = #Open;
       investors = [];
+      valuationHistory = [];
     };
 
     farms.put(farmId, newFarm);
