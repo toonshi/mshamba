@@ -58,7 +58,27 @@ actor {
 
   // Lists all farms in the system
   public query func listFarms() : async [Farm] {
-    Iter.toArray(HashMap.vals(farms))
+    Iter.toArray(
+      Iter.map<(Text, Farm), Farm>(
+        farms.entries(),
+        func ((_, farm)) = farm
+      )
+    )
+  };
+
+  // Lists all farms owned by the caller
+  public shared query ({ caller }) func listFarmsByOwner() : async [Farm] {
+    let ownedFarms = Iter.filter<(Text, Farm)>(
+      farms.entries(),
+      func ((_, farm)) = farm.owner == caller
+    );
+
+    return Iter.toArray(
+      Iter.map<(Text, Farm), Farm>(
+        ownedFarms,
+        func ((_, farm)) = farm
+      )
+    );
   };
 
   // Allows a user to invest in a farm by providing an amount
@@ -68,7 +88,8 @@ actor {
   ) : async Result<Farm> {
     switch (farms.get(farmId)) {
       case (?farm) {
-        if (!farm.isOpenForInvestment) {
+        if (farm.isOpenForInvestment == false) {
+
           return #err("This farm is not open for investment");
         };
 
@@ -101,4 +122,4 @@ actor {
     }
   };
 
-}
+};

@@ -1,4 +1,4 @@
-import Farms "lib/farms";
+import Farms "farms";
 import Profiles "lib/profiles";
 import Land "lib/land";
 import Token "lib/token";
