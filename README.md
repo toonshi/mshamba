@@ -112,8 +112,17 @@ dfx canister --help
 If you want to test your project locally, you can use the following commands:
 
 ```bash
+
 # Starts the replica, running in the background
 dfx start --background
+
+
+# Make sure that you have node
+node --version
+
+# Install Frontend Dependencies
+npm install --save-dev vite @types/node
+
 
 # Deploys your canisters to the replica and generates your candid interface
 dfx deploy
