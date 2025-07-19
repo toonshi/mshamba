@@ -113,6 +113,97 @@ module {
     listedAt : Int;
   };
 
+  // Enhanced Valuation System
+  
+  public type CropType = {
+    #Vegetables;
+    #Grains;
+    #Fruits;
+    #Livestock;
+    #Cash_Crops;
+  };
+
+  public type ValuationFactors = {
+    landSize : Float;
+    cropType : CropType;
+    soilQuality : Nat;      // 1-10 scale
+    waterAccess : Bool;
+    infrastructure : Nat;   // 1-10 scale
+    marketAccess : Nat;     // 1-10 scale
+    climateRisk : Nat;      // 1-10 scale
+  };
+
+  public type ValuationMetrics = {
+    totalValuation : Nat;
+    sharePrice : Nat;
+    qualityScore : Float;
+    cropMultiplier : Float;
+    locationMultiplier : Float;
+    calculatedAt : Int;
+    factors : ValuationFactors;
+  };
+
+  // Enhanced Farm Token System
+  
+  public type TokenStandard = {
+    #ICRC1;  // ICP token standard
+    #Custom; // Custom implementation
+  };
+
+  public type FarmToken = {
+    tokenId : Text;
+    farmId : Text;
+    owner : Principal;
+    amount : Nat;
+    tokenStandard : TokenStandard;
+    metadata : [(Text, Text)]; // Key-value metadata
+    createdAt : Int;
+    lastTransfer : Int;
+  };
+
+  public type TokenTransfer = {
+    transferId : Text;
+    tokenId : Text;
+    from : Principal;
+    to : Principal;
+    amount : Nat;
+    pricePerToken : ?Nat; // Optional for market transfers
+    timestamp : Int;
+    transferType : {
+      #Direct;     // Direct transfer
+      #MarketSale; // Secondary market sale
+      #Distribution; // Profit distribution
+    };
+  };
+
+  // Profit Distribution System
+  
+  public type ProfitDistribution = {
+    distributionId : Text;
+    farmId : Text;
+    totalProfit : Nat;
+    distributionDate : Int;
+    profitPerShare : Nat;
+    recipients : [(Principal, Nat)]; // (investor, amount)
+    status : {
+      #Pending;
+      #Distributed;
+      #Failed;
+    };
+  };
+
+  public type HarvestReport = {
+    reportId : Text;
+    farmId : Text;
+    harvestDate : Int;
+    totalYield : Float;
+    totalRevenue : Nat;
+    expenses : Nat;
+    netProfit : Nat;
+    yieldPerAcre : Float;
+    qualityGrade : Text;
+  };
+
   // Supply Chain / Merger Network 
 
   // public type LinkType = {
@@ -130,7 +221,4 @@ module {
   //   timestamp : Int;
   // };
 
-  
-
- 
 }

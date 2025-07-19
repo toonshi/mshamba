@@ -12,6 +12,10 @@ import Profiles "lib/profiles";
 import Land "lib/land";
 import Token "lib/token";
 import Investments "lib/investments";
+import Valuation "lib/valuation";
+import Tokens "lib/tokens";
+import Profits "lib/profits";
+import Market "lib/market";
 import Types "lib/types";
 import Utils "lib/utils";
 
@@ -28,6 +32,15 @@ actor Mshamba {
   var tokenLedger = Token.newLedger();
   var investments = Investments.newInvestmentStore();
   var investorIndex = Investments.newInvestorIndex();
+  
+  // Enhanced tokenization stores
+  var tokenStore = Tokens.newTokenStore();
+  var tokenBalances = Tokens.newBalanceStore();
+  var tokenTransfers = Tokens.newTransferStore();
+  var profitDistributions = Profits.newDistributionStore();
+  var harvestReports = Profits.newHarvestStore();
+  var marketOrders = Market.newOrderStore();
+  var marketTrades = Market.newTradeStore();
 
   // Stable arrays for persistence
   stable var farmStoreStable : [Types.Farm] = [];
@@ -81,10 +94,29 @@ actor Mshamba {
     description: Text,
     location: Text,
     fundingGoal: Nat,
-    totalShares: Nat,
-    sharePrice: Nat
+    landSize: Float,
+    cropType: Types.CropType,
+    soilQuality: Nat,
+    waterAccess: Bool,
+    infrastructure: Nat,
+    marketAccess: Nat,
+    climateRisk: Nat
   ) : async Utils.Result<Types.Farm> {
-    Farms.createFarm(caller, farmStore, name, description, location, fundingGoal, totalShares, sharePrice)
+    // Calculate automated valuation
+    let valuationResult = Valuation.calculateFarmValuation(
+      landSize, cropType, location, soilQuality, waterAccess,
+      infrastructure, marketAccess, null, climateRisk
+    );
+    
+    switch (valuationResult) {
+      case (#err(msg)) #err("Valuation failed: " # msg);
+      case (#ok(metrics)) {
+        // Create farm with calculated share price
+        let totalShares = 1_000_000; // Standard 1M shares
+        Farms.createFarm(caller, farmStore, name, description, location, 
+                        fundingGoal, totalShares, metrics.sharePrice)
+      };
+    }
   };
 
   public query func getFarm(farmId: Text) : async Utils.Result<Types.Farm> {
@@ -99,7 +131,31 @@ actor Mshamba {
     farmId: Text,
     amount: Nat
   ) : async Utils.Result<Types.Farm> {
-    Farms.investInFarm(caller, farmId, amount, farmStore)
+    // First update the farm with investment
+    let farmResult = Farms.investInFarm(caller, farmId, amount, farmStore);
+    
+    switch (farmResult) {
+      case (#err(msg)) #err(msg);
+      case (#ok(farm)) {
+        // Mint tokens for the investor
+        let tokenResult = Tokens.mintFarmTokens(
+          farmId, caller, amount, farm.sharePrice, tokenStore, tokenBalances
+        );
+        
+        switch (tokenResult) {
+          case (#err(msg)) #err("Token minting failed: " # msg);
+          case (#ok(_)) {
+            // Record the investment
+            let sharesReceived = amount / farm.sharePrice;
+            ignore Investments.recordInvestment(
+              caller, farmId, amount, sharesReceived, farm.sharePrice, 
+              investments, investorIndex
+            );
+            #ok(farm)
+          };
+        }
+      };
+    }
   };
 
   // ------ LAND ------
@@ -206,6 +262,133 @@ actor Mshamba {
     switch (farmStore.get(farmId)) {
       case (null) return #err("Farm not found");
       case (?farm) #ok(farm.valuationHistory)
+    }
+  };
+
+  // ------ ENHANCED TOKENIZATION ------
+  
+  // Token functions
+  public query ({ caller }) func getTokenBalance(farmId: Text) : async Nat {
+    Tokens.getTokenBalance(caller, farmId, tokenBalances)
+  };
+  
+  public query ({ caller }) func getUserTokens() : async [(Text, Nat)] {
+    Tokens.getUserTokens(caller, tokenBalances)
+  };
+  
+  public shared ({ caller }) func transferTokens(
+    to: Principal,
+    farmId: Text,
+    amount: Nat
+  ) : async Utils.Result<Types.TokenTransfer> {
+    Tokens.transferTokens(caller, to, farmId, amount, null, tokenBalances, tokenTransfers)
+  };
+  
+  public query func getTotalSupply(farmId: Text) : async Nat {
+    Tokens.getTotalSupply(farmId, tokenBalances)
+  };
+  
+  public query func getTokenHolders(farmId: Text) : async [(Principal, Nat)] {
+    Tokens.getTokenHolders(farmId, tokenBalances)
+  };
+  
+  // Profit distribution functions
+  public shared ({ caller }) func recordHarvest(
+    farmId: Text,
+    totalYield: Float,
+    totalRevenue: Nat,
+    expenses: Nat,
+    qualityGrade: Text,
+    landSize: Float
+  ) : async Utils.Result<Types.HarvestReport> {
+    Profits.recordHarvest(farmId, caller, totalYield, totalRevenue, expenses, 
+                         qualityGrade, landSize, harvestReports)
+  };
+  
+  public shared ({ caller }) func createProfitDistribution(
+    farmId: Text,
+    harvestReportId: Text,
+    farmerShare: Float
+  ) : async Utils.Result<Types.ProfitDistribution> {
+    switch (harvestReports.get(harvestReportId)) {
+      case (?report) {
+        Profits.createProfitDistribution(farmId, report, farmerShare, 
+                                       tokenBalances, profitDistributions)
+      };
+      case null #err("Harvest report not found");
+    }
+  };
+  
+  public shared ({ caller }) func executeProfitDistribution(
+    distributionId: Text
+  ) : async Utils.Result<Types.ProfitDistribution> {
+    Profits.executeProfitDistribution(distributionId, profitDistributions, 
+                                    tokenBalances, tokenTransfers)
+  };
+  
+  public query func getFarmProfitHistory(farmId: Text) : async [Types.ProfitDistribution] {
+    Profits.getFarmProfitHistory(farmId, profitDistributions)
+  };
+  
+  public query ({ caller }) func getInvestorProfitHistory() : async [(Text, Nat)] {
+    Profits.getInvestorProfitHistory(caller, profitDistributions)
+  };
+  
+  // Secondary market functions
+  public shared ({ caller }) func createMarketOrder(
+    farmId: Text,
+    orderType: Types.OrderType,
+    quantity: Nat,
+    pricePerShare: Nat
+  ) : async Utils.Result<Types.TradeOrder> {
+    Market.createOrder(caller, farmId, orderType, quantity, pricePerShare, 
+                      tokenBalances, marketOrders)
+  };
+  
+  public shared ({ caller }) func cancelOrder(orderId: Text) : async Utils.Result<Types.TradeOrder> {
+    Market.cancelOrder(orderId, caller, marketOrders)
+  };
+  
+  public func matchOrders(farmId: Text) : async [Types.TradeMatch] {
+    Market.matchOrders(farmId, marketOrders, marketTrades, tokenBalances, tokenTransfers)
+  };
+  
+  public query func getOrderBook(farmId: Text) : async {buyOrders: [Types.TradeOrder]; sellOrders: [Types.TradeOrder]} {
+    Market.getOrderBook(farmId, marketOrders)
+  };
+  
+  public query func getMarketPrice(farmId: Text) : async ?Nat {
+    Market.getMarketPrice(farmId, marketTrades)
+  };
+  
+  public query ({ caller }) func getUserOrders() : async [Types.TradeOrder] {
+    Market.getUserOrders(caller, marketOrders)
+  };
+  
+  public query ({ caller }) func getUserTrades() : async [Types.TradeMatch] {
+    Market.getUserTrades(caller, marketTrades)
+  };
+  
+  // Farm valuation functions
+  public func calculateFarmValuation(
+    landSize: Float,
+    cropType: Types.CropType,
+    location: Text,
+    soilQuality: Nat,
+    waterAccess: Bool,
+    infrastructure: Nat,
+    marketAccess: Nat,
+    climateRisk: Nat
+  ) : async Utils.Result<Types.ValuationMetrics> {
+    Valuation.calculateFarmValuation(landSize, cropType, location, soilQuality, 
+                                   waterAccess, infrastructure, marketAccess, 
+                                   null, climateRisk)
+  };
+  
+  public query func getValuationTrend(farmId: Text) : async Text {
+    switch (farmStore.get(farmId)) {
+      case (?farm) Valuation.getValuationTrend(farm.valuationHistory);
+      case null "farm_not_found";
     }
   };
 };
