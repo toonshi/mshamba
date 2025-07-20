@@ -16,6 +16,9 @@ import Valuation "lib/valuation";
 import Tokens "lib/tokens";
 import Profits "lib/profits";
 import Market "lib/market";
+import SupplyChain "lib/supplychain";
+import TokenFactory "lib/token_factory";
+import ICRC2Token "lib/icrc2_token";
 import Types "lib/types";
 import Utils "lib/utils";
 
@@ -41,6 +44,17 @@ actor Mshamba {
   var harvestReports = Profits.newHarvestStore();
   var marketOrders = Market.newOrderStore();
   var marketTrades = Market.newTradeStore();
+
+  // Supply chain stores
+  var supplyOfferings = SupplyChain.newSupplyOfferingStore();
+  var demandRequests = SupplyChain.newDemandRequestStore();
+  var supplyChainMessages = SupplyChain.newMessageStore();
+
+  // ICRC-2 Token system stores
+  var tokenRegistry = TokenFactory.newTokenRegistry();
+  var investmentRecords = TokenFactory.newInvestmentStore();
+  var icrc2TokenStore = ICRC2Token.newTokenStore();
+  var icrc2DistributionStore = ICRC2Token.newDistributionStore();
 
   // Stable arrays for persistence
   stable var farmStoreStable : [Types.Farm] = [];
@@ -291,6 +305,165 @@ actor Mshamba {
   public query func getTokenHolders(farmId: Text) : async [(Principal, Nat)] {
     Tokens.getTokenHolders(farmId, tokenBalances)
   };
+
+  // ------ ICRC-2 TOKEN ENDPOINTS ------
+
+  // Create ICRC-2 token for a farm
+  public func createFarmToken(
+    farmId: Text,
+    initialSupply: ?Nat,
+    decimals: ?Nat8,
+    fee: ?Nat,
+    logo: ?Text
+  ) : async Utils.Result<ICRC2Token.FarmTokenMetadata> {
+    let caller = Principal.fromActor(this);
+    
+    switch (farmStore.get(farmId)) {
+      case (?farm) {
+        // Check if token already exists
+        switch (icrc2TokenStore.get(farmId)) {
+          case (?existing) {
+            #err("Token already exists for farm: " # farmId)
+          };
+          case null {
+            let valuation = TokenFactory.calculateFarmValuation(farm);
+            let supply = switch (initialSupply) {
+              case (?s) { s };
+              case null { TokenFactory.calculateInitialSupply(valuation, 100) }; // Default $1 per token
+            };
+            
+            let tokenArgs: ICRC2Token.CreateTokenArgs = {
+              farm = farm;
+              initial_supply = supply;
+              decimals = Option.get(decimals, 8);
+              fee = Option.get(fee, 10000); // 0.0001 tokens
+              minting_account = {
+                owner = caller;
+                subaccount = null;
+              };
+            };
+            
+            ICRC2Token.createFarmToken(tokenArgs, icrc2TokenStore)
+          };
+        }
+      };
+      case null {
+        #err("Farm not found: " # farmId)
+      };
+    }
+  };
+
+  // Get token metadata
+  public query func getTokenMetadata(farmId: Text) : async Utils.Result<ICRC2Token.FarmTokenMetadata> {
+    ICRC2Token.getTokenMetadata(farmId, icrc2TokenStore)
+  };
+
+  // Get all farm tokens
+  public query func getAllFarmTokens() : async [ICRC2Token.FarmTokenMetadata] {
+    ICRC2Token.getAllTokens(icrc2TokenStore)
+  };
+
+  // Calculate token price
+  public query func getTokenPrice(farmId: Text) : async Utils.Result<Float> {
+    ICRC2Token.calculateTokenPrice(farmId, icrc2TokenStore)
+  };
+
+  // Get token metrics for dashboard
+  public query func getTokenMetrics(farmId: Text) : async Utils.Result<ICRC2Token.TokenMetrics> {
+    ICRC2Token.getTokenMetrics(farmId, icrc2TokenStore, icrc2DistributionStore)
+  };
+
+  // Update farm valuation
+  public func updateFarmValuation(
+    farmId: Text,
+    newValuation: Nat
+  ) : async Utils.Result<ICRC2Token.FarmTokenMetadata> {
+    // Only admin can update valuations
+    let caller = Principal.fromActor(this);
+    if (caller != ADMIN_PRINCIPAL) {
+      return #err("Unauthorized: Only admin can update valuations");
+    };
+    
+    ICRC2Token.updateFarmValuation(farmId, newValuation, icrc2TokenStore)
+  };
+
+  // Create profit distribution
+  public func distributeFarmProfits(
+    farmId: Text,
+    totalProfit: Nat,
+    tokenHolders: [(ICRC2Token.Account, Nat)]
+  ) : async Utils.Result<ICRC2Token.ProfitDistribution> {
+    let caller = Principal.fromActor(this);
+    
+    // Verify caller is farm owner or admin
+    switch (farmStore.get(farmId)) {
+      case (?farm) {
+        if (farm.owner != caller and caller != ADMIN_PRINCIPAL) {
+          return #err("Unauthorized: Only farm owner or admin can distribute profits");
+        };
+        
+        ICRC2Token.createProfitDistribution(
+          farmId,
+          totalProfit,
+          tokenHolders,
+          icrc2TokenStore,
+          icrc2DistributionStore
+        )
+      };
+      case null {
+        #err("Farm not found: " # farmId)
+      };
+    }
+  };
+
+  // Get profit distributions for a farm
+  public query func getFarmProfitDistributions(farmId: Text) : async [ICRC2Token.ProfitDistribution] {
+    ICRC2Token.getFarmDistributions(farmId, icrc2DistributionStore)
+  };
+
+  // Investment tracking functions
+  public func recordTokenInvestment(
+    farmId: Text,
+    investor: Principal,
+    amount: Nat,
+    tokensReceived: Nat
+  ) : async Utils.Result<TokenFactory.InvestmentRecord> {
+    switch (ICRC2Token.calculateTokenPrice(farmId, icrc2TokenStore)) {
+      case (#ok(tokenPrice)) {
+        TokenFactory.recordInvestment(
+          farmId,
+          investor,
+          amount,
+          tokensReceived,
+          tokenPrice,
+          investmentRecords
+        )
+      };
+      case (#err(msg)) {
+        #err("Failed to get token price: " # msg)
+      };
+    }
+  };
+
+  // Get investments for a farm
+  public query func getFarmInvestments(farmId: Text) : async [TokenFactory.InvestmentRecord] {
+    TokenFactory.getFarmInvestments(farmId, investmentRecords)
+  };
+
+  // Get investor's investments
+  public query func getInvestorInvestments(investor: Principal) : async [TokenFactory.InvestmentRecord] {
+    TokenFactory.getInvestorInvestments(investor, investmentRecords)
+  };
+
+  // Get token analytics
+  public query func getTokenAnalytics() : async TokenFactory.TokenAnalytics {
+    TokenFactory.getTokenAnalytics(tokenRegistry, investmentRecords)
+  };
+
+  // Calculate market cap
+  public query func getFarmMarketCap(farmId: Text) : async Utils.Result<Nat> {
+    ICRC2Token.calculateMarketCap(farmId, icrc2TokenStore)
+  };
   
   // Profit distribution functions
   public shared ({ caller }) func recordHarvest(
@@ -391,4 +564,6 @@ actor Mshamba {
       case null "farm_not_found";
     }
   };
+
+
 };

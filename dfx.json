@@ -4,9 +4,14 @@
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko"
     },
+    "farm_token": {
+      "main": "src/mshamba_backend/farm_token.mo",
+      "type": "motoko"
+    },
     "mshamba_frontend": {
       "dependencies": [
-        "mshamba_backend"
+        "mshamba_backend",
+        "farm_token"
       ],
       "source": [
         "src/mshamba_frontend/dist"

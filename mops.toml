@@ -1,0 +1,7 @@
+[package]
+name = "mshamba"
+version = "0.1.0"
+description = "Decentralized agricultural tokenization platform"
+
+[dependencies]
+base = "0.10.4"
