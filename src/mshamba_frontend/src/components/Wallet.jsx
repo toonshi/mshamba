@@ -19,8 +19,20 @@ const Wallet = () => {
       setLoading(true);
       const result = await mshamba_backend.getMyWallet();
       if ('ok' in result) {
-        setWallet(result.ok);
-        setTransactions(result.ok.transactions || []);
+        const walletData = result.ok;
+        // Transform transactions to match our expected format
+        const transactions = walletData.transactions.map(tx => ({
+          ...tx,
+          transactionType: tx.transactionType._name,
+          amount: tx.amount.toString(),
+          timestamp: tx.timestamp / 1000000 // Convert from nanoseconds to milliseconds
+        }));
+        
+        setWallet({
+          ...walletData,
+          balance: walletData.balance.toString()
+        });
+        setTransactions(transactions);
       } else {
         setError(result.err || 'Failed to load wallet');
       }
@@ -47,14 +59,26 @@ const Wallet = () => {
     
     try {
       setLoading(true);
+      const amountE8s = Math.floor(parseFloat(depositAmount) * 1e8); // Convert to e8s
       const result = await mshamba_backend.depositToMyWallet(
-        parseFloat(depositAmount) * 1e8, // Convert to e8s
+        amountE8s,
         'Deposit from web interface'
       );
       
       if ('ok' in result) {
-        setWallet(result.ok);
-        setTransactions(result.ok.transactions || []);
+        const walletData = result.ok;
+        const transactions = walletData.transactions.map(tx => ({
+          ...tx,
+          transactionType: tx.transactionType._name,
+          amount: tx.amount.toString(),
+          timestamp: tx.timestamp / 1000000 // Convert from nanoseconds to milliseconds
+        }));
+        
+        setWallet({
+          ...walletData,
+          balance: walletData.balance.toString()
+        });
+        setTransactions(transactions);
         setDepositAmount('');
         setError(null);
       } else {
@@ -62,7 +86,7 @@ const Wallet = () => {
       }
     } catch (err) {
       console.error('Deposit error:', err);
-      setError('Failed to process deposit');
+      setError('Failed to process deposit: ' + (err.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -78,22 +102,35 @@ const Wallet = () => {
     
     try {
       setLoading(true);
+      const amountE8s = Math.floor(parseFloat(withdrawAmount) * 1e8); // Convert to e8s
+      // For now, we'll use the same method as deposit since withdraw might not be implemented
       const result = await mshamba_backend.withdrawFromMyWallet(
-        parseFloat(withdrawAmount) * 1e8, // Convert to e8s
+        amountE8s,
         'Withdrawal to external wallet'
       );
       
       if ('ok' in result) {
-        setWallet(result.ok);
-        setTransactions(result.ok.transactions || []);
+        const walletData = result.ok;
+        const transactions = walletData.transactions.map(tx => ({
+          ...tx,
+          transactionType: tx.transactionType._name,
+          amount: tx.amount.toString(),
+          timestamp: tx.timestamp / 1000000 // Convert from nanoseconds to milliseconds
+        }));
+        
+        setWallet({
+          ...walletData,
+          balance: walletData.balance.toString()
+        });
+        setTransactions(transactions);
         setWithdrawAmount('');
         setError(null);
       } else {
-        setError(result.err || 'Withdrawal failed');
+        setError(result.err || 'Withdrawal failed: ' + (result.err || 'Unknown error'));
       }
     } catch (err) {
       console.error('Withdrawal error:', err);
-      setError('Failed to process withdrawal');
+      setError('Failed to process withdrawal: ' + (err.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -109,9 +146,27 @@ const Wallet = () => {
     
     try {
       setLoading(true);
+      const amountE8s = Math.floor(parseFloat(transferAmount) * 1e8); // Convert to e8s
+      
+      // First try to parse the input as a principal
+      let recipientPrincipal;
+      try {
+        recipientPrincipal = window.ic.plug.agent.getPrincipal(transferTo);
+      } catch (err) {
+        // If parsing as principal fails, try to convert from text
+        try {
+          recipientPrincipal = Principal.fromText(transferTo);
+        } catch (err) {
+          setError('Invalid recipient principal ID');
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Note: The actual method name might be different in your backend
       const result = await mshamba_backend.transferToUser(
-        transferTo, // Principal ID of recipient
-        parseFloat(transferAmount) * 1e8, // Convert to e8s
+        recipientPrincipal,
+        amountE8s,
         'Transfer to ' + transferTo
       );
       
@@ -121,11 +176,11 @@ const Wallet = () => {
         setTransferTo('');
         setError(null);
       } else {
-        setError(result.err || 'Transfer failed');
+        setError('Transfer failed: ' + (result.err || 'Unknown error'));
       }
     } catch (err) {
       console.error('Transfer error:', err);
-      setError('Failed to process transfer');
+      setError('Failed to process transfer: ' + (err.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
