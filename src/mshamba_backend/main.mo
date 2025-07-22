@@ -2,22 +2,26 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Float "mo:base/Float";
 import Nat "mo:base/Nat";
+import Nat64 "mo:base/Nat64";
 
 import Iter "mo:base/Iter";
 import Int "mo:base/Int";
 import Time "mo:base/Time";
 import Array "mo:base/Array";
-import Farms "lib/farms";
-import Profiles "lib/profiles";
-import Land "lib/land";
-import Token "lib/token";
-import Investments "lib/investments";
-import Valuation "lib/valuation";
-import Tokens "lib/tokens";
-import Profits "lib/profits";
-import Market "lib/market";
-import Types "lib/types";
-import Utils "lib/utils";
+import HashMap "mo:base/HashMap";
+import Result "mo:base/Result";
+import Types "./lib/types";
+import Utils "./lib/utils";
+import Farms "./lib/farms";
+import Profiles "./lib/profiles";
+import Land "./lib/land";
+import Token "./lib/token";
+import Investments "./lib/investments";
+import Valuation "./lib/valuation";
+import Tokens "./lib/tokens";
+import Profits "./lib/profits";
+import Market "./lib/market";
+import Wallet "./lib/wallet";
 
 actor Mshamba {
 
@@ -45,9 +49,13 @@ actor Mshamba {
   // Stable arrays for persistence
   stable var farmStoreStable : [Types.Farm] = [];
   stable var profileStoreStable : [Types.UserProfile] = [];
+  
+  // Wallet store
+  private var walletStore = HashMap.HashMap<Principal, Types.Wallet>(1, Principal.equal, Principal.hash);
 
   system func preupgrade() {
     farmStoreStable := Iter.toArray(farmStore.vals());
+    // Note: Wallet state is not persisted across upgrades in this implementation
     profileStoreStable := Iter.toArray(profileStore.vals());
     // TODO: Repeat for other stores
   };
@@ -62,7 +70,31 @@ actor Mshamba {
       profileStore.put(profile.wallet, profile);
     };
     profileStoreStable := [];
+    // Re-initialize wallet store after upgrade
+    walletStore := HashMap.HashMap<Principal, Types.Wallet>(1, Principal.equal, Principal.hash);
     // TODO: Repeat for other stores
+  };
+
+  // ------ WALLET ------
+  public shared({ caller }) func getMyWallet() : async Types.WalletResult {
+    switch (Wallet.getOrCreateWallet(walletStore, caller)) {
+      case (#ok(wallet)) { #ok(wallet) };
+      case (#err(msg)) { #err("Failed to get wallet: " # msg) };
+    }
+  };
+
+  public shared({ caller }) func depositToMyWallet(amount: Nat, description: Text) : async Types.WalletResult {
+    switch (Wallet.depositICP(walletStore, caller, Nat64.fromNat(amount), description)) {
+      case (#ok(wallet)) { #ok(wallet) };
+      case (#err(msg)) { #err("Deposit failed: " # msg) };
+    }
+  };
+
+  public shared({ caller }) func withdrawFromMyWallet(amount: Nat, description: Text) : async Types.WalletResult {
+    switch (Wallet.withdrawICP(walletStore, caller, Nat64.fromNat(amount), description)) {
+      case (#ok(wallet)) { #ok(wallet) };
+      case (#err(msg)) { #err("Withdrawal failed: " # msg) };
+    }
   };
 
   // ------ PROFILES ------
@@ -73,6 +105,8 @@ actor Mshamba {
     bio: Text,
     location: Text
   ) : async Utils.Result<Types.UserProfile> {
+    // Ensure user has a wallet when creating/updating profile
+    ignore await getMyWallet();
     Profiles.upsertProfile(caller, profileStore, name, email, role, bio, location)
   };
 

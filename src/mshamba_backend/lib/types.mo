@@ -47,6 +47,38 @@ module {
     valuationHistory : [(Int, Nat)]; // (timestamp, value)
   };
 
+  // Wallet Types
+  public type TransactionType = {
+    #deposit;
+    #withdrawal;
+    #investment;
+    #profitDistribution;
+    #transferIn;
+    #transferOut;
+  };
+
+  public type Transaction = {
+    id : Text;
+    timestamp : Int;
+    transactionType : TransactionType;
+    from : Principal;
+    to : Principal;
+    amount : Nat;
+    description : Text;
+  };
+
+  public type Wallet = {
+    id : Principal;
+    balance : Nat;
+    transactions : [Transaction];
+    createdAt : Int;
+  };
+
+  public type WalletResult = {
+    #ok : Wallet;
+    #err : Text;
+  };
+
   //  Primary Investment Tracking
 
   public type Investment = {
