@@ -1,6 +1,17 @@
 module {
   // User & Roles
 
+public type bookCategory = {
+    #Inputs;
+    #Sales;
+    #Labor;
+    #Expenses;
+    #Yields
+    ;
+  };
+
+
+
   public type Role = {
     #Investor;
     #Farmer;
@@ -18,6 +29,7 @@ module {
     bio : Text;
     location : Text;
     joinedAt : Int;
+    
   };
 
   //  Farm Project
@@ -45,6 +57,7 @@ module {
     status : FarmStatus;
     investors : [Principal];
     valuationHistory : [(Int, Nat)]; // (timestamp, value)
+    sharePriceHistory : [(Int, Nat)];// (timestamp, value)
   };
 
   // Wallet Types

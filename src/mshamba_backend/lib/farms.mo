@@ -25,8 +25,7 @@ module {
     description: Text,
     location: Text,
     fundingGoal: Nat,
-    totalShares: Nat,
-    sharePrice: Nat
+    
   ) : Result<Farm> {
     let farmId = "farm-" # Int.toText(Time.now());
 
@@ -38,13 +37,14 @@ module {
       location = location;
       fundingGoal = fundingGoal;
       fundedAmount = 0;
-      totalShares = totalShares;
-      sharePrice = sharePrice;
+      totalShares = 0 ;
+      sharePrice = 0;
       isOpenForInvestment = true;
       createdAt = Time.now();
       status = #Open;
       investors = [];
       valuationHistory = [];
+      sharePriceHistory = [];
     };
 
     farms.put(farmId, newFarm);
