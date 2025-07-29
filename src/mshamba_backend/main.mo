@@ -10,7 +10,9 @@ import Array "mo:base/Array";
 
 import FarmToken "lib/farm_tokens";
 
-persistent actor class Mshamba() = this {
+
+actor  {
+
 
   type Farm = {
     id : Text;
@@ -31,9 +33,9 @@ persistent actor class Mshamba() = this {
     timestamp : Int;
   };
 
-  transient var farms : Trie.Trie<Text, Farm> = Trie.empty();
-  transient var investments : Trie.Trie<Text, [Investment]> = Trie.empty();
-  transient var farmTokens : Trie.Trie<Text, FarmToken.Token> = Trie.empty();
+  stable var farms : Trie.Trie<Text, Farm> = Trie.empty();
+  stable var investments : Trie.Trie<Text, [Investment]> = Trie.empty();
+  var farmTokens : Trie.Trie<Text, FarmToken.Token> = Trie.empty();
 
   public shared({ caller }) func createFarm(
     name : Text,

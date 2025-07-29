@@ -7,13 +7,7 @@
     "mshamba_frontend": {
       "dependencies": ["mshamba_backend"],
       "source": ["src/mshamba_frontend/dist"],
-      "type": "assets",
-      "workspace": "mshamba_frontend"
-    },
-    "test_workflow": {
-      "main": "test/test_workflow.mo",
-      "type": "motoko",
-      "dependencies": ["mshamba_backend"]
+      "type": "assets"
     }
   },
   "defaults": {
