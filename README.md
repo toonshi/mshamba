@@ -98,9 +98,12 @@ public type Result<T> = {
   #err: Text;
 };
 
-
+## Frontend repo:
+  https://github.com/VeeThoithi
 If you want to start working on your project right away, you might want to try the following commands:
 
+## Valuation Model repo:
+  https://github.com/ericx00/Landvaluation
 ```bash
 cd mshamba/
 dfx help

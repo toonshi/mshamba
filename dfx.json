@@ -5,14 +5,15 @@
       "type": "motoko"
     },
     "mshamba_frontend": {
-      "dependencies": [
-        "mshamba_backend"
-      ],
-      "source": [
-        "src/mshamba_frontend/dist"
-      ],
+      "dependencies": ["mshamba_backend"],
+      "source": ["src/mshamba_frontend/dist"],
       "type": "assets",
       "workspace": "mshamba_frontend"
+    },
+    "test_workflow": {
+      "main": "test/test_workflow.mo",
+      "type": "motoko",
+      "dependencies": ["mshamba_backend"]
     }
   },
   "defaults": {
