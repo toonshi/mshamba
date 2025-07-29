@@ -3,12 +3,14 @@ import Text "mo:base/Text";
 import Nat "mo:base/Nat";
 import Time "mo:base/Time";
 import Result "mo:base/Result";
-import Debug "mo:base/Debug";
+// import Debug "mo:base/Debug";
 import Principal "mo:base/Principal";
+import Int "mo:base/Int";
+import Array "mo:base/Array";
 
-import FarmToken "token/farm_token";
+import FarmToken "lib/farm_tokens";
 
-actor class Mshamba() = this {
+persistent actor class Mshamba() = this {
 
   type Farm = {
     id : Text;
@@ -29,20 +31,18 @@ actor class Mshamba() = this {
     timestamp : Int;
   };
 
-  stable var farms : Trie.Trie<Text, Farm> = Trie.empty();
-  stable var investments : Trie.Trie<Text, [Investment]> = Trie.empty();
-  stable var farmTokens : Trie.Trie<Text, FarmToken.Token> = Trie.empty();
+  transient var farms : Trie.Trie<Text, Farm> = Trie.empty();
+  transient var investments : Trie.Trie<Text, [Investment]> = Trie.empty();
+  transient var farmTokens : Trie.Trie<Text, FarmToken.Token> = Trie.empty();
 
-  public func createFarm(
+  public shared({ caller }) func createFarm(
     name : Text,
     description : Text,
     location : Text,
     fundingGoal : Nat,
     sharePrice : Nat
   ) : async Result.Result<Text, Text> {
-    let caller = Principal.toText(Principal.fromActor(this));
     let farmId = "farm-" # Int.toText(Time.now());
-
     let farm : Farm = {
       id = farmId;
       name = name;
@@ -52,59 +52,51 @@ actor class Mshamba() = this {
       totalRaised = 0;
       sharePrice = sharePrice;
       createdAt = Time.now();
-      owner = Principal.fromText(caller);
+      owner = caller;
     };
 
-    // Store farm
-    farms := Trie.put(farms, farmId, farm);
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    let (updatedFarms, _) = Trie.put(farms, key, Text.equal, farm);
+    farms := updatedFarms;
 
     // Initialize token for the farm
     let token = FarmToken.newToken(farmId);
-    farmTokens := Trie.put(farmTokens, farmId, token);
+    let (updatedTokens, _) = Trie.put(farmTokens, key, Text.equal, token);
+    farmTokens := updatedTokens;
 
     return #ok(farmId);
   };
 
-  public func getFarm(farmId : Text) : async Result.Result<Farm, Text> {
-    switch (Trie.get(farms, farmId)) {
-      case (?farm) return #ok(farm);
-      case null return #err("Farm not found");
-    };
+  public query func getFarm(farmId : Text) : async Result.Result<Farm, Text> {
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    switch (Trie.get(farms, key, Text.equal)) {
+      case (?farm) #ok(farm);
+      case null #err("Farm not found");
+    }
   };
 
-  public func getAllFarms() : async [Farm] {
-    Trie.toArray(farms)
-    |> Array.map<Farm, Farm>(func((_, farm)) { farm })
+  public query func getAllFarms() : async [Farm] {
+    Trie.toArray<Text, Farm, Farm>(farms, func (_, farm) { farm })
   };
 
-  public func investInFarm(farmId : Text, amount : Nat) : async Result.Result<Text, Text> {
-    let caller = Principal.fromActor(this);
+  public shared({ caller }) func investInFarm(farmId : Text, amount : Nat) : async Result.Result<Text, Text> {
+    let key = { key = farmId; hash = Text.hash(farmId) };
 
-    // Retrieve the farm
-    let maybeFarm = Trie.get(farms, farmId);
-    switch maybeFarm {
+    switch (Trie.get(farms, key, Text.equal)) {
       case null return #err("Farm not found");
       case (?farm) {
-        // Check if investment would exceed goal
         if (farm.totalRaised + amount > farm.fundingGoal) {
           return #err("Investment exceeds funding goal");
         };
 
-        // Update totalRaised
-        let updatedFarm = { 
-          id = farm.id;
-          name = farm.name;
-          description = farm.description;
-          location = farm.location;
-          fundingGoal = farm.fundingGoal;
-          totalRaised = farm.totalRaised + amount;
-          sharePrice = farm.sharePrice;
-          createdAt = farm.createdAt;
-          owner = farm.owner;
+        if (farm.sharePrice == 0) {
+          return #err("Invalid share price");
         };
-        farms := Trie.put(farms, farmId, updatedFarm);
 
-        // Record investment
+        let updatedFarm = { farm with totalRaised = farm.totalRaised + amount };
+        let (newFarms, _) = Trie.put(farms, key, Text.equal, updatedFarm);
+        farms := newFarms;
+
         let investment : Investment = {
           investor = caller;
           farmId = farmId;
@@ -112,21 +104,32 @@ actor class Mshamba() = this {
           timestamp = Time.now();
         };
 
-        let current = switch (Trie.get(investments, farmId)) {
+        let invKey = { key = farmId; hash = Text.hash(farmId) };
+        let current = switch (Trie.get(investments, invKey, Text.equal)) {
           case (?inv) inv;
           case null [];
         };
+        let (newInvTrie, _) = Trie.put(investments, invKey, Text.equal, Array.append(current, [investment]));
+        investments := newInvTrie;
 
-        investments := Trie.put(investments, farmId, Array.append(current, [investment]));
-
-        // Mint tokens to investor
-        switch (Trie.get(farmTokens, farmId)) {
-          case (?token) {
-            let tokensToMint = amount / farm.sharePrice;
-            let updatedToken = FarmToken.mint(token, caller, tokensToMint);
-            farmTokens := Trie.put(farmTokens, farmId, updatedToken);
-          };
+        switch (Trie.get(farmTokens, key, Text.equal)) {
           case null return #err("Farm token not initialized");
+          case (?token) {
+            switch (FarmToken.mintFarmTokens(
+              farmId,
+              caller,
+              amount,
+              farm.sharePrice,
+              token.tokens,
+              token.balances
+            )) {
+              case (#ok(_)) {
+                let (updatedTokensTrie, _) = Trie.put(farmTokens, key, Text.equal, token);
+                farmTokens := updatedTokensTrie;
+              };
+              case (#err(e)) return #err("Token mint failed: " # e);
+            };
+          };
         };
 
         return #ok("Investment successful");
@@ -134,18 +137,22 @@ actor class Mshamba() = this {
     };
   };
 
-  public func getFarmInvestments(farmId : Text) : async [Investment] {
-    switch (Trie.get(investments, farmId)) {
+  public query func getFarmInvestments(farmId : Text) : async [Investment] {
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    switch (Trie.get(investments, key, Text.equal)) {
       case (?inv) inv;
       case null [];
-    };
+    }
   };
 
-  public func getMyBalance(farmId : Text) : async Result.Result<Nat, Text> {
-    let caller = Principal.fromActor(this);
-    switch (Trie.get(farmTokens, farmId)) {
-      case (?token) return #ok(FarmToken.balanceOf(token, caller));
-      case null return #err("No token found for this farm");
-    };
+  public shared({ caller }) func getMyBalance(farmId : Text) : async Result.Result<Nat, Text> {
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    switch (Trie.get(farmTokens, key, Text.equal)) {
+      case (?token) {
+        let balance = FarmToken.getTokenBalance(caller, farmId, token.balances);
+        #ok(balance);
+      };
+      case null #err("No token found for this farm");
+    }
   };
 };

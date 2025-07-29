@@ -16,6 +16,24 @@ module {
   public type TokenStandard = Types.TokenStandard;
   public type Result<T> = Utils.Result<T>;
 
+  public type Token = {
+  farmId: Text;
+  balances: HashMap.HashMap<(Principal, Text), Nat>;
+  tokens: HashMap.HashMap<Text, FarmToken>;
+  transfers: HashMap.HashMap<Text, TokenTransfer>;
+};
+
+// This is the function your main.mo expects
+public func newToken(farmId: Text) : Token {
+  {
+    farmId = farmId;
+    balances = newBalanceStore();
+    tokens = newTokenStore();
+    transfers = newTransferStore();
+  }
+};
+
+
   // Token storage factories
   public func newTokenStore() : HashMap.HashMap<Text, FarmToken> {
     HashMap.HashMap<Text, FarmToken>(100, Text.equal, Text.hash)
