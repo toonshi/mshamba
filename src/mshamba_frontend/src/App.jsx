@@ -18,6 +18,10 @@ import { FarmerRecords } from './pages/FarmerRecords';
 import { useInvestments } from './hooks/useInvestments';
 import './styles/globals.css';
 
+import { Actor, HttpAgent } from "@dfinity/agent";
+import { idlFactory as backend_idl, canisterId as backend_id } from "@backend";
+
+
 function App() {
   const {
     activeTimeframe,
