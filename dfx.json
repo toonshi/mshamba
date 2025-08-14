@@ -1,25 +1,13 @@
 {
   "canisters": {
-    "mshamba_backend": {
-      "main": "src/mshamba_backend/main.mo",
-      "type": "motoko"
-    },
-    "mshamba_frontend": {
-      "dependencies": [
-        "mshamba_backend"
-      ],
-      "source": [
-        "src/mshamba_frontend/dist"
-      ],
-      "type": "assets"
-    },
     "token_factory": {
       "type": "motoko",
       "main": "src/factory/main.mo"
     },
-    "fungible_token": {
-      "type": "motoko",
-      "main": "src/token/main.mo"
+    "mshamba_frontend": {
+      "dependencies": ["token_factory"],
+      "source": ["src/mshamba_frontend/dist"],
+      "type": "assets"
     }
   },
   "defaults": {
@@ -29,9 +17,7 @@
     }
   },
   "mops": {
-    "packages": [
-      "serde"
-    ]
+    "packages": ["serde"]
   },
   "output_env_file": ".env",
   "version": 1
