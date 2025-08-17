@@ -26,7 +26,7 @@ actor TokenFactory {
       arg          : Blob;
     }) -> async ();
   };
-  let ic : ICManagement = actor ("aaaaa-aa");
+
 
   // Types matching ledger DID subset
   type Account = { owner : Principal; subaccount : ?Blob };
@@ -77,6 +77,9 @@ actor TokenFactory {
     extraControllers : [Principal],
     cyclesToSpend    : ?Nat
   ) : async Principal {
+    // THIS IS THE FIX: The actor reference is now initialized inside the function.
+    let ic : ICManagement = actor ("aaaaa-aa");
+
     assert initialSupply > 0;
 
     // Enforce tokenomics

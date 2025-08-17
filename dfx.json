@@ -4,8 +4,12 @@
       "type": "motoko",
       "main": "src/factory/main.mo"
     },
+    "mshamba_backend": {
+      "type": "motoko",
+      "main": "src/mshamba_backend/main.mo"
+    },
     "mshamba_frontend": {
-      "dependencies": ["token_factory"],
+      "dependencies": ["token_factory", "mshamba_backend"],
       "source": ["src/mshamba_frontend/dist"],
       "type": "assets"
     }
@@ -15,9 +19,6 @@
       "args": "",
       "packtool": "mops sources"
     }
-  },
-  "mops": {
-    "packages": ["serde"]
   },
   "output_env_file": ".env",
   "version": 1
