@@ -29,22 +29,24 @@ module {
     #Closed;
   };
 
-  public type Farm = {
-    farmId : Text;
-    name : Text;
-    owner : Principal;
-    description : Text;
-    location : Text;
-    fundingGoal : Nat;
-    fundedAmount : Nat;
-    totalShares : Nat;       
-    sharePrice : Nat;            
-    createdAt : Int;
-    status : FarmStatus;
-    investors : [Principal];
-    valuationHistory : [(Int, Nat)]; // (timestamp, value)
-    sharePriceHistory : [(Int, Nat)];// (timestamp, value)
-  };
+public type Farm = {
+  farmId: Text;
+  name: Text;
+  owner: Principal;
+  description: Text;
+  location: Text;
+  fundingGoal: Nat;
+  fundedAmount: Nat;
+  totalShares: Nat;
+  sharePrice: Nat;
+  createdAt: Int;
+  status: FarmStatus;
+  investors: [Principal];
+  valuationHistory: [Nat];
+  sharePriceHistory: [Nat];
+  ledgerCanister: ?Principal;   // NEW: the deployed ledger canister for this farm
+};
+
 
   // Wallet Types
   public type TransactionType = {

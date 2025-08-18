@@ -5,12 +5,13 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Types "types";
-import Utils "utils";
+import IM "token_factory";
+
 
 module {
   public type Farm = Types.Farm;
   public type FarmStatus = Types.FarmStatus;
-  public type Result<T> = Utils.Result<T>;
+
 
   // Creates a new in-memory HashMap store for farms
   public func newFarmStore() : HashMap.HashMap<Text, Farm> {
@@ -50,6 +51,48 @@ module {
     farms.put(farmId, newFarm);
     #ok(newFarm)
   };
+
+
+
+
+
+public func openFarmInvestment(
+  caller: Principal,
+  farms: HashMap.HashMap<Text, Farm>,
+  farmId: Text,
+  tokenName: Text,
+  tokenSymbol: Text,
+  initialSupply: Nat,
+  investorAllocs: [IM.Allocation]
+) : async Result<Farm> {
+  switch (farms.get(farmId)) {
+    case (?farm) {
+      if (farm.status != #Open) {
+        return #err("Farm is not open for investment");
+      };
+
+      let ledgerId = await IM.openInvestment(
+        tokenName,
+        tokenSymbol,
+        farm.owner,
+        initialSupply,
+        investorAllocs,
+        365,             // vestingDays
+        10_000,          // transferFee
+        [],              // extraControllers
+        null             // cyclesToSpend
+      );
+
+      let updatedFarm = { farm with ledgerCanister = ?ledgerId };
+      farms.put(farmId, updatedFarm);
+
+      #ok(updatedFarm)
+    };
+    case null { #err("Farm not found") };
+  }
+};
+
+
 
   // Retrieve a farm by ID
   public func getFarm(
@@ -99,11 +142,11 @@ module {
   ) : Result<Farm> {
     switch (farms.get(farmId)) {
       case (?farm) {
-        if (farm.isOpenForInvestment == false) {
+        if (farm.FarmStatus == #Closed) {
           return #err("This farm is not open for investment");
         };
 
-        if (farm.status != #Open) {
+        if (farm.FarmStatus != #Registered and farm.FarmStatus != #Funded) {
           return #err("This farm is not accepting funds at this time");
         };
 
