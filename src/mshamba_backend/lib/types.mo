@@ -187,5 +187,5 @@ public type Farm = {
     yieldPerAcre : Float;
     qualityGrade : Text;
   };
-
+}
  

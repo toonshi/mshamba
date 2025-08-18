@@ -5,7 +5,7 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Types "types";
-import IM "token_factory";
+import IM "tokenFactory";
 
 
 module {
