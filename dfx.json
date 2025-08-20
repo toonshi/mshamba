@@ -1,37 +1,38 @@
 {
   "canisters": {
-    "mshamba_backend": {
-      "main": "src/mshamba_backend/main.mo",
-      "type": "motoko"
-    },
-    "mshamba_frontend": {
-      "dependencies": [
-        "mshamba_backend"
-      ],
-      "source": [
-        "src/mshamba_frontend/dist"
-      ],
-      "type": "assets"
-    },
+    
     "token_factory": {
       "type": "motoko",
       "main": "src/factory/main.mo"
     },
-    "fungible_token": {
-      "type": "motoko",
-      "main": "src/token/main.mo"
+    "mshamba_backend": {
+      "main": "src/mshamba_backend/main.mo",
+      "type": "motoko"
+    },
+    "icrc1_ledger": {
+      "type": "custom",
+      "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "candid": "wasm/ledger.did",
+      "init_arg": "(variant { Init = record { token_symbol = \"MSH\"; token_name = \"Mshamba Token\"; minting_account = record { owner = principal \"frf6c-rdjtw-4xfdf-ghsf7-j2rwe-czr2v-tbxcl-doo7h-bt6jl-vzrzz-mae\" }; transfer_fee = 10_000; metadata = vec {}; initial_balances = vec {}; archive_options = record { num_blocks_to_archive = 10_000; trigger_threshold = 20_000; controller_id = principal \"frf6c-rdjtw-4xfdf-ghsf7-j2rwe-czr2v-tbxcl-doo7h-bt6jl-vzrzz-mae\"; cycles_for_archive_creation = opt 4_000_000_000_000; }; } })"
+    },
+    "icrc1_index": {
+      "type": "custom",
+      "wasm": "wasm/ic-icrc1-index-ng.wasm",
+      "candid": "wasm/index-ng.did",
+      "init_arg": "(opt variant { Init = record { ledger_id = principal \"umunu-kh777-77774-qaaca-cai\" } })"
+    },
+    "icrc1_archive": {
+      "type": "custom",
+      "wasm": "wasm/ic-icrc1-archive.wasm",
+      "candid": "wasm/archive.did"
     }
   },
+
   "defaults": {
     "build": {
       "args": "",
-      "packtool": "mops sources"
+      "packtool": ""
     }
-  },
-  "mops": {
-    "packages": [
-      "serde"
-    ]
   },
   "output_env_file": ".env",
   "version": 1
