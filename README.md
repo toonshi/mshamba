@@ -71,7 +71,8 @@ node --version
 # Install Frontend Dependencies
 npm install --save-dev vite @types/node
 
-
+Run the embed_icrc1_wasm.sh script after making it into an executable
+using chmod ....
 # Deploys your canisters to the replica and generates your candid interface
 dfx deploy
 ```
@@ -93,4 +94,21 @@ npm start
 ```
 
 Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+
+
+TO:DO: Rewrite the embed_icrc1 script in the root folder  so that it divides the wasm bytes into chunks. Canisters can only take in 2mb.
+
+Testing token_factory: 
+
+dfx deploy token_factory
+Notice the canister id at the end of the url
+dfx canister status <put the canister_id here>
+dfx canister update-settings <put the canister_id here> --add-controller <put the canister_id here>
+confirm controllers
+dfx canister status <put the canister_id here>
+
+
+
+ dfx canister call token_factory createFarmLedger   '("MyToken", "MTK", principal "w7x7r-cok77-xa", 1000000, vec { record { owner = principal "w7x7r-cok77-xa"; allocation = 10000 } }, null, 365, 1000, vec { principal "w7x7r-cok77-xa" }, opt 900_000_000_000)'
+
 
