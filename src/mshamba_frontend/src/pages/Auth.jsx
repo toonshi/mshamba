@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { AuthClient } from '@dfinity/auth-client';
-
 import { ArrowLeft, Shield, Sprout } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const Auth = ({ onBack }) => {
   const [authClient, setAuthClient] = useState(null);
   const [principal, setPrincipal] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Read ?type=farmer or ?type=investor from URL
+  const queryParams = new URLSearchParams(location.search);
+  const userType = queryParams.get("type"); 
 
   useEffect(() => {
     const initAuth = async () => {
@@ -18,10 +22,17 @@ export const Auth = ({ onBack }) => {
       if (await client.isAuthenticated()) {
         const id = client.getIdentity();
         setPrincipal(id.getPrincipal().toText());
+
+        // If already logged in, redirect them immediately
+        if (userType === "farmer") {
+          navigate("/farmer/dashboard");
+        } else if (userType === "investor") {
+          navigate("/investor/dashboard");
+        }
       }
     };
     initAuth();
-  }, []);
+  }, [navigate, userType]);
 
   const handleInternetIdentity = async () => {
     setIsLoading(true);
@@ -31,8 +42,15 @@ export const Auth = ({ onBack }) => {
         const id = authClient.getIdentity();
         setPrincipal(id.getPrincipal().toText());
         setIsLoading(false);
-        // Navigate to profile selection page
-        navigate('/profile');
+
+        // Redirect based on role chosen on Home.jsx
+        if (userType === "farmer") {
+          navigate("/farmer/dashboard");
+        } else if (userType === "investor") {
+          navigate("/investor/dashboard");
+        } else {
+          navigate("/"); // fallback
+        }
       },
     });
   };
@@ -55,7 +73,7 @@ export const Auth = ({ onBack }) => {
 
           <div className="flex items-center justify-center mb-4">
             <Sprout className="w-8 h-8 text-green-500 mr-2" />
-            <h1 className="text-2xl font-bold">AgriVest</h1>
+            <h1 className="text-2xl font-bold">Mshamba</h1>
           </div>
 
           <h2 className="text-xl font-semibold mb-2">Sign in with Internet Identity</h2>
