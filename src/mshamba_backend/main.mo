@@ -1,18 +1,33 @@
 import Farm "lib/farms";
-import IM "lib/tokenFactory"; // (kept for future openInvestment)
 import UserProfile "lib/userProfiles";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
-import Iter "mo:base/Iter";
+import Nat "mo:base/Nat";
+import TF "canister:token_factory";
+import Types "lib/types";
 
-actor  {
-  stable var farmStore = Farm.newFarmStore();
-  stable var profileStore = UserProfile.newProfileStore();
+actor {
+
+  public type Allocation = TF.Allocation;
+
+   var farmStore = Farm.newFarmStore();
+   var profileStore = UserProfile.newProfileStore();
+
+  // ==============================
+  // HELPERS
+  // ==============================
+  func getFarmerProfile(caller: Principal) : ?UserProfile.Profile {
+  switch (UserProfile.getProfile(profileStore, caller)) {
+    case (?(p)) {
+      if (p.role == #Farmer) { ?p } else { null }
+    };
+    case null { null };
+  }
+};
 
   // ==============================
   // PROFILES
   // ==============================
-  /// Create Profile (Farmer or Investor)
   public shared ({ caller }) func createProfile(
     name : Text,
     bio : Text,
@@ -22,7 +37,6 @@ actor  {
     UserProfile.createProfile(profileStore, caller, name, bio, role, certifications)
   };
 
-  /// Fetch profile by Principal
   public query func getProfile(owner : Principal) : async ?UserProfile.Profile {
     UserProfile.getProfile(profileStore, owner)
   };
@@ -30,57 +44,73 @@ actor  {
   // ==============================
   // FARMS (Farmer-only actions)
   // ==============================
-  /// Create a new farm (only if caller is a Farmer)
   public shared ({ caller }) func createFarm(
     name : Text,
     description : Text,
     location : Text,
     fundingGoal : Nat
   ) : async Farm.Result<Farm.Farm> {
-    switch (UserProfile.getProfile(profileStore, caller)) {
-      case (?(p)) {
-        if (p.role == #Farmer) {
-          Farm.createFarm(caller, farmStore, name, description, location, fundingGoal)
-        } else {
-          #err("Only farmers can create farms")
-        }
-      };
-      case null { #err("Profile not found. Create a farmer profile first") };
+    switch (getFarmerProfile(caller)) {
+      case (?_) { Farm.createFarm(caller, farmStore, name, description, location, fundingGoal) };
+      case null { #err("Only farmers can create farms or profile not found") };
     }
   };
 
-  /// Query farms belonging to the caller (Farmer only)
   public shared query ({ caller }) func myFarms() : async [Farm.Farm] {
-    let allFarms = Farm.listFarms(farmStore);
-    Iter.toArray(
-      Iter.filter<Farm.Farm>(
-        Iter.fromArray(allFarms),
-        func (f : Farm.Farm) : Bool { f.owner == caller }
-      )
-    )
+    Farm.listFarmsByOwner(farmStore, caller)
   };
 
-  //  Open investment — uncomment when you wire token factory
-  // public shared ({ caller }) func openInvestment(
-  //   farmId : Text,
-  //   tokenName : Text,
-  //   tokenSymbol : Text,
-  //   initialSupply : Nat,
-  //   investorAllocs : [IM.Allocation]
-  // ) : async Farm.Result<Farm.Farm> {
-  //   await Farm.openFarmInvestment(
-  //     caller,
-  //     farmStore,
-  //     farmId,
-  //     tokenName,
-  //     tokenSymbol,
-  //     initialSupply,
-  //     investorAllocs
-  //   )
-  // };
-
-  // List all farms
   public query func listFarms() : async [Farm.Farm] {
     Farm.listFarms(farmStore)
   };
-}
+
+  // ==============================
+  // INVESTMENT (Token Factory Integration)
+  // ==============================
+  public shared ({ caller }) func openFarmInvestment(
+    farmId : Text,
+    tokenName : Text,
+    tokenSymbol : Text,
+    initialSupply : Nat,
+    investorAllocs : [Allocation],
+    vestingDays : Nat,
+    transferFee : Nat,
+    extraControllers : [Principal],
+    cyclesToSpend : ?Nat
+  ) : async Farm.Result<Farm.Farm> {
+
+    // 1️⃣ Retrieve the farm and ensure it exists & is open
+    let farmResult = Farm.getFarm(farmId, farmStore);
+   switch (farmResult) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+    if (not farm.isOpenForInvestment) {
+      return #err("This farm is not open for investment");
+    };
+
+        // 2️⃣ Update farm funding and investors
+        let investedFarm = switch (Farm.investInFarm(caller, farmId, initialSupply, farmStore)) {
+          case (#ok(f)) { f };
+          case (#err(msg)) { return #err(msg) };
+        };
+
+        // 3️⃣ Call Token Factory to create investment tokens
+        let _ledgerId = await TF.createFarmLedger(
+          tokenName,
+          tokenSymbol,
+          investedFarm.owner,
+          initialSupply,
+          investorAllocs,
+          null,          // governance placeholder
+          vestingDays,
+          transferFee,
+          extraControllers,
+          cyclesToSpend
+        );
+
+        // 4️⃣ Return the updated farm
+        #ok(investedFarm)
+      }
+    }
+  };
+};

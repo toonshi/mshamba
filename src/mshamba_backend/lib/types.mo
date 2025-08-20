@@ -1,3 +1,4 @@
+//types
 module {
   // User & Roles
   public type Role = {
@@ -45,6 +46,7 @@ public type Farm = {
   valuationHistory: [Nat];
   sharePriceHistory: [Nat];
   ledgerCanister: ?Principal;   // NEW: the deployed ledger canister for this farm
+  isOpenForInvestment: Bool;   // NEW: flag to indicate if farm is open for investment
 };
 
 
@@ -187,5 +189,7 @@ public type Farm = {
     yieldPerAcre : Float;
     qualityGrade : Text;
   };
+
+  public type Result<T> = { #ok : T; #err : Text };
 }
  
