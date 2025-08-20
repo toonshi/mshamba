@@ -1,12 +1,23 @@
-//types
 module {
   // User & Roles
+
+public type bookCategory = {
+    #Inputs;
+    #Sales;
+    #Labor;
+    #Expenses;
+    #Yields
+    ;
+  };
+
+
+
   public type Role = {
     #Investor;
     #Farmer;
-    // #LandOwner;
-    // #SupplyPartner;
-    // #Admin;
+    #LandOwner;
+    #SupplyPartner;
+    #Admin;
   };
 
   public type UserProfile = {
@@ -24,31 +35,30 @@ module {
   //  Farm Project
 
   public type FarmStatus = {
-    #Registered;
+    #Open;
     #Funded;
-    #Trading;
+    #InProgress;
+    #Harvested;
     #Closed;
   };
 
-public type Farm = {
-  farmId: Text;
-  name: Text;
-  owner: Principal;
-  description: Text;
-  location: Text;
-  fundingGoal: Nat;
-  fundedAmount: Nat;
-  totalShares: Nat;
-  sharePrice: Nat;
-  createdAt: Int;
-  status: FarmStatus;
-  investors: [Principal];
-  valuationHistory: [Nat];
-  sharePriceHistory: [Nat];
-  ledgerCanister: ?Principal;   // NEW: the deployed ledger canister for this farm
-  isOpenForInvestment: Bool;   // NEW: flag to indicate if farm is open for investment
-};
-
+  public type Farm = {
+    farmId : Text;
+    name : Text;
+    owner : Principal;
+    description : Text;
+    location : Text;
+    fundingGoal : Nat;
+    fundedAmount : Nat;
+    totalShares : Nat;           // e.g. 1,000,000
+    sharePrice : Nat;            // in e8s (ICP format)
+    isOpenForInvestment : Bool;
+    createdAt : Int;
+    status : FarmStatus;
+    investors : [Principal];
+    valuationHistory : [(Int, Nat)]; // (timestamp, value)
+    sharePriceHistory : [(Int, Nat)];// (timestamp, value)
+  };
 
   // Wallet Types
   public type TransactionType = {
@@ -70,7 +80,20 @@ public type Farm = {
     description : Text;
   };
 
- 
+  public type Wallet = {
+    id : Principal;
+    balance : Nat;
+    transactions : [Transaction];
+    createdAt : Int;
+  };
+
+  public type WalletResult = {
+    #ok : Wallet;
+    #err : Text;
+  };
+
+  //  Primary Investment Tracking
+
   public type Investment = {
     investmentId : Text;
     investor : Principal;
@@ -124,7 +147,17 @@ public type Farm = {
     timestamp : Int;
   };
 
-  
+  // ===== Land Listings 
+  public type LandListing = {
+    landId : Text;
+    owner : Principal;
+    location : Text;
+    sizeInAcres : Float;
+    leaseRatePerMonth : Nat;
+    isAvailable : Bool;
+    listedAt : Int;
+  };
+
   // Enhanced Valuation System
   
   public type CropType = {
@@ -149,6 +182,8 @@ public type Farm = {
     totalValuation : Nat;
     sharePrice : Nat;
     qualityScore : Float;
+    cropMultiplier : Float;
+    locationMultiplier : Float;
     calculatedAt : Int;
     factors : ValuationFactors;
   };
@@ -160,8 +195,32 @@ public type Farm = {
     #Custom; // Custom implementation
   };
 
+  public type FarmToken = {
+    tokenId : Text;
+    farmId : Text;
+    owner : Principal;
+    amount : Nat;
+    tokenStandard : TokenStandard;
+    metadata : [(Text, Text)]; // Key-value metadata
+    createdAt : Int;
+    lastTransfer : Int;
+  };
 
- 
+  public type TokenTransfer = {
+    transferId : Text;
+    tokenId : Text;
+    from : Principal;
+    to : Principal;
+    amount : Nat;
+    pricePerToken : ?Nat; // Optional for market transfers
+    timestamp : Int;
+    transferType : {
+      #Direct;     // Direct transfer
+      #MarketSale; // Secondary market sale
+      #Distribution; // Profit distribution
+    };
+  };
+
   // Profit Distribution System
   
   public type ProfitDistribution = {
@@ -190,6 +249,21 @@ public type Farm = {
     qualityGrade : Text;
   };
 
-  public type Result<T> = { #ok : T; #err : Text };
+  // Supply Chain / Merger Network 
+
+  // public type LinkType = {
+  //   #Merger;
+  //   #SupplyChainPartner;
+  //   #Transport;
+  //   #EquipmentLease;
+  // };
+
+  // public type NetworkLink = {
+  //   from : Principal;
+  //   to : Principal;
+  //   linkType : LinkType;
+  //   message : Text;
+  //   timestamp : Int;
+  // };
+
 }
- 

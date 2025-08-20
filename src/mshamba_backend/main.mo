@@ -1,116 +1,160 @@
-import Farm "lib/farms";
-import UserProfile "lib/userProfiles";
+import Trie "mo:base/Trie";
 import Text "mo:base/Text";
-import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
-import TF "canister:token_factory";
-import Types "lib/types";
+import Time "mo:base/Time";
+import Result "mo:base/Result";
+// import Debug "mo:base/Debug";
+import Principal "mo:base/Principal";
+import Int "mo:base/Int";
+import Array "mo:base/Array";
 
-actor {
+import FarmToken "lib/farm_tokens";
 
-  public type Allocation = TF.Allocation;
 
-   var farmStore = Farm.newFarmStore();
-   var profileStore = UserProfile.newProfileStore();
+actor  {
 
-  // ==============================
-  // HELPERS
-  // ==============================
-  func getFarmerProfile(caller: Principal) : ?UserProfile.Profile {
-  switch (UserProfile.getProfile(profileStore, caller)) {
-    case (?(p)) {
-      if (p.role == #Farmer) { ?p } else { null }
-    };
-    case null { null };
-  }
-};
 
-  // ==============================
-  // PROFILES
-  // ==============================
-  public shared ({ caller }) func createProfile(
-    name : Text,
-    bio : Text,
-    role : UserProfile.Role,
-    certifications : [Text]
-  ) : async Bool {
-    UserProfile.createProfile(profileStore, caller, name, bio, role, certifications)
+  type Farm = {
+    id : Text;
+    name : Text;
+    description : Text;
+    location : Text;
+    fundingGoal : Nat;
+    totalRaised : Nat;
+    sharePrice : Nat;
+    createdAt : Int;
+    owner : Principal;
   };
 
-  public query func getProfile(owner : Principal) : async ?UserProfile.Profile {
-    UserProfile.getProfile(profileStore, owner)
+  type Investment = {
+    investor : Principal;
+    farmId : Text;
+    amount : Nat;
+    timestamp : Int;
   };
 
-  // ==============================
-  // FARMS (Farmer-only actions)
-  // ==============================
-  public shared ({ caller }) func createFarm(
+  stable var farms : Trie.Trie<Text, Farm> = Trie.empty();
+  stable var investments : Trie.Trie<Text, [Investment]> = Trie.empty();
+  var farmTokens : Trie.Trie<Text, FarmToken.Token> = Trie.empty();
+
+  public shared({ caller }) func createFarm(
     name : Text,
     description : Text,
     location : Text,
-    fundingGoal : Nat
-  ) : async Farm.Result<Farm.Farm> {
-    switch (getFarmerProfile(caller)) {
-      case (?_) { Farm.createFarm(caller, farmStore, name, description, location, fundingGoal) };
-      case null { #err("Only farmers can create farms or profile not found") };
+    fundingGoal : Nat,
+    sharePrice : Nat
+  ) : async Result.Result<Text, Text> {
+    let farmId = "farm-" # Int.toText(Time.now());
+    let farm : Farm = {
+      id = farmId;
+      name = name;
+      description = description;
+      location = location;
+      fundingGoal = fundingGoal;
+      totalRaised = 0;
+      sharePrice = sharePrice;
+      createdAt = Time.now();
+      owner = caller;
+    };
+
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    let (updatedFarms, _) = Trie.put(farms, key, Text.equal, farm);
+    farms := updatedFarms;
+
+    // Initialize token for the farm
+    let token = FarmToken.newToken(farmId);
+    let (updatedTokens, _) = Trie.put(farmTokens, key, Text.equal, token);
+    farmTokens := updatedTokens;
+
+    return #ok(farmId);
+  };
+
+  public query func getFarm(farmId : Text) : async Result.Result<Farm, Text> {
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    switch (Trie.get(farms, key, Text.equal)) {
+      case (?farm) #ok(farm);
+      case null #err("Farm not found");
     }
   };
 
-  public shared query ({ caller }) func myFarms() : async [Farm.Farm] {
-    Farm.listFarmsByOwner(farmStore, caller)
+  public query func getAllFarms() : async [Farm] {
+    Trie.toArray<Text, Farm, Farm>(farms, func (_, farm) { farm })
   };
 
-  public query func listFarms() : async [Farm.Farm] {
-    Farm.listFarms(farmStore)
-  };
+  public shared({ caller }) func investInFarm(farmId : Text, amount : Nat) : async Result.Result<Text, Text> {
+    let key = { key = farmId; hash = Text.hash(farmId) };
 
-  // ==============================
-  // INVESTMENT (Token Factory Integration)
-  // ==============================
-  public shared ({ caller }) func openFarmInvestment(
-    farmId : Text,
-    tokenName : Text,
-    tokenSymbol : Text,
-    initialSupply : Nat,
-    investorAllocs : [Allocation],
-    vestingDays : Nat,
-    transferFee : Nat,
-    extraControllers : [Principal],
-    cyclesToSpend : ?Nat
-  ) : async Farm.Result<Farm.Farm> {
-
-    // 1️⃣ Retrieve the farm and ensure it exists & is open
-    let farmResult = Farm.getFarm(farmId, farmStore);
-   switch (farmResult) {
-      case (#err(msg)) { return #err(msg) };
-      case (#ok(farm)) {
-    if (not farm.isOpenForInvestment) {
-      return #err("This farm is not open for investment");
-    };
-
-        // 2️⃣ Update farm funding and investors
-        let investedFarm = switch (Farm.investInFarm(caller, farmId, initialSupply, farmStore)) {
-          case (#ok(f)) { f };
-          case (#err(msg)) { return #err(msg) };
+    switch (Trie.get(farms, key, Text.equal)) {
+      case null return #err("Farm not found");
+      case (?farm) {
+        if (farm.totalRaised + amount > farm.fundingGoal) {
+          return #err("Investment exceeds funding goal");
         };
 
-        // 3️⃣ Call Token Factory to create investment tokens
-        let _ledgerId = await TF.createFarmLedger(
-          tokenName,
-          tokenSymbol,
-          investedFarm.owner,
-          initialSupply,
-          investorAllocs,
-          null,          // governance placeholder
-          vestingDays,
-          transferFee,
-          extraControllers,
-          cyclesToSpend
-        );
+        if (farm.sharePrice == 0) {
+          return #err("Invalid share price");
+        };
 
-        // 4️⃣ Return the updated farm
-        #ok(investedFarm)
-      }
+        let updatedFarm = { farm with totalRaised = farm.totalRaised + amount };
+        let (newFarms, _) = Trie.put(farms, key, Text.equal, updatedFarm);
+        farms := newFarms;
+
+        let investment : Investment = {
+          investor = caller;
+          farmId = farmId;
+          amount = amount;
+          timestamp = Time.now();
+        };
+
+        let invKey = { key = farmId; hash = Text.hash(farmId) };
+        let current = switch (Trie.get(investments, invKey, Text.equal)) {
+          case (?inv) inv;
+          case null [];
+        };
+        let (newInvTrie, _) = Trie.put(investments, invKey, Text.equal, Array.append(current, [investment]));
+        investments := newInvTrie;
+
+        switch (Trie.get(farmTokens, key, Text.equal)) {
+          case null return #err("Farm token not initialized");
+          case (?token) {
+            switch (FarmToken.mintFarmTokens(
+              farmId,
+              caller,
+              amount,
+              farm.sharePrice,
+              token.tokens,
+              token.balances
+            )) {
+              case (#ok(_)) {
+                let (updatedTokensTrie, _) = Trie.put(farmTokens, key, Text.equal, token);
+                farmTokens := updatedTokensTrie;
+              };
+              case (#err(e)) return #err("Token mint failed: " # e);
+            };
+          };
+        };
+
+        return #ok("Investment successful");
+      };
+    };
+  };
+
+  public query func getFarmInvestments(farmId : Text) : async [Investment] {
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    switch (Trie.get(investments, key, Text.equal)) {
+      case (?inv) inv;
+      case null [];
+    }
+  };
+
+  public shared({ caller }) func getMyBalance(farmId : Text) : async Result.Result<Nat, Text> {
+    let key = { key = farmId; hash = Text.hash(farmId) };
+    switch (Trie.get(farmTokens, key, Text.equal)) {
+      case (?token) {
+        let balance = FarmToken.getTokenBalance(caller, farmId, token.balances);
+        #ok(balance);
+      };
+      case null #err("No token found for this farm");
     }
   };
 };

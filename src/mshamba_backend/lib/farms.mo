@@ -1,4 +1,3 @@
-//farm module
 import Time "mo:base/Time";
 import Text "mo:base/Text";
 import Int "mo:base/Int";
@@ -6,34 +5,28 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Types "types";
-import Nat "mo:base/Nat";
-
-
+import Utils "utils";
 
 module {
-  public type Result<T> = Types.Result<T>;
   public type Farm = Types.Farm;
   public type FarmStatus = Types.FarmStatus;
+  public type Result<T> = Utils.Result<T>;
 
-  // ==============================
-  // Farm Store
-  // ==============================
+  // Creates a new in-memory HashMap store for farms
   public func newFarmStore() : HashMap.HashMap<Text, Farm> {
     HashMap.HashMap<Text, Farm>(10, Text.equal, Text.hash)
   };
 
-  // ==============================
-  // Create Farm
-  // ==============================
+  // Create a new farm record
   public func createFarm(
     caller: Principal,
     farms: HashMap.HashMap<Text, Farm>,
     name: Text,
     description: Text,
     location: Text,
-    fundingGoal: Nat
-  ) : Types.Result<Farm> {
-
+    fundingGoal: Nat,
+    
+  ) : Result<Farm> {
     let farmId = "farm-" # Int.toText(Time.now());
 
     let newFarm: Farm = {
@@ -44,37 +37,32 @@ module {
       location = location;
       fundingGoal = fundingGoal;
       fundedAmount = 0;
-      totalShares = 0;
+      totalShares = 0 ;
       sharePrice = 0;
       isOpenForInvestment = true;
       createdAt = Time.now();
-      status = #Registered;
+      status = #Open;
       investors = [];
       valuationHistory = [];
       sharePriceHistory = [];
-      ledgerCanister = null; // Initially no ledger canister deployed
     };
 
     farms.put(farmId, newFarm);
     #ok(newFarm)
   };
 
-  // ==============================
-  // Get a Farm by ID
-  // ==============================
+  // Retrieve a farm by ID
   public func getFarm(
     farmId: Text,
     farms: HashMap.HashMap<Text, Farm>
-  ) : Types.Result<Farm> {
+  ) : Result<Farm> {
     switch (farms.get(farmId)) {
       case (?farm) { #ok(farm) };
       case null { #err("Farm not found") };
     }
   };
 
-  // ==============================
-  // List all Farms
-  // ==============================
+  // List all farms
   public func listFarms(farms: HashMap.HashMap<Text, Farm>) : [Farm] {
     Iter.toArray(
       Iter.map<(Text, Farm), Farm>(
@@ -84,16 +72,14 @@ module {
     )
   };
 
-  // ==============================
-  // List Farms by Owner
-  // ==============================
+  // List farms owned by a principal
   public func listFarmsByOwner(
     farms: HashMap.HashMap<Text, Farm>,
-    owner: Principal
+    caller: Principal
   ) : [Farm] {
     let ownedFarms = Iter.filter<(Text, Farm)>(
       farms.entries(),
-      func ((_, farm)) = farm.owner == owner
+      func ((_, farm)) = farm.owner == caller
     );
 
     Iter.toArray(
@@ -104,32 +90,32 @@ module {
     )
   };
 
-  // ==============================
-  // Invest in a Farm (State only)
-  // ==============================
+  // Invest in a farm
   public func investInFarm(
     caller: Principal,
     farmId: Text,
     amount: Nat,
     farms: HashMap.HashMap<Text, Farm>
-  ) : Types.Result<Farm> {
-
+  ) : Result<Farm> {
     switch (farms.get(farmId)) {
       case (?farm) {
-
-        if (not farm.isOpenForInvestment) {
+        if (farm.isOpenForInvestment == false) {
           return #err("This farm is not open for investment");
+        };
+
+        if (farm.status != #Open) {
+          return #err("This farm is not accepting funds at this time");
         };
 
         let updatedFunded = farm.fundedAmount + amount;
 
-        let updatedFarm: Farm = {
+        let updatedFarm = {
           farm with
           fundedAmount = updatedFunded;
           investors = Array.append(farm.investors, [caller])
         };
 
-        let finalFarm: Farm = if (updatedFunded >= farm.fundingGoal) {
+        let finalFarm = if (updatedFunded >= farm.fundingGoal) {
           {
             updatedFarm with
             isOpenForInvestment = false;
