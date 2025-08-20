@@ -6,6 +6,19 @@
 
 ---
 
+## Table of Contents
+* [🧠 Project Architecture Overview](#-project-architecture-overview)
+  * [1. `main.mo` — Central Controller](#1-mainmo--central-controller)
+  * [2. `profiles.mo` — User Identity & Roles](#2-profilesmo--user-identity--roles)
+  * [3. `farms.mo` — Farm Project Management](#3-farmsmo--farm-project-management)
+  * [7. `types.mo` — Shared Type Definitions](#7-typesmo--shared-type-definitions)
+* [Running the project locally](#running-the-project-locally)
+* [Testing Canisters](#testing-canisters)
+  * [Testing `token_factory`](#testing-token_factory)
+  * [Testing `mshamba_backend` (User Profiles)](#testing-mshamba_backend-user-profiles)
+
+---
+
 ## 🧠 Project Architecture Overview
 
 The project is structured into modular components, each handling a distinct domain of the system:
@@ -98,17 +111,74 @@ Which will start a server at `http://localhost:8080`, proxying API requests to t
 
 TO:DO: Rewrite the embed_icrc1 script in the root folder  so that it divides the wasm bytes into chunks. Canisters can only take in 2mb.
 
-Testing token_factory: 
+## Testing Canisters
 
+This section provides examples of how to interact with the deployed canisters using `dfx canister call`.
+
+### Testing `token_factory`
+
+First, ensure your `token_factory` canister has enough cycles. You can deposit cycles using:
+```bash
+dfx canister deposit-cycles 10000000000000 $(dfx canister id token_factory)
+```
+
+Then, you can deploy the `token_factory` canister:
+```bash
 dfx deploy token_factory
+```
+
 Notice the canister id at the end of the url
+```bash
 dfx canister status <put the canister_id here>
 dfx canister update-settings <put the canister_id here> --add-controller <put the canister_id here>
 confirm controllers
 dfx canister status <put the canister_id here>
+```
 
+Example `createFarmLedger` call (note the `opt 900_000_000_000` for `cyclesToSpend`):
+```bash
+dfx canister call token_factory createFarmLedger '(
+  "MyToken",
+  "MTK",
+  principal "w7x7r-cok77-xa",
+  1000000,
+  vec { record { owner = principal "w7x7r-cok77-xa"; allocation = 10000 } },
+  null,
+  365,
+  1000,
+  vec { principal "w7x7r-cok77-xa" },
+  opt 900_000_000_000
+)'
+```
 
+### Testing `mshamba_backend` (User Profiles)
 
- dfx canister call token_factory createFarmLedger   '("MyToken", "MTK", principal "w7x7r-cok77-xa", 1000000, vec { record { owner = principal "w7x7r-cok77-xa"; allocation = 10000 } }, null, 365, 1000, vec { principal "w7x7r-cok77-xa" }, opt 900_000_000_000)'
+First, deploy the `mshamba_backend` canister:
+```bash
+dfx deploy mshamba_backend
+```
 
+**Create a Farmer Profile:**
+```bash
+dfx canister call mshamba_backend createProfile '(
+  "John Doe",
+  "Experienced organic farmer.",
+  variant { #Farmer },
+  vec { "Organic Farming", "Sustainable Agriculture" }
+)'
+```
 
+**Create an Investor Profile:**
+```bash
+dfx canister call mshamba_backend createProfile '(
+  "Jane Smith",
+  "Passionate about sustainable investments.",
+  variant { #Investor },
+  vec { "Financial Analysis" }
+)'
+```
+
+**Get a Profile (replace <principal_id> with the principal of the user who created the profile):**
+```bash
+dfx canister call mshamba_backend getProfile '(principal "<principal_id>")'
+```
