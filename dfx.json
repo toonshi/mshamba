@@ -1,6 +1,5 @@
 {
   "canisters": {
-    
     "token_factory": {
       "type": "motoko",
       "main": "src/factory/main.mo"
@@ -8,6 +7,16 @@
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko"
+    },
+     "mshamba_frontend": {
+      "dependencies": [
+        "mshamba_backend",
+        "icrc1_ledger"
+      ],
+      "source": [
+        "src/mshamba_frontend/dist"
+      ],
+      "type": "assets"
     },
     "icrc1_ledger": {
       "type": "custom",
@@ -27,7 +36,6 @@
       "candid": "wasm/archive.did"
     }
   },
-
   "defaults": {
     "build": {
       "args": "",
