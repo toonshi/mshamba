@@ -1,6 +1,9 @@
 {
   "canisters": {
     "mshamba_backend": {
+      "dependencies": [
+        "token_factory"
+      ],
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko"
     },
@@ -16,23 +19,15 @@
     "token_factory": {
       "type": "motoko",
       "main": "src/factory/main.mo"
-    },
-    "fungible_token": {
-      "type": "motoko",
-      "main": "src/token/main.mo"
     }
   },
   "defaults": {
     "build": {
       "args": "",
-      "packtool": "mops sources"
+      "packtool": ""
     }
   },
-  "mops": {
-    "packages": [
-      "serde"
-    ]
-  },
+  
   "output_env_file": ".env",
   "version": 1
 }

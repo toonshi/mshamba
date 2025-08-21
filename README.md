@@ -98,6 +98,22 @@ public type Result<T> = {
   #err: Text;
 };
 
+### Token Architecture
+
+Mshamba utilizes a two-tiered token system to manage both platform-wide currency and farm-specific investments:
+
+1.  **Platform Currency (`MshambaToken`)**:
+    *   **Location**: Defined in `src/token/main.mo`.
+    *   **Nature**: This is a standalone, fungible token canister that serves as the primary currency across the entire Mshamba platform. It manages its own total supply, balances, and transfers.
+    *   **Initialization**: Its `initial_supply` is set during deployment (e.g., via `dfx deploy`), defining the total amount of this currency available from the start.
+
+2.  **Farm-Specific Investment Shares**:
+    *   **Location**: Logic implemented in `src/mshamba_backend/lib/farm_tokens.mo` and managed by the `mshamba_backend` canister (specifically in `src/mshamba_backend/main.mo`).
+    *   **Nature**: These are not separate canisters. Instead, they are logical tokens whose balances and transfers are managed *within the internal state of the `mshamba_backend` canister*. Each farm has its own distinct set of these shares.
+    *   **Creation**: When an investor funds a farm (via `investInFarm`), the `mshamba_backend` mints these farm-specific shares and assigns them to the investor, representing their stake in that particular farm.
+
+This layered approach allows for a general platform currency while also providing granular, farm-specific investment tracking.
+
 ## Frontend repo:
   https://github.com/VeeThoithi
 If you want to start working on your project right away, you might want to try the following commands:
