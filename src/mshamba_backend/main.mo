@@ -9,12 +9,12 @@ import Blob "mo:base/Blob";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 
-actor {
+persistent actor {
 
   public type Allocation = TF.Allocation;
 
-   var farmStore = Farm.newFarmStore();
-   var profileStore = UserProfile.newProfileStore();
+   transient var farmStore = Farm.newFarmStore();
+   transient var profileStore = UserProfile.newProfileStore();
 
   // ==============================
   // HELPERS
