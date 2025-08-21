@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AuthClient } from '@dfinity/auth-client';
 import { ArrowLeft, Shield, Sprout } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { mshamba_backend as backendActor } from "declarations/mshamba_backend"; // New import
 
 export const Auth = ({ onBack }) => {
   const [authClient, setAuthClient] = useState(null);
@@ -40,8 +41,37 @@ export const Auth = ({ onBack }) => {
       identityProvider: 'https://identity.ic0.app/#authorize',
       onSuccess: async () => {
         const id = authClient.getIdentity();
-        setPrincipal(id.getPrincipal().toText());
+        const currentPrincipal = id.getPrincipal();
+        setPrincipal(currentPrincipal.toText());
         setIsLoading(false);
+
+        // Check if profile exists, if not, create one
+        try {
+          const profile = await backendActor.getProfile(currentPrincipal);
+          if (!profile) {
+            let role;
+            if (userType === "farmer") {
+              role = { farmer: null }; // Motoko variant type
+            } else if (userType === "investor") {
+              role = { investor: null }; // Motoko variant type
+            } else {
+              // Default role or handle error if no userType
+              console.warn("No user type specified, defaulting to investor role for profile creation.");
+              role = { investor: null };
+            }
+
+            await backendActor.createProfile(
+              "New User", // Default name
+              "No bio yet", // Default bio
+              role,
+              [] // Default certifications
+            );
+            console.log("Profile created for new user:", currentPrincipal.toText());
+          }
+        } catch (error) {
+          console.error("Error checking or creating profile:", error);
+          // Handle error, maybe show a message to the user
+        }
 
         // Redirect based on role chosen on Home.jsx
         if (userType === "farmer") {
