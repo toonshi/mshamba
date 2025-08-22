@@ -11,9 +11,14 @@
     "format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
   },
   "dependencies": {
-    "@dfinity/agent": "^0.15.7",
-    "@dfinity/candid": "^0.15.7",
-    "@dfinity/principal": "^0.15.7",
+    "@dfinity/agent": "^3.2.2",
+    "@dfinity/auth-client": "^3.2.2",
+    "@dfinity/candid": "^3.2.2",
+    "@dfinity/identity": "^3.2.2",
+    "@dfinity/ledger-icp": "^4.1.0",
+    "@dfinity/principal": "^3.2.2",
+    "@dfinity/utils": "^2.14.0",
+    "@nfid/identitykit": "^1.0.14",
     "chart.js": "^4.5.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.3.0",

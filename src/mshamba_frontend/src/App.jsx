@@ -3,6 +3,7 @@ import { mshamba_backend } from 'declarations/mshamba_backend';
 import TradingCharts from './components/TradingCharts';
 import './components/TradingCharts.css';
 import './App.css';
+import { ConnectWallet } from '@nfid/identitykit/react';
 
 function App() {
   const [farms, setFarms] = useState([]);
@@ -217,6 +218,9 @@ function App() {
               </span>
               <span className="stat-label">Total Investors</span>
             </div>
+          </div>
+          <div className="wallet-section">
+            <ConnectWallet />
           </div>
         </div>
       </header>
