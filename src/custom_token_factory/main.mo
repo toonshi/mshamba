@@ -7,8 +7,8 @@ import Candid "mo:base/ExperimentalCycles";
 import Types "types";
 
 actor {
-  public type Account = record { owner : Principal; subaccount : ?Blob };
-  public type Allocation = record {
+  type Account = record { owner : Principal; subaccount : ?Blob };
+  type Allocation = record {
     account : Account;
     amount : Nat;
   };
