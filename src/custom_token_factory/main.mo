@@ -25,9 +25,9 @@ actor {
   ) : async Result.Result<Principal, Text> {
 
     // 1. Generate new canister IDs
-    let ledgerId = Principal.fromBlob(await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
-    let indexId = Principal.fromBlob(await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
-    let archiveId = Principal.fromBlob(await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
+    let ledgerId = Candid.decode("record { canister_id : principal }", await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
+    let indexId = Candid.decode("record { canister_id : principal }", await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
+    let archiveId = Candid.decode("record { canister_id : principal }", await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
 
     // Get this canister's principal to set as controller
     let selfPrincipal = Principal.fromActor(this);
