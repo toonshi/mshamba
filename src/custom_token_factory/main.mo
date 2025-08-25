@@ -7,10 +7,7 @@ import Candid "mo:base/ExperimentalCycles";
 import Types "types";
 
 actor {
-  type Allocation = record {
-    account : record { owner : Principal; subaccount : ?Blob };
-    amount : Nat;
-  };
+  
 
   // Placeholder for ICRC-1 Ledger WASM bytes
   let ICRC1_LEDGER_WASM : Blob = Blob.fromArray([]); // Replace with actual WASM bytes
@@ -19,16 +16,16 @@ actor {
   // Placeholder for ICRC-1 Archive WASM bytes
   let ICRC1_ARCHIVE_WASM : Blob = Blob.fromArray([]); // Replace with actual WASM bytes
 
-  // public shared ({ caller }) func createFarmLedger(
-  //   tokenName : Text,
-  //   tokenSymbol : Text,
-  //   initialSupply : Nat,
-  //   investorAllocs : [Types.Allocation],
-  //   vestingDays : Nat, // Not directly used for ICRC-1 deployment, but part of original signature
-  //   transferFee : Nat,
-  //   extraControllers : [Principal],
-  //   cyclesToSpend : ?Nat
-  // ) : async Result.Result<Principal, Text> {
+  public shared ({ caller }) func createFarmLedger(
+    tokenName : Text,
+    tokenSymbol : Text,
+    initialSupply : Nat,
+    investorAllocs : [record { account : record { owner : Principal; subaccount : ?Blob }; amount : Nat }],
+    vestingDays : Nat, // Not directly used for ICRC-1 deployment, but part of original signature
+    transferFee : Nat,
+    extraControllers : [Principal],
+    cyclesToSpend : ?Nat
+  ) : async Result.Result<Principal, Text> {
 
   //   // 1. Generate new canister IDs
   //   let ledgerId = await Canister.create();
