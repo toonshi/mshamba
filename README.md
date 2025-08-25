@@ -2,6 +2,8 @@
 
 # 🌾 Mshamba
 
+**IMPORTANT NOTE:** This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from the deployment to ensure stability and address ongoing development. Investment functionalities that rely on the token factory are currently not active.
+
 **Mshamba** is a decentralized platform for tokenizing agricultural projects on the Internet Computer Protocol (ICP). It enables urban investors to invest directly in farms, allows landowners to lease unused land, and empowers farmers to raise capital transparently without predatory loans. It also facilitates cooperation across the entire agricultural supply chain.
 
 ---
@@ -28,7 +30,7 @@ The project is structured into modular components, each handling a distinct doma
 ### 1. `main.mo` — Central Controller
 
 - Acts as the orchestrator.
-- Connects all modules: profiles, farms, tokens, land, investments.
+- Connects all modules: profiles, farms, land, investments. (Token-related functionalities are currently inactive).
 - Routes API calls from the frontend or other actors.
 
 ---
@@ -54,7 +56,6 @@ Handles creation and funding of farms:
   - `getFarm`: retrieve a specific farm.
   - `listFarms`: all farms in the system.
   - `listFarmsByOwner`: farms owned by the caller.
-  - `investInFarm`: fund a farm.
 
 
 
@@ -116,6 +117,8 @@ TO:DO: Rewrite the embed_icrc1 script in the root folder  so that it divides the
 This section provides examples of how to interact with the deployed canisters using `dfx canister call`.
 
 ### Testing `token_factory`
+
+**Note:** The `token_factory` canister is currently not part of the stable deployment. The instructions below are provided for reference in case the token factory is re-enabled or for development purposes.
 
 First, ensure your `token_factory` canister has enough cycles. You can deposit cycles using:
 ```bash
