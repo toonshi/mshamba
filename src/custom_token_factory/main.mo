@@ -55,7 +55,7 @@ actor {
         token_symbol = tokenSymbol;
         token_name = tokenName;
         metadata = vec {};
-        initial_balances = vec { record { record { owner = caller; subaccount = null }; initialSupply } };
+        initial_balances = [ record { account = record { owner = caller; subaccount = null }; amount = initialSupply } ];
         archive_options = record {
           num_blocks_to_archive = 1000;
           trigger_threshold = 2000;
