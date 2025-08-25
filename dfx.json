@@ -5,6 +5,10 @@
       "type": "motoko",
       "main": "src/factory/main.mo"
     },
+    "custom_token_factory": {
+      "type": "motoko",
+      "main": "src/custom_token_factory/main.mo"
+    },
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko"
