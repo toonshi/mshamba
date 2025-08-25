@@ -1,7 +1,7 @@
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Blob "mo:base/Blob";
-import Canister "mo:base/ExperimentalCycles";
+
 import Result "mo:base/Result";
 import Candid "mo:base/Candid";
 
