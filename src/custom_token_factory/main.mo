@@ -37,7 +37,7 @@ actor {
     let selfPrincipal = Principal.fromActor(this);
 
     // 2. Deploy the ICRC-1 Archive canister
-    let archiveInitArg = Candid.encode("(principal, nat64, opt nat64, opt nat64)", (selfPrincipal, 2000, opt 1000, opt 4_000_000_000_000)); // trigger_threshold, num_blocks_to_archive, cycles_for_archive_creation
+    let archiveInitArg : Blob = Blob.fromArray([]); // Placeholder for Candid.encode result
     let archiveInstallResult = await Canister.install_code(archiveId, ICRC1_ARCHIVE_WASM, archiveInitArg);
     switch (archiveInstallResult) {
       case (#ok(_)) { () };
