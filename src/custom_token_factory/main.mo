@@ -3,7 +3,6 @@ import Nat "mo:base/Nat";
 import Blob "mo:base/Blob";
 import Canister "mo:base/ExperimentalCycles";
 import IC "mo:base/IC";
-import IC "mo:base/IC";
 import Result "mo:base/Result";
 
 actor {
@@ -26,9 +25,9 @@ actor {
   ) : async Result.Result<Principal, Text> {
 
     // 1. Generate new canister IDs
-    let ledgerId = await IC.create_canister();
-    let indexId = await IC.create_canister();
-    let archiveId = await IC.create_canister();
+    let ledgerId = await ic0.create_canister();
+    let indexId = await ic0.create_canister();
+    let archiveId = await ic0.create_canister();
 
     // Get this canister's principal to set as controller
     let selfPrincipal = Principal.fromActor(this);
