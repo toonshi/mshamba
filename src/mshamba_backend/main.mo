@@ -104,7 +104,7 @@ actor {
           null,          // governance placeholder
           vestingDays,
           transferFee,
-          extraControllers # [Principal "ulvla-h7777-77774-qaacq-cai"],
+          extraControllers # [Principal.fromText("ulvla-h7777-77774-qaacq-cai")],
           cyclesToSpend
         );
 
