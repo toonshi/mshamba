@@ -9,7 +9,7 @@ actor {
   // Declare the IC Management Canister
   actor IC_MANAGEMENT_CANISTER : actor {
     create_canister : shared () -> async Principal;
-    install_code : shared { canister_id : Principal; arg : Blob; wasm_module : Blob; mode : variant { install; reinstall; upgrade } } -> async ();
+    install_code : shared { canister_id : Principal; arg : Blob; wasm_module : Blob; mode : Nat } -> async ();
     // ... other management functions if needed
   } = actor "aaaaa-aa";
   // Placeholder for ICRC-1 Ledger WASM bytes
