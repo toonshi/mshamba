@@ -3,7 +3,7 @@ import Nat "mo:base/Nat";
 import Blob "mo:base/Blob";
 
 import Result "mo:base/Result";
-import Candid "mo:base/Candid";
+
 
 actor {
   
