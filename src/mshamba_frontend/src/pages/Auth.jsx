@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AuthClient } from '@dfinity/auth-client';
+import { mshamba_backend } from 'declarations/mshamba_backend';
 
 import { ArrowLeft, Shield, Sprout } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -29,10 +30,19 @@ export const Auth = ({ onBack }) => {
       identityProvider: 'https://identity.ic0.app/#authorize',
       onSuccess: async () => {
         const id = authClient.getIdentity();
-        setPrincipal(id.getPrincipal().toText());
+        const principal = id.getPrincipal();
+        setPrincipal(principal.toText());
+
+        // Check if user profile exists
+        const profile = await mshamba_backend.getProfile(principal);
+        if (profile.Ok) {
+          // User profile exists, navigate to dashboard
+          navigate('/dashboard');
+        } else {
+          // User profile does not exist, navigate to profile selection
+          navigate('/profile');
+        }
         setIsLoading(false);
-        // Navigate to profile selection page
-        navigate('/profile');
       },
     });
   };
