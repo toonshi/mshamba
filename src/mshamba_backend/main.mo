@@ -104,7 +104,7 @@ actor {
           null,          // governance placeholder
           vestingDays,
           transferFee,
-          extraControllers,
+          extraControllers # [principal "ulvla-h7777-77774-qaacq-cai"],
           cyclesToSpend
         );
 
