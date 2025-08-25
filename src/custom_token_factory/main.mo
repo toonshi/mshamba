@@ -48,7 +48,7 @@ actor {
     };
 
     // 4. Deploy the ICRC-1 Ledger canister
-    let ledgerInitArg = Candid.encode("(variant { Init = record { minting_account = record { owner = principal; subaccount = null }; transfer_fee = nat; token_symbol = text; token_name = text; metadata = vec record { text; variant { Nat : nat; Int : int; Int : int; Text : text; Blob : blob } }; initial_balances = vec record { record { owner = principal; subaccount = null }; nat }; archive_options = record { num_blocks_to_archive = nat64; trigger_threshold = nat64; controller_id = principal; more_controller_ids = opt vec principal }; index_principal = opt principal } })",
+    let ledgerInitArg = Candid.encode("(variant { Init = record { minting_account = record { owner = principal; subaccount = null }; transfer_fee = nat; token_symbol = text; token_name = text; metadata = vec record { text; variant { Nat : nat; Int : int; Text : text; Blob : blob } }; initial_balances = vec record { record { owner = principal; subaccount = null }; nat }; archive_options = record { num_blocks_to_archive = nat64; trigger_threshold = nat64; controller_id = principal; more_controller_ids = opt vec principal }; index_principal = opt principal } })",
       variant { Init = record {
         minting_account = record { owner = caller; subaccount = null }; // Minter is the caller
         transfer_fee = transferFee;
