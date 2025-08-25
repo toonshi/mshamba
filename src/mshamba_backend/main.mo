@@ -127,8 +127,11 @@ actor {
         if (farm.owner != caller) {
           return #err("Only the farm owner can change investment status");
         };
-        Farm.updateFarmInvestmentStatus(farmId, farmStore, newStatus);
-        #ok(farm)
+        let updateResult = Farm.updateFarmInvestmentStatus(farmId, farmStore, newStatus);
+        switch (updateResult) {
+          case (#ok(updatedFarm)) { #ok(updatedFarm) };
+          case (#err(msg)) { #err(msg) };
+        }
       }
     }
   };
