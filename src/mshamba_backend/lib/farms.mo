@@ -129,18 +129,31 @@ module {
           investors = Array.append(farm.investors, [caller])
         };
 
-        let finalFarm: Farm = if (updatedFunded >= farm.fundingGoal) {
-          {
-            updatedFarm with
-            isOpenForInvestment = false;
-            status = #Funded;
-          }
-        } else {
-          updatedFarm
-        };
+        let finalFarm: Farm = updatedFarm;
 
         farms.put(farmId, finalFarm);
         #ok(finalFarm)
+      };
+      case null { #err("Farm not found") };
+    }
+  };
+
+  // ==============================
+  // Update Farm Investment Status
+  // ==============================
+  public func updateFarmInvestmentStatus(
+    farmId: Text,
+    farms: HashMap.HashMap<Text, Farm>,
+    newStatus: Bool
+  ) : Types.Result<Farm> {
+    switch (farms.get(farmId)) {
+      case (?farm) {
+        let updatedFarm: Farm = {
+          farm with
+          isOpenForInvestment = newStatus;
+        };
+        farms.put(farmId, updatedFarm);
+        #ok(updatedFarm)
       };
       case null { #err("Farm not found") };
     }

@@ -113,4 +113,23 @@ actor {
       }
     }
   };
+
+  // ==============================
+  // FARMER ACTIONS
+  // ==============================
+  public shared ({ caller }) func toggleFarmInvestmentStatus(
+    farmId : Text,
+    newStatus : Bool
+  ) : async Farm.Result<Farm.Farm> {
+    switch (Farm.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        if (farm.owner != caller) {
+          return #err("Only the farm owner can change investment status");
+        };
+        Farm.updateFarmInvestmentStatus(farmId, farmStore, newStatus);
+        #ok(farm)
+      }
+    }
+  };
 };

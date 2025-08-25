@@ -13,7 +13,7 @@
       "type": "custom",
       "wasm": "wasm/ic-icrc1-ledger.wasm",
       "candid": "wasm/ledger.did",
-      "init_arg": "(variant { Init = record { token_symbol = \"MSH\"; token_name = \"Mshamba Token\"; minting_account = record { owner = principal \"frf6c-rdjtw-4xfdf-ghsf7-j2rwe-czr2v-tbxcl-doo7h-bt6jl-vzrzz-mae\" }; transfer_fee = 10_000; metadata = vec {}; initial_balances = vec {}; archive_options = record { num_blocks_to_archive = 10_000; trigger_threshold = 20_000; controller_id = principal \"frf6c-rdjtw-4xfdf-ghsf7-j2rwe-czr2v-tbxcl-doo7h-bt6jl-vzrzz-mae\"; cycles_for_archive_creation = opt 4_000_000_000_000; }; } })"
+      "init_arg": "(variant { Init = record { token_symbol = \"MSH\"; token_name = \"Mshamba Token\"; minting_account = record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\" }; transfer_fee = 10_000; metadata = vec {}; initial_balances = vec { record { record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\" }; 1_000_000_000_000 } }; archive_options = record { num_blocks_to_archive = 10_000; trigger_threshold = 20_000; controller_id = principal \"frf6c-rdjtw-4xfdf-ghsf7-j2rwe-czr2v-tbxcl-doo7h-bt6jl-vzrzz-mae\"; cycles_for_archive_creation = opt 4_000_000_000_000; }; } })"
     },
     "icrc1_index": {
       "type": "custom",
