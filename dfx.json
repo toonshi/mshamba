@@ -24,13 +24,14 @@
     "icrc1_archive": {
       "type": "custom",
       "wasm": "wasm/ic-icrc1-archive.wasm",
-      "candid": "wasm/archive.did"
+      "candid": "wasm/archive.did",
+      "init_arg": "(principal \"vg3po-ix777-77774-qaafa-cai\", 1000000, null, null)"
     },
     "farm1_ledger": {
       "type": "custom",
-      "candid": "src/icrc1_ledger/icrc1.did",
+      "candid": "wasm/ledger.did",
       "wasm": "src/icrc1_ledger/ic-icrc1-ledger.wasm",
-      "init_arg": "(variant { Init = record { minting_account = \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; icrc1_minting_account = null; initial_values = vec { record { \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; record { e8s = 100000000000 } } }; max_message_size_bytes = null; transaction_window = null; archive_options = opt record { trigger_threshold = 2000; num_blocks_to_archive = 1000; node_max_memory_size_bytes = null; max_message_size_bytes = null; controller_id = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; more_controller_ids = null; cycles_for_archive_creation = null; max_transactions_per_response = null; }; send_whitelist = vec {}; transfer_fee = opt record { e8s = 10000 }; token_symbol = opt \"FARM1\"; token_name = opt \"Farm1 Token\"; feature_flags = null; } })"
+      "init_arg": "(variant { Init = record { minting_account = record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; transfer_fee = 10000; token_symbol = \"FARM1\"; token_name = \"Farm1 Token\"; metadata = vec {}; initial_balances = vec { record { record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; 100000000000 } }; archive_options = record { num_blocks_to_archive = 1000; trigger_threshold = 2000; controller_id = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\" } } })"
     }
   },
 
