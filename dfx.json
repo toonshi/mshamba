@@ -19,7 +19,7 @@
       "type": "custom",
       "wasm": "wasm/ic-icrc1-index-ng.wasm",
       "candid": "wasm/index-ng.did",
-      "init_arg": "(opt variant { Init = record { ledger_id = principal \"umunu-kh777-77774-qaaca-cai\" } )",
+      "init_arg": "(opt variant { Init = record { ledger_id = principal \"umunu-kh777-77774-qaaca-cai\" } })"
       "controllers": [
         "ucwa4-rx777-77774-qaada-cai"
       ]
