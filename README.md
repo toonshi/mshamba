@@ -185,3 +185,23 @@ dfx canister call mshamba_backend createProfile '(
 ```bash
 dfx canister call mshamba_backend getProfile '(principal "<principal_id>")'
 ```
+
+**Create a Farm:**
+```bash
+dfx canister call mshamba_backend createFarm '(
+  "Green Acres",
+  "A farm specializing in organic vegetables",
+  "Rural Area, Kenya",
+  1000000
+)'
+```
+
+**List All Farms:**
+```bash
+dfx canister call mshamba_backend listFarms
+```
+
+**List Farms by Current User:**
+```bash
+dfx canister call mshamba_backend myFarms
+```
