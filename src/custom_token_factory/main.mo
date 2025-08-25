@@ -20,7 +20,7 @@ actor {
     tokenName : Text,
     tokenSymbol : Text,
     initialSupply : Nat,
-    investorAllocs : [record { account : record { owner : Principal; subaccount : ?Blob }; amount : Nat }],
+    investorAllocs : [record { account : Principal; amount : Nat }],
     vestingDays : Nat, // Not directly used for ICRC-1 deployment, but part of original signature
     transferFee : Nat,
     extraControllers : [Principal],
