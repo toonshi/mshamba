@@ -6,10 +6,7 @@ import Result "mo:base/Result";
 import Candid "mo:base/Candid";
 
 actor {
-  type Allocation = record {
-    account : record { owner : Principal; subaccount : ?Blob };
-    amount : Nat;
-  };
+  
 
   // Placeholder for ICRC-1 Ledger WASM bytes
   let ICRC1_LEDGER_WASM : Blob = Blob.fromArray([]); // Replace with actual WASM bytes
