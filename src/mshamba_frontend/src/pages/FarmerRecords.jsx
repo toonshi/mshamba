@@ -74,8 +74,8 @@ export const FarmerRecords = ({ onBack }) => {
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Farm Record Books</h1>
-                <p className="text-gray-400">Manage your farm records, expenses, and progress tracking</p>
+              <h1 className="text-3xl font-bold">To setup your investment enter your farmer record books</h1>
+  <p className="text-gray-400">Track capital investments, operating expenses, and revenue to monitor farm profitability and make informed financial decisions</p>
               </div>
             </div>
           </div>
