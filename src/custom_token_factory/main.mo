@@ -1,17 +1,11 @@
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Blob "mo:base/Blob";
-import ExperimentalCycles "mo:base/ExperimentalCycles";
-
+import Canister "mo:base/ExperimentalCycles";
 import Result "mo:base/Result";
+import Candid "mo:base/Candid";
 
 actor {
-  // Declare the IC Management Canister
-  actor IC_MANAGEMENT_CANISTER : actor {
-    create_canister : shared () -> async Principal;
-    install_code : shared { canister_id : Principal; arg : Blob; wasm_module : Blob; mode : Nat } -> async ();
-    // ... other management functions if needed
-  } = actor "aaaaa-aa";
   // Placeholder for ICRC-1 Ledger WASM bytes
   let ICRC1_LEDGER_WASM : Blob = Blob.fromArray([]); // Replace with actual WASM bytes
   // Placeholder for ICRC-1 Index WASM bytes
@@ -31,9 +25,9 @@ actor {
   ) : async Result.Result<Principal, Text> {
 
     // 1. Generate new canister IDs
-    let ledgerId = (await IC_MANAGEMENT_CANISTER.create_canister({})).canister_id;
-    let indexId = (await IC_MANAGEMENT_CANISTER.create_canister({})).canister_id;
-    let archiveId = (await IC_MANAGEMENT_CANISTER.create_canister({})).canister_id;
+    let ledgerId = Principal.fromBlob(await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
+    let indexId = Principal.fromBlob(await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
+    let archiveId = Principal.fromBlob(await ic0.call_raw(Principal.fromText("aaaaa-aa"), "create_canister", Candid.encode("record { settings : opt record { controllers : opt vec principal; compute_allocation : opt nat; memory_allocation : opt nat; freezing_threshold : opt nat } }", record { settings = null }), 0)).canister_id;
 
     // Get this canister's principal to set as controller
     let selfPrincipal = Principal.fromActor(this);
