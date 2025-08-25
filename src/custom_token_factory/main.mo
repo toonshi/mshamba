@@ -3,7 +3,7 @@ import Nat "mo:base/Nat";
 import Blob "mo:base/Blob";
 import Canister "mo:base/ExperimentalCycles";
 import Result "mo:base/Result";
-import Candid "mo:base/Candid";
+
 
 actor {
   // Placeholder for ICRC-1 Ledger WASM bytes
