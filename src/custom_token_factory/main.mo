@@ -14,8 +14,9 @@ actor {
   // Placeholder for ICRC-1 Archive WASM bytes
   let ICRC1_ARCHIVE_WASM : Blob = Blob.fromArray([]); // Replace with actual WASM bytes
 
+  public type Account = record { owner : Principal; subaccount : ?Blob };
   public type Allocation = record {
-    account : record { owner : Principal; subaccount : ?Blob };
+    account : Account;
     amount : Nat;
   };
 
