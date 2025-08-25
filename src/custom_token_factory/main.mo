@@ -8,7 +8,7 @@ import Result "mo:base/Result";
 actor {
   // Declare the IC Management Canister
   actor IC_MANAGEMENT_CANISTER : actor {
-    create_canister : shared { settings : ?record { controllers : ?[Principal]; compute_allocation : ?Nat; memory_allocation : ?Nat; freezing_threshold : ?Nat } } -> async record { canister_id : Principal };
+    create_canister : shared {} -> async record { canister_id : Principal };
     install_code : shared { canister_id : Principal; arg : Blob; wasm_module : Blob; mode : variant { install; reinstall; upgrade } } -> async ();
     // ... other management functions if needed
   } = actor "aaaaa-aa";
