@@ -28,7 +28,10 @@
       "type": "custom",
       "wasm": "wasm/ic-icrc1-archive.wasm",
       "candid": "wasm/archive.did",
-      "init_arg": "(principal \"vg3po-ix777-77774-qaafa-cai\", 1000000, null, null)"
+      "init_arg": "(principal \"vg3po-ix777-77774-qaafa-cai\", 1000000, null, null)",
+      "controllers": [
+        "ucwa4-rx777-77774-qaada-cai"
+      ]
     },
     "farm1_ledger": {
       "type": "custom",
