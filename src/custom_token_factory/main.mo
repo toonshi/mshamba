@@ -6,6 +6,12 @@ import ExperimentalCycles "mo:base/ExperimentalCycles";
 import Result "mo:base/Result";
 
 actor {
+  // Declare the IC Management Canister
+  actor IC_MANAGEMENT_CANISTER : actor {
+    create_canister : shared { settings : ?record { controllers : ?[Principal]; compute_allocation : ?Nat; memory_allocation : ?Nat; freezing_threshold : ?Nat } } -> async record { canister_id : Principal };
+    install_code : shared { canister_id : Principal; arg : Blob; wasm_module : Blob; mode : variant { install; reinstall; upgrade } } -> async ();
+    // ... other management functions if needed
+  } = actor "aaaaa-aa";
   // Placeholder for ICRC-1 Ledger WASM bytes
   let ICRC1_LEDGER_WASM : Blob = Blob.fromArray([]); // Replace with actual WASM bytes
   // Placeholder for ICRC-1 Index WASM bytes
@@ -25,9 +31,9 @@ actor {
   ) : async Result.Result<Principal, Text> {
 
     // 1. Generate new canister IDs
-    let ledgerId = await ExperimentalCycles.create_canister();
-    let indexId = await ExperimentalCycles.create_canister();
-    let archiveId = await ExperimentalCycles.create_canister();
+    let ledgerId = (await IC_MANAGEMENT_CANISTER.create_canister({})).canister_id;
+    let indexId = (await IC_MANAGEMENT_CANISTER.create_canister({})).canister_id;
+    let archiveId = (await IC_MANAGEMENT_CANISTER.create_canister({})).canister_id;
 
     // Get this canister's principal to set as controller
     let selfPrincipal = Principal.fromActor(this);
