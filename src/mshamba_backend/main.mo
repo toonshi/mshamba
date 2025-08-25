@@ -3,6 +3,7 @@ import UserProfile "lib/userProfiles";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
+import Array "mo:base/Array";
 import TF "canister:token_factory";
 import Types "lib/types";
 
@@ -104,7 +105,7 @@ actor {
           null,          // governance placeholder
           vestingDays,
           transferFee,
-          extraControllers # [Principal.fromText("ulvla-h7777-77774-qaacq-cai")],
+          Array.append(extraControllers, [Principal.fromText("ulvla-h7777-77774-qaacq-cai")]),
           cyclesToSpend
         );
 
