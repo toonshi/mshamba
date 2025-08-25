@@ -16,11 +16,7 @@ actor {
     tokenName : Text,
     tokenSymbol : Text,
     initialSupply : Nat,
-    investorAllocs : [Principal],
-    vestingDays : Nat, // Not directly used for ICRC-1 deployment, but part of original signature
-    transferFee : Nat,
-    extraControllers : [Principal],
-    cyclesToSpend : ?Nat
+    transferFee : Nat
   ) : async Result.Result<Principal, Text> {
 
     // 1. Generate new canister IDs
@@ -32,7 +28,7 @@ actor {
     let selfPrincipal = Principal.fromActor(this);
 
     // 2. Deploy the ICRC-1 Archive canister
-    let archiveInitArg : Blob = Blob.fromArray([]); // Placeholder for Candid.encode result
+    let archiveInitArg = Candid.encode("(principal, nat64, opt nat64, opt nat64)", (selfPrincipal, 2000, null, null));
     let archiveInstallResult = await Canister.install_code(archiveId, ICRC1_ARCHIVE_WASM, archiveInitArg);
     switch (archiveInstallResult) {
       case (#ok(_)) { () };
