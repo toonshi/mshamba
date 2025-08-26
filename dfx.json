@@ -1,14 +1,20 @@
 {
   "canisters": {
-    
     "token_factory": {
       "type": "motoko",
       "main": "src/factory/main.mo"
     },
-    
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko"
+    },
+    "mshamba_frontend": {
+      "type": "assets",
+      "source": ["src/mshamba_frontend/dist"],
+      "build": "cd src/mshamba_frontend && npm install && npm run build",
+      "dependencies": [
+        "mshamba_backend"
+      ]
     },
     "icrc1_ledger": {
       "type": "custom",
@@ -41,7 +47,6 @@
       "init_arg": "(variant { Init = record { minting_account = record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; transfer_fee = 10000; token_symbol = \"FARM1\"; token_name = \"Farm1 Token\"; metadata = vec {}; initial_balances = vec { record { record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; 100000000000 } }; archive_options = record { num_blocks_to_archive = 1000; trigger_threshold = 2000; controller_id = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\" } } })"
     }
   },
-
   "defaults": {
     "build": {
       "args": "",
