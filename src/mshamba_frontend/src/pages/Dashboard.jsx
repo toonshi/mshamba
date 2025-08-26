@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { AuthClient } from '@dfinity/auth-client';
 import { mshamba_backend } from 'declarations/mshamba_backend';
-import { Sprout, TrendingUp, User, Edit, Search, ArrowRight } from 'lucide-react';
+import { Sprout, TrendingUp, User, Edit, Search, ArrowRight, Download, Rocket } from 'lucide-react';
 import { CreateFarmForm } from '../components/CreateFarmForm';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [userProfile, setUserProfile] = useState(null);
@@ -11,6 +12,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [filter, setFilter] = useState('');
+  const navigate = useNavigate();
 
   const fetchMyFarms = useCallback(async () => {
     const userFarms = await mshamba_backend.myFarms();
@@ -83,6 +85,15 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error toggling investment status:", error);
     }
+  };
+
+  const handleDownloadAuditReport = (farmId) => {
+    alert(`Downloading audit report for farm ${farmId}. (Placeholder)`);
+    // In a real app, this would trigger an API call to get the report and download it.
+  };
+
+  const handleLaunchInvestment = (farmId) => {
+    navigate(`/farmer/setup-investment/${farmId}`);
   };
 
   const filteredFarms = allFarms.filter(farm => 
@@ -176,6 +187,20 @@ const Dashboard = () => {
                           />
                           <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                         </label>
+                      </div>
+                      <div className="flex space-x-2 mt-4">
+                        <button 
+                          onClick={() => handleDownloadAuditReport(farm.id)}
+                          className="flex-1 py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm flex items-center justify-center"
+                        >
+                          <Download className="w-4 h-4 mr-2" /> Audit Report
+                        </button>
+                        <button 
+                          onClick={() => handleLaunchInvestment(farm.id)}
+                          className="flex-1 py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm flex items-center justify-center"
+                        >
+                          <Rocket className="w-4 h-4 mr-2" /> Launch
+                        </button>
                       </div>
                     </div>
                   ))}
