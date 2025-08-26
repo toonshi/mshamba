@@ -37,7 +37,7 @@ function App() {
         <Route index element={<FarmListing />} /> 
         <Route path="profile" element={<FarmListing />} /> 
           <Route path="records" element={<FarmRecords />} />
-          <Route path="setup-investment" element={<SetupInvestment />} />
+          <Route path="setup-investment/:farmId" element={<SetupInvestment />} />
           <Route path="valuation" element={<ValuationReport />} />
           <Route path="investors" element={<InvestorsList />} />
           <Route path="graphs" element={<FarmGraphs />} />

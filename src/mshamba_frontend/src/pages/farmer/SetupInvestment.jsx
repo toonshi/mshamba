@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { DollarSign, Users, Calendar, Target, Mail } from 'lucide-react';
+import { mshamba_backend } from 'declarations/mshamba_backend';
 
 const SetupInvestment = () => {
+  const { farmId } = useParams();
+  const navigate = useNavigate();
   const [investmentData, setInvestmentData] = useState({
     title: '',
     description: '',
@@ -10,8 +14,34 @@ const SetupInvestment = () => {
     duration: '',
     purpose: ''
   });
+  const [farmName, setFarmName] = useState('');
+  const [currentInvestments, setCurrentInvestments] = useState([]); // Keep for local display if needed
 
-  const [currentInvestments, setCurrentInvestments] = useState([]);
+  useEffect(() => {
+    const fetchFarmDetails = async () => {
+      if (farmId) {
+        try {
+          const result = await mshamba_backend.getFarm(farmId);
+          if (result.ok) {
+            setFarmName(result.ok.name);
+            setInvestmentData(prev => ({
+              ...prev,
+              title: `Investment for ${result.ok.name}`,
+              description: `Funding opportunity for ${result.ok.name}.`
+            }));
+          } else {
+            alert(`Error fetching farm details: ${result.err}`);
+            navigate('/farmer/dashboard'); // Redirect if farm not found
+          }
+        } catch (error) {
+          console.error("Error fetching farm details:", error);
+          alert("An unexpected error occurred while fetching farm details.");
+          navigate('/farmer/dashboard');
+        }
+      }
+    };
+    fetchFarmDetails();
+  }, [farmId, navigate]);
 
   const handleInputChange = (e) => {
     setInvestmentData({
@@ -20,24 +50,58 @@ const SetupInvestment = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setCurrentInvestments([
-      ...currentInvestments,
-      { ...investmentData, status: 'Draft', raised: 0 }
-    ]);
-    setInvestmentData({
-      title: '',
-      description: '',
-      targetAmount: '',
-      minimumInvestment: '',
-      duration: '',
-      purpose: ''
-    });
-    alert('Investment saved!');
+    if (!farmId) {
+      alert("Error: Farm ID is missing. Please navigate from a specific farm.");
+      return;
+    }
+
+    // Generate token symbol (e.g., first 3 letters of title, uppercase)
+    const tokenSymbol = investmentData.title.substring(0, 3).toUpperCase();
+
+    try {
+      // Convert Nat values
+      const initialSupplyNat = BigInt(investmentData.targetAmount);
+      const transferFeeNat = BigInt(10_000); // Default transfer fee
+      const vestingDaysNat = BigInt(365); // Default vesting days
+
+      const result = await mshamba_backend.openFarmInvestment(
+        farmId,
+        investmentData.title, // tokenName
+        tokenSymbol,
+        initialSupplyNat,
+        [], // investorAllocs (empty for now)
+        null, // governance (null for now)
+        vestingDaysNat,
+        transferFeeNat,
+        [], // extraControllers (empty for now)
+        null // cyclesToSpend (null for default)
+      );
+
+      if (result.ok) {
+        alert(`Investment opportunity "${investmentData.title}" published successfully! Ledger ID: ${result.ok.toText()}`);
+        // Clear form and navigate back to farmer dashboard
+        setInvestmentData({
+          title: '',
+          description: '',
+          targetAmount: '',
+          minimumInvestment: '',
+          duration: '',
+          purpose: ''
+        });
+        navigate('/farmer/dashboard');
+      } else {
+        alert(`Failed to publish investment: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error publishing investment:", error);
+      alert("An unexpected error occurred while publishing investment.");
+    }
   };
 
   const openInvestment = (index) => {
+    // This function is for local state management, not directly related to backend openFarmInvestment
     alert(`Launching investment: ${currentInvestments[index].title}`);
     const updated = [...currentInvestments];
     updated[index].status = 'Live';

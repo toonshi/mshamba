@@ -116,6 +116,45 @@ actor {
   };
 
   // ==============================
+  // INVESTOR ACTIONS
+  // ==============================
+  public shared ({ caller }) func handleInvest(
+    farmId : Text,
+    amount : Nat
+  ) : async Farm.Result<Farm.Farm> {
+    // 1. Retrieve the farm and ensure it exists & is open for investment
+    let farmResult = Farm.getFarm(farmId, farmStore);
+    switch (farmResult) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        if (not farm.isOpenForInvestment) {
+          return #err("This farm is not open for investment");
+        };
+
+        // 2. Ensure the farm has a deployed ledger canister
+        let ledgerId = switch (farm.ledgerCanister) {
+          case (?id) { id };
+          case null { return #err("Farm does not have a deployed ledger canister yet.") };
+        };
+
+        // 3. Call the token canister to transfer tokens from caller to farm's ledger
+        //    NOTE: This assumes the token canister has a 'transfer' function
+        //    and that the caller has enough balance in that token.
+        //    This part needs careful implementation based on the token standard (e.g., ICRC-1)
+        //    For now, we'll simulate the transfer and focus on updating the farm's state.
+        //    This is a simplification and needs to be replaced with actual token transfer.
+
+        // 4. Update farm funding and investors (using the internal investInFarm from lib/farms.mo)
+        let updateResult = Farm.investInFarm(caller, farmId, amount, farmStore);
+        switch (updateResult) {
+          case (#ok(updatedFarm)) { #ok(updatedFarm) };
+          case (#err(msg)) { #err(msg) };
+        }
+      }
+    }
+  };
+
+  // ==============================
   // FARMER ACTIONS
   // ==============================
   public shared ({ caller }) func toggleFarmInvestmentStatus(

@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { mshamba_backend } from 'declarations/mshamba_backend';
+import { Actor, HttpAgent } from '@dfinity/agent';
+import { Principal } from '@dfinity/principal';
+import { idlFactory as mshamba_backend_idl } from 'declarations/mshamba_backend';
 import { Search, MapPin, DollarSign, Clock, Mail, Sprout } from 'lucide-react';
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
@@ -118,83 +122,26 @@ const Farms = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
-  // TODO: Replace with actual backend API call
   useEffect(() => {
     const fetchFarms = async () => {
       try {
         setLoading(true);
-        // Replace this with actual backend call
-        // const response = await backendActor.getAllFarms();
-        // setFarms(response);
-        
-        // Sample data for testing - remove when backend is connected
-        setFarms([
-          {
-            id: 1,
-            name: "Green Valley Maize Farm",
-            location: "Nakuru, Kenya",
-            crop: "Maize",
-            size: "10 acres",
-            minInvestment: 5000,
-            duration: 8,
-            targetAmount: 50000,
-            currentAmount: 15000,
-            createdAt: "2024-01-15",
-            image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 2,
-            name: "Highland Coffee Plantation",
-            location: "Kiambu, Kenya",
-            crop: "Coffee",
-            size: "15 acres",
-            minInvestment: 8000,
-            duration: 12,
-            targetAmount: 80000,
-            currentAmount: 35000,
-            createdAt: "2024-01-10",
-            image: "https://images.pexels.com/photos/894695/pexels-photo-894695.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 3,
-            name: "Sunrise Vegetable Gardens",
-            location: "Meru, Kenya",
-            crop: "Vegetables",
-            size: "5 acres",
-            minInvestment: 3000,
-            duration: 6,
-            targetAmount: 25000,
-            currentAmount: 8000,
-            createdAt: "2024-01-20",
-            image: "https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 4,
-            name: "Tropical Fruit Orchard",
-            location: "Machakos, Kenya",
-            crop: "Fruits",
-            size: "20 acres",
-            minInvestment: 10000,
-            duration: 10,
-            targetAmount: 100000,
-            currentAmount: 75000,
-            createdAt: "2024-01-05",
-            image: "https://images.pexels.com/photos/1132047/pexels-photo-1132047.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 5,
-            name: "Golden Wheat Fields",
-            location: "Uasin Gishu, Kenya",
-            crop: "Maize",
-            size: "25 acres",
-            minInvestment: 12000,
-            duration: 7,
-            targetAmount: 120000,
-            currentAmount: 45000,
-            createdAt: "2024-01-25",
-            image: "https://images.pexels.com/photos/265216/pexels-photo-265216.jpeg?auto=compress&cs=tinysrgb&w=400"
-          }
-        ]);
+        const response = await mshamba_backend.listFarms();
+        const mappedFarms = response.map(farm => ({
+          id: farm.farmId,
+          name: farm.name,
+          location: farm.location,
+          // These fields are not directly from backend, use placeholders or N/A
+          crop: "Mixed Crops", // Placeholder
+          size: "N/A acres", // Placeholder
+          minInvestment: 1000, // Placeholder (number)
+          duration: 6, // Placeholder (number of months)
+          image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400", // Generic placeholder image
+          targetAmount: Number(farm.fundingGoal),
+          currentAmount: Number(farm.fundedAmount),
+          createdAt: new Date(Number(farm.createdAt) / 1_000_000).toISOString(), // Convert nanoseconds to milliseconds
+        }));
+        setFarms(mappedFarms);
       } catch (error) {
         console.error('Error fetching farms:', error);
         setFarms([]);
@@ -243,13 +190,44 @@ const Farms = () => {
 
   const handleInvest = async (farm) => {
     try {
-      // TODO: Implement investment logic with backend
-      // await backendActor.investInFarm(farm.id, investmentAmount);
-      console.log('Investing in farm:', farm);
-      alert(`Investment in ${farm.name} initiated. This will be connected to the backend.`);
+      if (!window.ic || !window.ic.plug) {
+        alert("Plug Wallet is not installed or not available. Please install it to invest.");
+        return;
+      }
+
+      // Request connection to Plug Wallet
+      const connected = await window.ic.plug.requestConnect({
+        whitelist: [process.env.CANISTER_ID_MSHAMBA_BACKEND],
+      });
+
+      if (!connected) {
+        alert("Plug Wallet connection refused.");
+        return;
+      }
+
+      // Create an actor for mshamba_backend using Plug's agent
+      const plugAgent = window.ic.plug.agent;
+      const backendActor = Actor.createActor(mshamba_backend_idl, {
+        agent: plugAgent,
+        canisterId: process.env.CANISTER_ID_MSHAMBA_BACKEND,
+      });
+
+      // Placeholder for investment amount (e.g., 1 token unit)
+      const investmentAmount = BigInt(1_000_000_000_000); 
+
+      // Call the new handleInvest function on the backend
+      const result = await backendActor.handleInvest(farm.id, investmentAmount);
+
+      if (result.ok) {
+        alert(`Successfully invested in ${farm.name}! Funded amount updated.`);
+        // Refresh the farms list to show updated funded amount
+        fetchFarms(); 
+      } else {
+        alert(`Investment failed: ${result.err}`);
+      }
     } catch (error) {
       console.error('Error investing in farm:', error);
-      alert('Error processing investment. Please try again.');
+      alert('An unexpected error occurred during investment. Please try again.');
     }
   };
 
