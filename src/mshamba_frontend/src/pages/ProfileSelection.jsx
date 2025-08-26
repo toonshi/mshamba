@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthClient } from '@dfinity/auth-client';
+import { mshamba_backend } from 'declarations/mshamba_backend';
+import { ProfileCreationModal } from '../components/ProfileCreationModal';
 import { 
   Sprout, 
   TrendingUp, 
@@ -16,9 +19,48 @@ import {
 
 const ProfileSelection = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const navigate = useNavigate();
+  const [authClient, setAuthClient] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const client = await AuthClient.create();
+      setAuthClient(client);
+    };
+    initAuth();
+  }, []);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+  };
+
+  const handleRoleSelection = (role) => {
+    setSelectedRole(role);
+    setIsModalOpen(true);
+  };
+
+  const handleModalSubmit = async (profileData) => {
+    if (!authClient) return;
+
+    const identity = authClient.getIdentity();
+    const principal = identity.getPrincipal();
+
+    const profileResult = await mshamba_backend.createProfile(
+      profileData.name,
+      profileData.bio,
+      { [selectedRole]: null },
+      profileData.skills
+    );
+
+    if (profileResult.Ok) {
+      setIsModalOpen(false);
+      navigate('/dashboard');
+    } else {
+      console.error("Failed to create profile:", profileResult.Err);
+      // Handle error appropriately
+    }
   };
 
   const themeClasses = isDarkMode 
@@ -27,6 +69,14 @@ const ProfileSelection = () => {
 
   return (
     <div className={`min-h-screen transition-all duration-300 ${themeClasses} relative overflow-hidden`}>
+      {isModalOpen && (
+        <ProfileCreationModal 
+          role={selectedRole}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleModalSubmit}
+        />
+      )}
+
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-10">
         <div className={`absolute top-16 left-16 w-56 h-56 rounded-full mix-blend-multiply filter blur-3xl animate-pulse ${
@@ -39,8 +89,8 @@ const ProfileSelection = () => {
 
       {/* Header with back button and theme toggle */}
       <div className="relative z-10 flex justify-between items-center p-3 sm:p-4">
-        <Link
-          to="/"
+        <button
+          onClick={() => navigate(-1)}
           className={`p-2 rounded-lg transition-all duration-300 backdrop-blur-sm border group ${
             isDarkMode 
               ? 'hover:bg-white/10 border-white/10 hover:border-white/20' 
@@ -48,7 +98,7 @@ const ProfileSelection = () => {
           }`}
         >
           <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform duration-300" />
-        </Link>
+        </button>
 
         <button
           onClick={toggleDarkMode}
@@ -113,9 +163,9 @@ const ProfileSelection = () => {
           {/* Role Selection Cards */}
           <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Farmer Card */}
-            <Link 
-              to="/auth?type=farmer"
-              className={`group backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+            <div 
+              onClick={() => handleRoleSelection('Farmer')}
+              className={`cursor-pointer group backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
                 isDarkMode 
                   ? 'bg-white/10 border-white/20 hover:border-green-500/30' 
                   : 'bg-white/95 border-gray-200 hover:border-green-300'
@@ -173,12 +223,12 @@ const ProfileSelection = () => {
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
 
             {/* Investor Card */}
-            <Link 
-              to="/auth?type=investor"
-              className={`group backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+            <div 
+              onClick={() => handleRoleSelection('Investor')}
+              className={`cursor-pointer group backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
                 isDarkMode 
                   ? 'bg-white/10 border-white/20 hover:border-blue-500/30' 
                   : 'bg-white/95 border-gray-200 hover:border-blue-300'
@@ -236,7 +286,7 @@ const ProfileSelection = () => {
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           </div>
 
           {/* Trust Indicators */}
