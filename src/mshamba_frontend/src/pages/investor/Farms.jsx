@@ -3,9 +3,35 @@ import { mshamba_backend } from 'declarations/mshamba_backend';
 import { Actor, HttpAgent } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { idlFactory as mshamba_backend_idl } from 'declarations/mshamba_backend';
+import { mshamba_assets } from 'declarations/mshamba_assets'; // Import assets canister
 import { Search, MapPin, DollarSign, Clock, Mail, Sprout } from 'lucide-react';
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
+  const [imageUrl, setImageUrl] = useState('');
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      if (farm.image) {
+        try {
+          const imageData = await mshamba_assets.getImage(farm.image);
+          if (imageData && imageData.length > 0) {
+            const blob = new Blob([new Uint8Array(imageData)], { type: 'image/jpeg' }); // Assuming JPEG, adjust type if needed
+            const url = URL.createObjectURL(blob);
+            setImageUrl(url);
+          } else {
+            setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback
+          }
+        } catch (error) {
+          console.error("Error fetching image:", error);
+          setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback on error
+        }
+      } else {
+        setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Default image if no ID
+      }
+    };
+    fetchImage();
+  }, [farm.image]); // Re-fetch if farm.image changes
+
   const progressPercentage = (farm.currentAmount / farm.targetAmount) * 100;
   
   const getStatusColor = (currentAmount, targetAmount) => {
@@ -28,7 +54,7 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative">
         <img
-          src={farm.image || 'https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'}
+          src={imageUrl} // Use the fetched image URL
           alt={farm.name}
           className="w-full h-48 object-cover"
         />
@@ -131,12 +157,11 @@ const Farms = () => {
           id: farm.farmId,
           name: farm.name,
           location: farm.location,
-          // These fields are not directly from backend, use placeholders or N/A
-          crop: "Mixed Crops", // Placeholder
-          size: "N/A acres", // Placeholder
-          minInvestment: 1000, // Placeholder (number)
-          duration: 6, // Placeholder (number of months)
-          image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400", // Generic placeholder image
+          crop: farm.crop, // Use actual crop from backend
+          size: farm.size, // Use actual size from backend
+          minInvestment: Number(farm.minInvestment), // Use actual minInvestment from backend
+          duration: Number(farm.duration), // Use actual duration from backend
+          image: farm.image, // Use actual image ID from backend
           targetAmount: Number(farm.fundingGoal),
           currentAmount: Number(farm.fundedAmount),
           createdAt: new Date(Number(farm.createdAt) / 1_000_000).toISOString(), // Convert nanoseconds to milliseconds

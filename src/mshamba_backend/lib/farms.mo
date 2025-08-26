@@ -31,7 +31,12 @@ module {
     name: Text,
     description: Text,
     location: Text,
-    fundingGoal: Nat
+    fundingGoal: Nat,
+    image: Text, // New parameter
+    crop: Text, // New parameter
+    size: Text, // New parameter
+    minInvestment: Nat, // New parameter
+    duration: Nat // New parameter
   ) : Types.Result<Farm> {
 
     let farmId = "farm-" # Int.toText(Time.now());
@@ -43,6 +48,11 @@ module {
       description = description;
       location = location;
       fundingGoal = fundingGoal;
+      image = image; // Assign new field
+      crop = crop; // Assign new field
+      size = size; // Assign new field
+      minInvestment = minInvestment; // Assign new field
+      duration = duration; // Assign new field
       fundedAmount = 0;
       totalShares = 0;
       sharePrice = 0;

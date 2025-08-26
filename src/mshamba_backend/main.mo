@@ -49,10 +49,15 @@ actor {
     name : Text,
     description : Text,
     location : Text,
-    fundingGoal : Nat
+    fundingGoal : Nat,
+    image: Text, // New parameter
+    crop: Text, // New parameter
+    size: Text, // New parameter
+    minInvestment: Nat, // New parameter
+    duration: Nat // New parameter
   ) : async Farm.Result<Farm.Farm> {
     switch (getFarmerProfile(caller)) {
-      case (?_) { Farm.createFarm(caller, farmStore, name, description, location, fundingGoal) };
+      case (?_) { Farm.createFarm(caller, farmStore, name, description, location, fundingGoal, image, crop, size, minInvestment, duration) };
       case null { #err("Only farmers can create farms or profile not found") };
     }
   };

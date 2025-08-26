@@ -47,6 +47,11 @@ public type Farm = {
   sharePriceHistory: [Nat];
   ledgerCanister: ?Principal;   // NEW: the deployed ledger canister for this farm
   isOpenForInvestment: Bool;   // NEW: flag to indicate if farm is open for investment
+  image: Text; // Image ID from mshamba_assets
+  crop: Text;
+  size: Text;
+  minInvestment: Nat;
+  duration: Nat; // in months
 };
 
 
