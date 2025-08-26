@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, DollarSign, Coins } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 export const FarmCard = ({ farm, onInvest, hasWallet }) => {
   const IconComponent = farm.icon;
@@ -15,7 +15,7 @@ export const FarmCard = ({ farm, onInvest, hasWallet }) => {
             <div>
               <h3 className="font-semibold text-white">{farm.name}</h3>
               <div className="flex items-center text-gray-300 text-sm">
-                <MapPin className="w-3 h-3 mr-1" />
+                <LucideIcons.MapPin className="w-3 h-3 mr-1" />
                 {farm.location}
               </div>
             </div>
@@ -65,12 +65,12 @@ export const FarmCard = ({ farm, onInvest, hasWallet }) => {
         >
           {hasWallet ? (
             <>
-              <Coins className="w-4 h-4" />
+              <LucideIcons.Coins className="w-4 h-4" />
               <span>Invest & Get Tokens</span>
             </>
           ) : (
             <>
-              <DollarSign className="w-4 h-4" />
+              <LucideIcons.DollarSign className="w-4 h-4" />
               <span>Connect Wallet to Invest</span>
             </>
           )}

@@ -1,15 +1,44 @@
 import React, { useState } from 'react';
 import { Sprout, TrendingUp, X } from 'lucide-react';
+import { mshamba_assets } from 'declarations/mshamba_assets'; // Import assets canister
 
 export const ProfileCreationModal = ({ role, onClose, onSubmit }) => {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [skills, setSkills] = useState('');
+  const [profileImageFile, setProfileImageFile] = useState(null); // State for profile image file (Uint8Array)
 
-  const handleSubmit = (e) => {
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const arrayBuffer = event.target.result;
+        const uint8Array = new Uint8Array(arrayBuffer);
+        setProfileImageFile(uint8Array);
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      setProfileImageFile(null);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const skillsArray = skills.split(',').map(skill => skill.trim()).filter(skill => skill);
-    onSubmit({ name, bio, skills: skillsArray });
+    let profilePictureId = "";
+
+    if (profileImageFile) {
+      try {
+        profilePictureId = await mshamba_assets.uploadImage(Array.from(profileImageFile));
+      } catch (error) {
+        console.error("Error uploading profile image:", error);
+        alert("Failed to upload profile image. Please try again.");
+        return;
+      }
+    }
+
+    onSubmit({ name, bio, skills: skillsArray, profilePicture: profilePictureId });
   };
 
   const isFarmer = role === 'Farmer';
@@ -66,6 +95,17 @@ export const ProfileCreationModal = ({ role, onClose, onSubmit }) => {
                   placeholder="e.g., Organic Farming, Financial Analysis"
                 />
                 <p className="text-xs text-gray-500 mt-1">Separate skills with a comma.</p>
+              </div>
+              {/* New field for profile picture */}
+              <div>
+                <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+                <input
+                  type="file"
+                  id="profilePicture"
+                  accept="image/*"
+                  onChange={handleProfileImageChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+                />
               </div>
             </div>
 

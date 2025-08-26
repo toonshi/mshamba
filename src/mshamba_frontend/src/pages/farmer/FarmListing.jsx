@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-  ArrowLeft,
-  Upload,
-  MapPin,
-  DollarSign,
-  Sprout,
-  User,
-  Clock,
-  TrendingUp,
-  FileText,
-} from "lucide-react";
+import * as LucideIcons from 'lucide-react';
 
 export const FarmListing = ({ onBack }) => {
   const [farms, setFarms] = useState([]);
@@ -71,7 +61,7 @@ export const FarmListing = ({ onBack }) => {
         <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3 mb-6 sm:mb-8">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Sprout className="w-6 h-6 text-green-600" />
+              <LucideIcons.Sprout className="w-6 h-6 text-green-600" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Add a Farm</h1>
@@ -85,7 +75,7 @@ export const FarmListing = ({ onBack }) => {
             {/* Farm Information */}
             <div>
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center text-gray-800">
-                <MapPin className="w-5 h-5 mr-2 text-green-600" />
+                <LucideIcons.MapPin className="w-5 h-5 mr-2 text-green-600" />
                 Farm Information
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -137,7 +127,7 @@ export const FarmListing = ({ onBack }) => {
             {/* Investment Details */}
             <div>
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center text-gray-800">
-                <DollarSign className="w-5 h-5 mr-2 text-green-600" />
+                <LucideIcons.DollarSign className="w-5 h-5 mr-2 text-green-600" />
                 Investment Details
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -155,7 +145,7 @@ export const FarmListing = ({ onBack }) => {
             {/* Project Description */}
             <div>
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center text-gray-800">
-                <FileText className="w-5 h-5 mr-2 text-green-600" />
+                <LucideIcons.FileText className="w-5 h-5 mr-2 text-green-600" />
                 Project Description
               </h2>
               <textarea
@@ -171,7 +161,7 @@ export const FarmListing = ({ onBack }) => {
             {/* Farmer Information */}
             <div>
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 flex items-center text-gray-800">
-                <User className="w-5 h-5 mr-2 text-green-600" />
+                <LucideIcons.User className="w-5 h-5 mr-2 text-green-600" />
                 Farmer Information
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -218,7 +208,7 @@ export const FarmListing = ({ onBack }) => {
                 Farm Images
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 sm:p-8 text-center">
-                <Upload className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
+                <LucideIcons.Upload className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
                 <input
                   type="file"
                   multiple
@@ -280,12 +270,12 @@ export const FarmListing = ({ onBack }) => {
                       </h3>
                       <div className="space-y-1 text-sm sm:text-base text-gray-600">
                         <p className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2 text-green-600" />
+                          <LucideIcons.MapPin className="w-4 h-4 mr-2 text-green-600" />
                           {farm.location}
                         </p>
                         {farm.farmerName && (
                           <p className="flex items-center">
-                            <User className="w-4 h-4 mr-2 text-green-600" />
+                            <LucideIcons.User className="w-4 h-4 mr-2 text-green-600" />
                             {farm.farmerName}
                             {farm.experience && ` (${farm.experience} years exp.)`}
                           </p>

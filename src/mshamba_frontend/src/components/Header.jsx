@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Sprout } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 export const Header = ({ onListFarm, onMyInvestments, onMarketAnalysis, onBrowseInvestments, onSupplyChain, onFarmerRecords, onLogin, onSignup }) => {
   return (
@@ -9,7 +9,7 @@ export const Header = ({ onListFarm, onMyInvestments, onMarketAnalysis, onBrowse
           {/* Logo and Navigation */}
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-2">
-              <Sprout className="w-8 h-8 text-green-500" />
+              <LucideIcons.Sprout className="w-8 h-8 text-green-500" />
               <span className="text-2xl font-bold text-white">M-Shamba</span>
             </div>
             <nav className="hidden md:flex space-x-6">
@@ -50,7 +50,7 @@ export const Header = ({ onListFarm, onMyInvestments, onMarketAnalysis, onBrowse
           {/* Search and Actions */}
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <LucideIcons.Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Search farms, crops, locations..."

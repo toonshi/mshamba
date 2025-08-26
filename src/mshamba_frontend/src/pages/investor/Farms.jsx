@@ -4,7 +4,7 @@ import { Actor, HttpAgent } from '@dfinity/agent';
 import { Principal } from '@dfinity/principal';
 import { idlFactory as mshamba_backend_idl } from 'declarations/mshamba_backend';
 import { mshamba_assets } from 'declarations/mshamba_assets'; // Import assets canister
-import { Search, MapPin, DollarSign, Clock, Mail, Sprout } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
   const [imageUrl, setImageUrl] = useState('');
@@ -70,7 +70,7 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
           <div>
             <h3 className="text-xl font-semibold text-gray-900 mb-1">{farm.name}</h3>
             <div className="flex items-center text-gray-600 text-sm">
-              <MapPin className="h-4 w-4 mr-1" />
+              <LucideIcons.MapPin className="h-4 w-4 mr-1" />
               {farm.location}
             </div>
           </div>
@@ -78,11 +78,11 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
 
         <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
           <div className="flex items-center">
-            <Sprout className="h-4 w-4 text-green-600 mr-2" />
+            <LucideIcons.Sprout className="h-4 w-4 text-green-600 mr-2" />
             <span className="text-gray-600">{farm.size} • {farm.crop}</span>
           </div>
           <div className="flex items-center">
-            <DollarSign className="h-4 w-4 text-blue-600 mr-2" />
+            <LucideIcons.DollarSign className="h-4 w-4 text-blue-600 mr-2" />
             <span className="text-gray-600">Min: ${farm.minInvestment?.toLocaleString() || 'N/A'}</span>
           </div>
         </div>
@@ -106,7 +106,7 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
         <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <DollarSign className="h-4 w-4 text-green-600" />
+              <LucideIcons.DollarSign className="h-4 w-4 text-green-600" />
             </div>
             <p className="font-medium text-gray-900">${farm.minInvestment?.toLocaleString() || 'N/A'}</p>
             <p className="text-gray-500">Min. Investment</p>
@@ -114,7 +114,7 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
           
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <Clock className="h-4 w-4 text-orange-600" />
+              <LucideIcons.Clock className="h-4 w-4 text-orange-600" />
             </div>
             <p className="font-medium text-gray-900">{farm.duration || 'N/A'}m</p>
             <p className="text-gray-500">Duration</p>
@@ -132,7 +132,7 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
             onClick={() => onEmailOwner(farm)}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
           >
-            <Mail className="h-4 w-4 mr-1" />
+            <LucideIcons.Mail className="h-4 w-4 mr-1" />
             Email
           </button>
         </div>
@@ -140,6 +140,24 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
     </div>
   );
 };
+
+const canisterId = process.env.CANISTER_ID_MSHAMBA_BACKEND;
+const host = process.env.DFX_NETWORK === 'ic' ? `https://icp-api.io` : `http://localhost:4943`;
+
+const agent = new HttpAgent({ host });
+
+// Fetch root key for certificate validation during development
+if (process.env.DFX_NETWORK !== 'ic') {
+  agent.fetchRootKey().catch(err => {
+    console.warn("Unable to fetch root key. Check to ensure that your local replica is running");
+    console.error(err);
+  });
+}
+
+const backendActor = Actor.createActor(mshamba_backend_idl, {
+  agent,
+  canisterId,
+});
 
 const Farms = () => {
   const [farms, setFarms] = useState([]);
@@ -152,7 +170,7 @@ const Farms = () => {
     const fetchFarms = async () => {
       try {
         setLoading(true);
-        const response = await mshamba_backend.listFarms();
+        const response = await backendActor.listFarms();
         const mappedFarms = response.map(farm => ({
           id: farm.farmId,
           name: farm.name,
@@ -298,7 +316,7 @@ const Farms = () => {
       <div className="bg-white rounded-xl shadow-sm border p-6">
         <div className="flex items-center space-x-3 mb-6">
           <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
-            <Sprout className="w-6 h-6 text-white" />
+            <LucideIcons.Sprout className="w-6 h-6 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Browse All Farms</h1>
@@ -309,7 +327,7 @@ const Farms = () => {
         {/* Search and Filters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <LucideIcons.Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search farms, locations, crops..."
@@ -345,14 +363,14 @@ const Farms = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center space-x-2 mb-2">
-            <MapPin className="w-5 h-5 text-green-600" />
+            <LucideIcons.MapPin className="w-5 h-5 text-green-600" />
             <span className="text-sm font-medium text-gray-600">Total Farms</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">{sortedFarms.length}</div>
         </div>
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center space-x-2 mb-2">
-            <DollarSign className="w-5 h-5 text-purple-600" />
+            <LucideIcons.DollarSign className="w-5 h-5 text-purple-600" />
             <span className="text-sm font-medium text-gray-600">Min Investment</span>
           </div>
           <div className="text-2xl font-bold text-purple-600">
@@ -364,7 +382,7 @@ const Farms = () => {
         </div>
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center space-x-2 mb-2">
-            <Clock className="w-5 h-5 text-orange-600" />
+            <LucideIcons.Clock className="w-5 h-5 text-orange-600" />
             <span className="text-sm font-medium text-gray-600">Avg. Duration</span>
           </div>
           <div className="text-2xl font-bold text-orange-600">
@@ -392,7 +410,7 @@ const Farms = () => {
         <div className="bg-white rounded-xl shadow-sm border p-12">
           <div className="text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-gray-400" />
+              <LucideIcons.Search className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No farms available</h3>
             <p className="text-gray-600">

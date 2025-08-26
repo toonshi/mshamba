@@ -6,6 +6,10 @@ import Nat "mo:base/Nat";
 import Array "mo:base/Array";
 import TF "canister:token_factory";
 import Types "lib/types";
+import HashMap "mo:base/HashMap";
+import Iter "mo:base/Iter";
+import Time "mo:base/Time";
+import Int "mo:base/Int";
 
 actor {
 
@@ -13,6 +17,7 @@ actor {
 
    var farmStore = Farm.newFarmStore();
    var profileStore = UserProfile.newProfileStore();
+  var investmentStore = HashMap.HashMap<Principal, [Types.Investment]>(10, Principal.equal, Principal.hash);
 
   // ==============================
   // HELPERS
@@ -33,9 +38,10 @@ actor {
     name : Text,
     bio : Text,
     role : UserProfile.Role,
-    certifications : [Text]
+    certifications : [Text],
+    profilePicture: Text // New parameter
   ) : async Bool {
-    UserProfile.createProfile(profileStore, caller, name, bio, role, certifications)
+    UserProfile.createProfile(profileStore, caller, name, bio, role, certifications, profilePicture)
   };
 
   public query func getProfile(owner : Principal) : async ?UserProfile.Profile {
@@ -152,7 +158,29 @@ actor {
         // 4. Update farm funding and investors (using the internal investInFarm from lib/farms.mo)
         let updateResult = Farm.investInFarm(caller, farmId, amount, farmStore);
         switch (updateResult) {
-          case (#ok(updatedFarm)) { #ok(updatedFarm) };
+          case (#ok(updatedFarm)) {
+            // Create and store the investment record
+            let investmentId = "inv-" # Int.toText(Time.now());
+            let newInvestment : Types.Investment = {
+              investmentId = investmentId;
+              investor = caller;
+              farmId = farmId;
+              amount = amount;
+              sharesReceived = 0; // Placeholder
+              pricePerShare = 0; // Placeholder
+              timestamp = Time.now();
+            };
+
+            let existingInvestments = switch (investmentStore.get(caller)) {
+              case (?investments) { investments };
+              case null { [] };
+            };
+
+            let updatedInvestments = Array.append(existingInvestments, [newInvestment]);
+            investmentStore.put(caller, updatedInvestments);
+
+            #ok(updatedFarm)
+          };
           case (#err(msg)) { #err(msg) };
         }
       }
@@ -178,6 +206,13 @@ actor {
           case (#err(msg)) { #err(msg) };
         }
       }
+    }
+  };
+
+  public shared query ({ caller }) func getMyInvestments() : async [Types.Investment] {
+    switch (investmentStore.get(caller)) {
+      case (?investments) { investments };
+      case null { [] };
     }
   };
 };

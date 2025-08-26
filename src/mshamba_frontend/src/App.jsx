@@ -30,7 +30,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<FarmListing />} /> 
-        <Route path="/profile-selection" element={<ProfileSelection />} />
+        <Route key="profile-selection-route" path="/profile-selection" element={<ProfileSelection />} />
 
         {/* Farmer Routes */}
         <Route path="/farmer/dashboard" element={<FarmerDashboard />}>

@@ -18,7 +18,7 @@ module {
     bio : Text;
     location : Text;
     joinedAt : Int;
-    
+    profilePicture: Text; // Image ID from mshamba_assets
   };
 
   //  Farm Project

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Search, Filter, MapPin, DollarSign, TrendingUp, Clock } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { FarmCard } from '../components/FarmCard';
 import { farmListings } from '../data/farmData';
 
@@ -55,7 +55,7 @@ export const AllInvestments = ({ onBack, onInvest, hasWallet }) => {
             onClick={onBack}
             className="flex items-center space-x-2 text-green-400 hover:text-green-300 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <LucideIcons.ArrowLeft className="w-5 h-5" />
             <span>Back to Dashboard</span>
           </button>
         </div>
@@ -63,7 +63,7 @@ export const AllInvestments = ({ onBack, onInvest, hasWallet }) => {
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-white" />
+              <LucideIcons.DollarSign className="w-6 h-6 text-white" />
             </div>
             <div>
               <h1 className="text-3xl font-bold">Browse All Investments</h1>
@@ -74,7 +74,7 @@ export const AllInvestments = ({ onBack, onInvest, hasWallet }) => {
           {/* Search and Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <LucideIcons.Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search farms, locations, crops..."
@@ -109,28 +109,28 @@ export const AllInvestments = ({ onBack, onInvest, hasWallet }) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <MapPin className="w-4 h-4 text-green-400" />
+                <LucideIcons.MapPin className="w-4 h-4 text-green-400" />
                 <span className="text-sm text-gray-400">Total Farms</span>
               </div>
               <div className="text-2xl font-bold">{sortedFarms.length}</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-blue-400" />
+                <LucideIcons.TrendingUp className="w-4 h-4 text-blue-400" />
                 <span className="text-sm text-gray-400">Avg. ROI</span>
               </div>
               <div className="text-2xl font-bold text-blue-400">19.2%</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <DollarSign className="w-4 h-4 text-purple-400" />
+                <LucideIcons.DollarSign className="w-4 h-4 text-purple-400" />
                 <span className="text-sm text-gray-400">Min Investment</span>
               </div>
               <div className="text-2xl font-bold text-purple-400">$3,000</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
-                <Clock className="w-4 h-4 text-yellow-400" />
+                <LucideIcons.Clock className="w-4 h-4 text-yellow-400" />
                 <span className="text-sm text-gray-400">Avg. Duration</span>
               </div>
               <div className="text-2xl font-bold text-yellow-400">7.5 months</div>
@@ -153,7 +153,7 @@ export const AllInvestments = ({ onBack, onInvest, hasWallet }) => {
         ) : (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-gray-400" />
+              <LucideIcons.Search className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2">No farms found</h3>
             <p className="text-gray-400">Try adjusting your search criteria or filters</p>

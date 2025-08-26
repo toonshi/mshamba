@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, MapPin, DollarSign, Calendar, Sprout } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 export const FarmListing = ({ onBack }) => {
   const [formData, setFormData] = useState({
@@ -46,7 +46,7 @@ export const FarmListing = ({ onBack }) => {
             onClick={onBack}
             className="flex items-center space-x-2 text-green-400 hover:text-green-300 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <LucideIcons.ArrowLeft className="w-5 h-5" />
             <span>Back to Dashboard</span>
           </button>
         </div>
@@ -54,7 +54,7 @@ export const FarmListing = ({ onBack }) => {
         <div className="bg-gray-800 rounded-xl p-8">
           <div className="flex items-center space-x-3 mb-8">
             <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
-              <Sprout className="w-6 h-6 text-white" />
+              <LucideIcons.Sprout className="w-6 h-6 text-white" />
             </div>
             <div>
               <h1 className="text-3xl font-bold">List Your Farm</h1>
@@ -66,7 +66,7 @@ export const FarmListing = ({ onBack }) => {
             {/* Farm Information */}
             <div>
               <h2 className="text-xl font-semibold mb-4 flex items-center">
-                <MapPin className="w-5 h-5 mr-2 text-green-400" />
+                <LucideIcons.MapPin className="w-5 h-5 mr-2 text-green-400" />
                 Farm Information
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -130,7 +130,7 @@ export const FarmListing = ({ onBack }) => {
             {/* Investment Details */}
             <div>
               <h2 className="text-xl font-semibold mb-4 flex items-center">
-                <DollarSign className="w-5 h-5 mr-2 text-green-400" />
+                <LucideIcons.DollarSign className="w-5 h-5 mr-2 text-green-400" />
                 Investment Details
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -260,7 +260,7 @@ export const FarmListing = ({ onBack }) => {
             <div>
               <label className="block text-sm font-medium mb-2">Farm Images</label>
               <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <LucideIcons.Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-400 mb-4">Upload farm images to attract investors</p>
                 <input
                   type="file"

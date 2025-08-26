@@ -13,6 +13,7 @@ module {
     bio: Text;
     role: Role;
     certifications: [Text];
+    profilePicture: Text;
   };
 
   public type ProfileStore = HashMap.HashMap<Principal, Profile>;
@@ -27,13 +28,14 @@ module {
     name: Text,
     bio: Text,
     role: Role,
-    certifications: [Text]
+    certifications: [Text],
+    profilePicture: Text // New parameter
   ) : Bool {
     switch (store.get(owner)) {
       case (?_) { false }; // already exists
       case null {
         let profile: Profile = {
-          owner; name; bio; role; certifications
+          owner; name; bio; role; certifications; profilePicture // Assign new field
         };
         store.put(owner, profile);
         true
