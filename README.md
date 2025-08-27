@@ -205,3 +205,52 @@ dfx canister call mshamba_backend listFarms
 ```bash
 dfx canister call mshamba_backend myFarms
 ```
+
+---
+
+## User Journeys
+
+This section outlines the typical user flows and interactions within the Mshamba platform, categorized by user roles.
+
+### 1. New User Onboarding & Profile Creation
+
+*   **Goal:** A new user registers and sets up their profile (as either a Farmer or an Investor).
+*   **Steps:**
+    1.  User accesses the Mshamba platform.
+    2.  User authenticates (e.g., via Internet Identity).
+    3.  User is prompted to select a profile type (Farmer or Investor).
+    4.  User fills out profile details (Name, Bio, Skills, Profile Picture).
+    5.  User submits the profile.
+    6.  User is redirected to their respective dashboard (Farmer Dashboard or Investor Dashboard).
+
+### 2. Farmer Journey: Creating and Managing a Farm
+
+*   **Goal:** A farmer creates a new farm project and manages its details.
+*   **Pre-requisite:** User has a Farmer profile.
+*   **Steps:**
+    1.  Farmer logs in and navigates to their Farmer Dashboard.
+    2.  Farmer accesses the "Create Farm" functionality.
+    3.  Farmer fills in farm details (Name, Description, Location, Funding Goal, Image, Crop, Size, Minimum Investment, Duration).
+    4.  Farmer submits the farm for creation.
+    5.  Farmer can view their created farms on their dashboard.
+    6.  Farmer can toggle the investment status of their farms.
+
+### 3. Investor Journey: Discovering and Investing in Farms
+
+*   **Goal:** An investor discovers available farm projects and invests in them.
+*   **Pre-requisite:** User has an Investor profile.
+*   **Steps:**
+    1.  Investor logs in and navigates to their Investor Dashboard.
+    2.  Investor browses available farms (e.g., on a "Farms" or "Farm Listing" page).
+    3.  Investor views details of a specific farm.
+    4.  Investor initiates an investment (e.g., by specifying an amount).
+    5.  Investor confirms the investment.
+    6.  Investor can view their past investments on their dashboard.
+
+### 4. General User Journey: Viewing Profiles and Farms
+
+*   **Goal:** Any authenticated user can view their own profile or browse public farm listings.
+*   **Steps:**
+    1.  User logs in.
+    2.  User can navigate to their own profile to view/edit details.
+    3.  User can browse a list of all public farms.

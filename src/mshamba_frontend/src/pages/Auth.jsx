@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AuthClient } from '@dfinity/auth-client';
 import { ArrowLeft, Shield, User, TrendingUp, Moon, Sun } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { mshamba_backend } from 'declarations/mshamba_backend';
 
 export const Auth = ({ onBack }) => {
   const [authClient, setAuthClient] = useState(null);
@@ -26,13 +27,36 @@ export const Auth = ({ onBack }) => {
 
       if (await client.isAuthenticated()) {
         const id = client.getIdentity();
-        setPrincipal(id.getPrincipal().toText());
+        const principal = id.getPrincipal(); // Get Principal object
+        setPrincipal(principal.toText());
+        console.log("Auth.jsx - principal =", principal.toText());
 
-        // If already logged in, redirect them immediately
-        if (userType === "farmer") {
-          navigate("/farmer/dashboard");
-        } else if (userType === "investor") {
-          navigate("/investor/dashboard");
+        console.log("Auth.jsx - useEffect: userType =", userType);
+        // Check if profile already exists
+        const existingProfile = await mshamba_backend.getProfile(principal);
+        console.log("Auth.jsx - useEffect: existingProfile =", existingProfile);
+
+        if (existingProfile !== null && (userType === "farmer" || userType === "investor")) {
+          // Profile exists, redirect to dashboard
+          if (existingProfile.role && existingProfile.role.Farmer !== undefined) {
+            console.log("Auth.jsx - useEffect: Redirecting to /farmer/dashboard");
+            navigate("/farmer/dashboard");
+          } else if (existingProfile.role && existingProfile.role.Investor !== undefined) {
+            console.log("Auth.jsx - useEffect: Redirecting to /investor/dashboard");
+            navigate("/investor/dashboard");
+          } else {
+            // Fallback if role is not recognized
+            console.log("Auth.jsx - useEffect: Fallback to / (role not recognized)");
+            navigate("/");
+          }
+        } else if (userType === "farmer" || userType === "investor") {
+          // No profile, redirect to create profile page
+          console.log("Auth.jsx - useEffect: Redirecting to /createprofile");
+          navigate(`/createprofile?type=${userType}`);
+        } else {
+          // Fallback if userType is not recognized
+          console.log("Auth.jsx - useEffect: Fallback to / (userType not recognized)");
+          navigate("/");
         }
       }
     };
@@ -45,15 +69,35 @@ export const Auth = ({ onBack }) => {
       identityProvider: 'https://identity.ic0.app/#authorize',
       onSuccess: async () => {
         const id = authClient.getIdentity();
-        setPrincipal(id.getPrincipal().toText());
+        const principal = id.getPrincipal(); // Get Principal object
+        setPrincipal(principal.toText());
+        console.log("Auth.jsx - principal =", principal.toText());
         setIsLoading(false);
 
-        // Redirect based on role chosen on Home.jsx
-        if (userType === "farmer") {
-          navigate("/farmer/dashboard");
-        } else if (userType === "investor") {
-          navigate("/investor/dashboard");
+        console.log("Auth.jsx - onSuccess: userType =", userType);
+        // Check if profile already exists
+        const existingProfile = await mshamba_backend.getProfile(principal);
+        console.log("Auth.jsx - onSuccess: existingProfile =", existingProfile);
+
+        if (existingProfile !== null && (userType === "farmer" || userType === "investor")) {
+          // Profile exists, redirect to dashboard
+          if (existingProfile.role && existingProfile.role.Farmer !== undefined) {
+            console.log("Auth.jsx - onSuccess: Redirecting to /farmer/dashboard");
+            navigate("/farmer/dashboard");
+          } else if (existingProfile.role && existingProfile.role.Investor !== undefined) {
+            console.log("Auth.jsx - onSuccess: Redirecting to /investor/dashboard");
+            navigate("/investor/dashboard");
+          } else {
+            // Fallback if role is not recognized
+            console.log("Auth.jsx - onSuccess: Fallback to / (role not recognized)");
+            navigate("/");
+          }
+        } else if (userType === "farmer" || userType === "investor") {
+          // No profile, redirect to create profile page
+          console.log("Auth.jsx - onSuccess: Redirecting to /createprofile");
+          navigate(`/createprofile?type=${userType}`);
         } else {
+          console.log("Auth.jsx - onSuccess: Fallback to / (userType not recognized)");
           navigate("/"); // fallback
         }
       },

@@ -14,7 +14,13 @@ export const ProfileSelection = ({ actor, principal }) => {
     }
 
     // Navigate to dashboard or next page
-    navigate('/dashboard');
+    if (type === 'farmer') {
+      navigate('/farmer/dashboard');
+    } else if (type === 'investor') {
+      navigate('/investor/dashboard');
+    } else {
+      navigate('/dashboard'); // Fallback, though should not be reached
+    }
   };
 
   return (

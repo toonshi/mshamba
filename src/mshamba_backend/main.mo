@@ -1,3 +1,5 @@
+import Debug "mo:base/Debug";
+import Result "mo:base/Result";
 import Farm "lib/farms";
 import UserProfile "lib/userProfiles";
 import Text "mo:base/Text";
@@ -40,12 +42,24 @@ actor {
     role : UserProfile.Role,
     certifications : [Text],
     profilePicture: Text // New parameter
-  ) : async Bool {
-    UserProfile.createProfile(profileStore, caller, name, bio, role, certifications, profilePicture)
+  ) : async Result.Result<Bool, Text> { // Change return type to Result
+    Debug.print("createProfile called");
+    let created = UserProfile.createProfile(profileStore, caller, name, bio, role, certifications, profilePicture);
+    Debug.print("UserProfile.createProfile returned: " # debug_show(created));
+    if (created) {
+      #ok(true)
+    } else {
+      Debug.print("Profile creation failed in UserProfile.createProfile");
+      #err("Profile already exists or could not be created") // Provide a meaningful error message
+    }
   };
 
   public query func getProfile(owner : Principal) : async ?UserProfile.Profile {
     UserProfile.getProfile(profileStore, owner)
+  };
+
+  public query func listProfiles() : async [UserProfile.Profile] {
+    UserProfile.listProfiles(profileStore)
   };
 
   // ==============================

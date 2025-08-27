@@ -3,7 +3,7 @@ import { AuthClient } from '@dfinity/auth-client';
 import { mshamba_backend } from 'declarations/mshamba_backend';
 import { Sprout, TrendingUp, User, Edit, Search, ArrowRight, Download, Rocket } from 'lucide-react';
 import { CreateFarmForm } from '../components/CreateFarmForm';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Dashboard = () => {
   const [userProfile, setUserProfile] = useState(null);
@@ -13,6 +13,11 @@ const Dashboard = () => {
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [filter, setFilter] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Read ?type=farmer or ?type=investor from URL
+  const queryParams = new URLSearchParams(location.search);
+  const userType = queryParams.get("type");
 
   const fetchMyFarms = useCallback(async () => {
     const userFarms = await mshamba_backend.myFarms();
@@ -31,8 +36,9 @@ const Dashboard = () => {
         const identity = authClient.getIdentity();
         const principal = identity.getPrincipal();
         const profileResult = await mshamba_backend.getProfile(principal);
+        console.log("Profile Result:", profileResult);
 
-        if (profileResult.Ok) {
+        if (profileResult.Ok !== null && profileResult.Ok !== undefined) {
           const profile = profileResult.Ok;
           setUserProfile(profile);
           if (Object.keys(profile.role)[0] === 'Farmer') {
@@ -42,16 +48,18 @@ const Dashboard = () => {
           }
         } else {
           console.error("Failed to fetch profile:", profileResult.Err);
+          navigate('/create-profile'); // Redirect to create profile page
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
+        navigate('/create-profile'); // Also redirect here in case of an error fetching profile
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [fetchMyFarms, fetchAllFarms]);
+  }, [fetchMyFarms, fetchAllFarms, navigate]);
 
   const handleCreateFarm = async (farmData) => {
     setIsCreatingFarm(true);
@@ -114,7 +122,11 @@ const Dashboard = () => {
   }
 
   if (!userProfile) {
-    return <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">Could not load profile.</div>;
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <p>Redirecting to profile creation...</p>
+      </div>
+    );
   }
 
   const isFarmer = Object.keys(userProfile.role)[0] === 'Farmer';

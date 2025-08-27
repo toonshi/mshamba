@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import { Auth } from "./pages/Auth";
 import ProfileSelection from "./pages/ProfileSelection";
+import CreateProfile from "./pages/CreateProfile";
 
 // Farmer pages
 import FarmerDashboard from "./pages/farmer/FarmerDashboard";  
@@ -31,6 +32,7 @@ function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<FarmListing />} /> 
         <Route key="profile-selection-route" path="/profile-selection" element={<ProfileSelection />} />
+        <Route path="/createprofile" element={<CreateProfile />} />
 
         {/* Farmer Routes */}
         <Route path="/farmer/dashboard" element={<FarmerDashboard />}>
