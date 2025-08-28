@@ -89,6 +89,8 @@ Run the embed_icrc1_wasm.sh script after making it into an executable
 using chmod ....
 # Deploys your canisters to the replica and generates your candid interface
 dfx deploy
+
+*Note: The `farm1_ledger` canister requires an initialization argument. This is provided via the `farm1_ledger.args` file located in the project root directory. This file contains the Candid initialization argument for the `farm1_ledger` canister.*
 ```
 
 Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
