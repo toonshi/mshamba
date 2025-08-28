@@ -6,7 +6,11 @@
     },
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "canister_id": "umunu-kh777-77774-qaaca-cai",
+      "controllers": [
+        "4qesy-eqkkq-3gwkk-oyyov-ivmyr-tfav4-w7x7b-2qi7k-hl4yb-bz6im-7ae"
+      ]
     },
     "mshamba_frontend": {
       "type": "assets",
@@ -17,6 +21,30 @@
       ]
     },
     "farm1_ledger": {
+      "type": "custom",
+      "candid": "wasm/ledger.did",
+      "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "controllers": [
+        "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
+      ]
+    },
+    "farm2_ledger": {
+      "type": "custom",
+      "candid": "wasm/ledger.did",
+      "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "controllers": [
+        "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
+      ]
+    },
+    "farm3_ledger": {
+      "type": "custom",
+      "candid": "wasm/ledger.did",
+      "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "controllers": [
+        "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
+      ]
+    },
+    "farm4_ledger": {
       "type": "custom",
       "candid": "wasm/ledger.did",
       "wasm": "wasm/ic-icrc1-ledger.wasm",

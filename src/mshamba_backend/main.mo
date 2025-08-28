@@ -11,6 +11,7 @@ import Iter "mo:base/Iter";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
 
+
 import LedgerTypes "canister:farm1_ledger";
 
 actor {
@@ -150,17 +151,33 @@ actor {
           case null { return #err("Farm does not have a deployed ledger canister yet.") };
         };
 
-        // 3. Call the token canister to transfer tokens from caller to farm's ledger
-        //    NOTE: This assumes the token canister has a 'transfer' function
-        //    and that the caller has enough balance in that token.
-        //    This part needs careful implementation based on the token standard (e.g., ICRC-1)
-        //    For now, we'll simulate the transfer and focus on updating the farm's state.
-        //    This is a simplification and needs to be replaced with actual token transfer.
+        // 3. Calculate tokens to issue based on investment amount and share price
+        if (farm.sharePrice == 0) {
+          return #err("Farm share price is not set. Cannot invest.");
+        };
 
-        // 4. Update farm funding and investors (using the internal investInFarm from lib/farms.mo)
+        let tokensToIssue = amount / farm.sharePrice;
+        if (tokensToIssue == 0) {
+          return #err("Investment amount is too small to receive any tokens.");
+        };
+
+        // Define Token Reserve Account (placeholder for now)
+        let tokenReservePrincipal = Principal.fromText("aaaaa-aa"); // Replace with actual Token Reserve Principal
+
+        // 4. Perform Transfers (Minting from mike - the minting_account)
+        let ledgerCanister = LedgerTypes;
+
+        // 5. Update farm funding and investors
         let updateResult = Farm.investInFarm(caller, farmId, amount, farmStore);
         switch (updateResult) {
           case (#ok(updatedFarm)) {
+            // Update totalShares
+            let finalFarm : Farm.Farm = {
+              updatedFarm with
+              totalShares = updatedFarm.totalShares + tokensToIssue;
+            };
+            farmStore.put(farmId, finalFarm);
+
             // Create and store the investment record
             let investmentId = "inv-" # Int.toText(Time.now());
             let newInvestment : Types.Investment = {
@@ -168,8 +185,8 @@ actor {
               investor = caller;
               farmId = farmId;
               amount = amount;
-              sharesReceived = 0; // Placeholder
-              pricePerShare = 0; // Placeholder
+              sharesReceived = tokensToIssue; // Now actual tokens
+              pricePerShare = farm.sharePrice; // Actual price
               timestamp = Time.now();
             };
 
@@ -181,11 +198,26 @@ actor {
             let updatedInvestments = Array.append(existingInvestments, [newInvestment]);
             investmentStore.put(caller, updatedInvestments);
 
-            #ok(updatedFarm)
+            #ok(finalFarm)
           };
           case (#err(msg)) { #err(msg) };
         }
       }
+    }
+  };
+
+  // Helper function to debug TransferError
+  // Helper function to debug TransferError
+  func debug_transfer_error(error: LedgerTypes.TransferError) : Text {
+    switch (error) {
+      case (#BadFee(e)) { "Transfer failed: BadFee" };
+      case (#BadBurn(e)) { "Transfer failed: BadBurn" };
+      case (#InsufficientFunds(e)) { "Transfer failed: InsufficientFunds" };
+      case (#TooOld) { "Transfer failed: TooOld" };
+      case (#CreatedInFuture(e)) { "Transfer failed: CreatedInFuture" };
+      case (#TemporarilyUnavailable) { "Transfer failed: TemporarilyUnavailable" };
+      case (#Duplicate(e)) { "Transfer failed: Duplicate" };
+      case (#GenericError(e)) { "Transfer failed: GenericError" };
     }
   };
 
@@ -207,6 +239,26 @@ actor {
           case (#ok(updatedFarm)) { #ok(updatedFarm) };
           case (#err(msg)) { #err(msg) };
         }
+      }
+    }
+  };
+
+  public shared ({ caller }) func updateFarmSharePrice(
+    farmId : Text,
+    newSharePrice : Nat
+  ) : async Farm.Result<Farm.Farm> {
+    switch (Farm.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        if (farm.owner != caller) {
+          return #err("Only the farm owner can update the share price");
+        };
+        let updatedFarm : Farm.Farm = {
+          farm with
+          sharePrice = newSharePrice;
+        };
+        farmStore.put(farmId, updatedFarm);
+        #ok(updatedFarm)
       }
     }
   };

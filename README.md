@@ -76,7 +76,7 @@ If you want to test your project locally, you can use the following commands:
 ```bash
 
 # Starts the replica, running in the background
-dfx start --background
+dfxt start --background
 
 
 # Make sure that you have node
@@ -88,7 +88,7 @@ npm install --save-dev vite @types/node
 Run the embed_icrc1_wasm.sh script after making it into an executable
 using chmod ....
 # Deploys your canisters to the replica and generates your candid interface
-dfx deploy
+dfxt deploy
 
 *Note: The `farm1_ledger` canister requires an initialization argument. This is provided via the `farm1_ledger.args` file located in the project root directory. This file contains the Candid initialization argument for the `farm1_ledger` canister.*
 ```
@@ -137,7 +137,7 @@ If you run `dfx start --clean` or `dfx deploy --mode reinstall` on your canister
     ```bash
     dfx canister call mshamba_backend updateFarmLedger '("YOUR_NEW_FARM_ID_HERE", principal "uxrrr-q7777-77774-qaaaq-cai")'
     ```
-    *Replace `YOUR_NEW_FARM_ID_HERE` with the actual `farmId` obtained from the previous step.*
+    *Replace `YOUR_NEW_FARM_ID_HERE` with the actual `farmId` from the previous step.*
 
 ## Testing Canisters
 
@@ -192,22 +192,22 @@ dfx deploy mshamba_backend
 
 **Create a Farmer Profile:**
 ```bash
-dfx canister call mshamba_backend createProfile '(
+dfx canister call mshamba_backend createProfile (
   "John Doe",
   "Experienced organic farmer.",
   variant { #Farmer },
   vec { "Organic Farming", "Sustainable Agriculture" }
-)'
+)
 ```
 
 **Create an Investor Profile:**
 ```bash
-dfx canister call mshamba_backend createProfile '(
+dfx canister call mshamba_backend createProfile (
   "Jane Smith",
   "Passionate about sustainable investments.",
   variant { #Investor },
   vec { "Financial Analysis" }
-)'
+)
 ```
 
 **Get a Profile (replace <principal_id> with the principal of the user who created the profile):**
@@ -217,12 +217,12 @@ dfx canister call mshamba_backend getProfile '(principal "<principal_id>")'
 
 **Create a Farm:**
 ```bash
-dfx canister call mshamba_backend createFarm '(
+dfx canister call mshamba_backend createFarm (
   "Green Acres",
   "A farm specializing in organic vegetables",
   "Rural Area, Kenya",
   1000000
-)'
+)
 ```
 
 **List All Farms:**
@@ -262,3 +262,12 @@ The `handleInvest` function allows an investor to invest a certain `amount` into
 7.  **Return Updated Farm:** If successful, it returns the updated farm record.
 
 **In essence, `handleInvest` orchestrates the process of recording an investment in a farm, updating the farm's state, and (in a complete implementation) facilitating the actual token transfer.**
+
+## Mainnet Canister IDs
+
+The following canisters have been deployed to the mainnet:
+
+- `farm1_ledger`: `osevl-taaaa-aaaac-a4bca-cai`
+- `farm2_ledger`: `ovft7-6yaaa-aaaac-a4bcq-cai`
+- `farm3_ledger`: `o4gyd-iqaaa-aaaac-a4bda-cai`
+- `farm4_ledger`: `o3h6x-fiaaa-aaaac-a4bdq-cai`

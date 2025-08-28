@@ -1,0 +1,35 @@
+(variant { Init = record {
+    token_symbol = "FARM2";
+    token_name   = "Farm Two Token";
+    decimals     = opt 8;
+
+    minting_account = record {
+      owner = principal "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe";
+      subaccount = null;
+    };
+
+    transfer_fee = 10_000;
+
+    metadata = vec {
+      record { "project:name";      variant { Text = "Sunny Fields" } };
+      record { "project:location";  variant { Text = "Nairobi, Kenya" } };
+      record { "project:crop";      variant { Text = "Tomatoes" } };
+      record { "project:land_size"; variant { Text = "5 acres" } };
+      record { "project:url";       variant { Text = "https://example.com/sunny_fields.jpg" } };
+    };
+
+    initial_balances = vec {
+      record {
+        record { owner = principal "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"; subaccount = null };
+        10_000_000_000_000
+      }
+    };
+
+    archive_options = record {
+      num_blocks_to_archive = 10_000;
+      trigger_threshold     = 20_000;
+      controller_id         = principal "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe";
+      cycles_for_archive_creation = opt 4_000_000_000_000;
+    };
+  }}
+)
