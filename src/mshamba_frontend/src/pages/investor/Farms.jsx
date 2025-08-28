@@ -12,18 +12,24 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
   useEffect(() => {
     const fetchImage = async () => {
       if (farm.image) {
-        try {
-          const imageData = await mshamba_assets.getImage(farm.image);
-          if (imageData && imageData.length > 0) {
-            const blob = new Blob([new Uint8Array(imageData)], { type: 'image/jpeg' }); // Assuming JPEG, adjust type if needed
-            const url = URL.createObjectURL(blob);
-            setImageUrl(url);
-          } else {
-            setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback
+        // Check if farm.image is a direct URL (http/https) or a local path starting with /
+        if (farm.image.startsWith('http://') || farm.image.startsWith('https://') || farm.image.startsWith('/')) {
+          setImageUrl(farm.image);
+        } else {
+          // Assume it's an asset ID for mshamba_assets canister
+          try {
+            const imageData = await mshamba_assets.getImage(farm.image);
+            if (imageData && imageData.length > 0) {
+              const blob = new Blob([new Uint8Array(imageData)], { type: 'image/jpeg' }); // Assuming JPEG, adjust type if needed
+              const url = URL.createObjectURL(blob);
+              setImageUrl(url);
+            } else {
+              setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback
+            }
+          } catch (error) {
+            console.error("Error fetching image from mshamba_assets:", error);
+            setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback on error
           }
-        } catch (error) {
-          console.error("Error fetching image:", error);
-          setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback on error
         }
       } else {
         setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Default image if no ID
