@@ -7,7 +7,7 @@
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko",
-      "canister_id": "umunu-kh777-77774-qaaca-cai",
+      "canister_id": "pwj2z-kaaaa-aaaac-a4bea-cai",
       "controllers": [
         "4qesy-eqkkq-3gwkk-oyyov-ivmyr-tfav4-w7x7b-2qi7k-hl4yb-bz6im-7ae"
       ]

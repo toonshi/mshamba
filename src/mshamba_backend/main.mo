@@ -247,6 +247,40 @@ actor {
     }
   };
 
+  public shared ({ caller }) func updateFarmDetails(
+    farmId : Text,
+    description : Text,
+    location : Text,
+    fundingGoal : Nat,
+    image: Text,
+    crop: Text,
+    size: Text,
+    minInvestment: Nat,
+    duration: Nat
+  ) : async Farm.Result<Farm.Farm> {
+    switch (Farm.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        if (farm.owner != caller) {
+          return #err("Only the farm owner can update farm details");
+        };
+        let updatedFarm : Farm.Farm = {
+          farm with
+          description = description;
+          location = location;
+          fundingGoal = fundingGoal;
+          image = image;
+          crop = crop;
+          size = size;
+          minInvestment = minInvestment;
+          duration = duration;
+        };
+        farmStore.put(farmId, updatedFarm);
+        #ok(updatedFarm)
+      }
+    }
+  };
+
   public shared query ({ caller }) func getMyInvestments() : async [Types.Investment] {
     switch (investmentStore.get(caller)) {
       case (?investments) { investments };
