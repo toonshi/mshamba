@@ -109,6 +109,32 @@ npm start
 
 Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
 
+### Recreating Test Data After Clean Deploy
+
+If you run `dfx start --clean` or `dfx deploy --mode reinstall` on your canisters, their state will be wiped. To recreate a farmer profile, a farm, and link it to the `farm1_ledger` for testing, follow these steps:
+
+1.  **Ensure you are using the `default` identity:**
+    ```bash
+    dfx identity use default
+    ```
+
+2.  **Create a farmer profile for the `default` identity:**
+    ```bash
+    dfx canister call mshamba_backend createProfile '("Default Farmer", "Bio for default farmer", variant { Farmer }, vec { "General Farming" }, "https://example.com/default_farmer.jpg")'
+    ```
+
+3.  **Create a farm:**
+    ```bash
+    dfx canister call mshamba_backend createFarm '("Green Acres", "A farm specializing in organic vegetables", "Rural Area, Kenya", 1000000, "https://example.com/green_acres.jpg", "Vegetables", "10 acres", 100, 365)'
+    ```
+    *Note down the `farmId` from the output (e.g., `farm-1756380362474759593`). You will need it for the next step.*
+
+4.  **Link the newly created farm to the `farm1_ledger`:**
+    ```bash
+    dfx canister call mshamba_backend updateFarmLedger '("YOUR_NEW_FARM_ID_HERE", principal "uxrrr-q7777-77774-qaaaq-cai")'
+    ```
+    *Replace `YOUR_NEW_FARM_ID_HERE` with the actual `farmId` obtained from the previous step.*
+
 ## Testing Canisters
 
 ---
