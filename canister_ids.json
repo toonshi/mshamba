@@ -10,5 +10,11 @@
   },
   "farm4_ledger": {
     "ic": "o3h6x-fiaaa-aaaac-a4bdq-cai"
+  },
+  "mshamba_backend": {
+    "ic": "pwj2z-kaaaa-aaaac-a4bea-cai"
+  },
+  "mshamba_frontend": {
+    "ic": "pri4n-hyaaa-aaaac-a4beq-cai"
   }
 }

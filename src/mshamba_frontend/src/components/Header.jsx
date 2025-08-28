@@ -10,7 +10,7 @@ export const Header = ({ onListFarm, onMyInvestments, onMarketAnalysis, onBrowse
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-2">
               <LucideIcons.Sprout className="w-8 h-8 text-green-500" />
-              <span className="text-2xl font-bold text-white">M-Shamba</span>
+              <span className="text-2xl font-bold text-white">Mshamba</span>
             </div>
             <nav className="hidden md:flex space-x-6">
               <button className="text-gray-300 hover:text-white transition-colors">Dashboard</button>
