@@ -131,6 +131,8 @@ If you run `dfx start --clean` or `dfx deploy --mode reinstall` on your canister
     ```
     *Note down the `farmId` from the output (e.g., `farm-1756380362474759593`). You will need it for the next step.*
 
+*Note: The `farm1_ledger.args` file is located in the project root directory (`/home/toonshi/production/mshamba/farm1_ledger.args`). This file contains the Candid initialization argument for the `farm1_ledger` canister.*
+
 4.  **Link the newly created farm to the `farm1_ledger`:**
     ```bash
     dfx canister call mshamba_backend updateFarmLedger '("YOUR_NEW_FARM_ID_HERE", principal "uxrrr-q7777-77774-qaaaq-cai")'
@@ -143,7 +145,10 @@ If you run `dfx start --clean` or `dfx deploy --mode reinstall` on your canister
 
 ### Testing `farm1_ledger` (Token Ledger)
 
-**Note on Minting:** The `icrc1_mint` method is not available in the standard ICRC-1 ledger WASM. Tokens are initialized via `initial_balances` in the `farm1_ledger.args` file during deployment.
+**Note on Token Transfer Behavior:**
+The `icrc1_mint` method is not available in the standard ICRC-1 ledger WASM. Tokens are initialized via `initial_balances` in the `farm1_ledger.args` file during deployment.
+
+**Important:** When `icrc1_transfer` is called by the `minting_account` (e.g., the `mike` identity in our setup), it currently behaves as a **minting function**, increasing the total supply and adding tokens to the recipient's balance without deducting from the sender. Transfers from non-minting accounts will likely fail due to insufficient funds. This behavior is being investigated.
 
 After deploying the `farm1_ledger` canister (e.g., using `dfx deploy farm1_ledger --argument-file farm1_ledger.args --mode reinstall --yes`), you can verify its state:
 
