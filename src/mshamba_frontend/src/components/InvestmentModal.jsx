@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DollarSign, Coins, TrendingUp, Clock, Shield } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
+import { mshamba_backend } from '../../declarations/mshamba_backend';
 
 export const InvestmentModal = ({ farm, isOpen, onClose, onInvest, walletBalance }) => {
   const [investmentAmount, setInvestmentAmount] = useState('');
@@ -21,22 +22,32 @@ export const InvestmentModal = ({ farm, isOpen, onClose, onInvest, walletBalance
 
   const handleInvest = async () => {
     if (!investmentAmount || parseFloat(investmentAmount) <= 0) return;
-    
+
     setIsProcessing(true);
-    
-    // Simulate investment process
-    setTimeout(() => {
-      onInvest({
-        farmId: farm.id,
-        amount: parseFloat(investmentAmount),
-        currency: selectedCurrency,
-        usdValue: usdAmount,
-        tokens: tokensToReceive
-      });
+
+    try {
+      const result = await mshamba_backend.handleInvest(farm.farmId, BigInt(usdAmount));
+
+      if ('ok' in result) {
+        onInvest({
+          farmId: farm.farmId,
+          amount: parseFloat(investmentAmount),
+          currency: selectedCurrency,
+          usdValue: usdAmount,
+          tokens: tokensToReceive
+        });
+        alert('Investment successful!');
+      } else {
+        alert(`Investment failed: ${result.err}`);
+      }
+    } catch (error) {
+      console.error('Error during investment:', error);
+      alert('An unexpected error occurred during investment.');
+    } finally {
       setIsProcessing(false);
       onClose();
       setInvestmentAmount('');
-    }, 3000);
+    }
   };
 
   if (!isOpen) return null;

@@ -16,7 +16,7 @@
   * [7. `types.mo` — Shared Type Definitions](#7-typesmo--shared-type-definitions)
 * [Running the project locally](#running-the-project-locally)
 * [Testing Canisters](#testing-canisters)
-  * [Testing `token_factory`](#testing-token_factory)
+  * [Testing `farm1_ledger` (Token Ledger)](#testing-farm1_ledger-token-ledger)
   * [Testing `mshamba_backend` (User Profiles)](#testing-mshamba_backend-user-profiles)
 
 ---
@@ -109,49 +109,45 @@ npm start
 
 Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
 
-
-TO:DO: Rewrite the embed_icrc1 script in the root folder  so that it divides the wasm bytes into chunks. Canisters can only take in 2mb.
-
 ## Testing Canisters
 
-This section provides examples of how to interact with the deployed canisters using `dfx canister call`.
+---
 
-### Testing `token_factory`
+### Testing `farm1_ledger` (Token Ledger)
 
-**Note:** The `token_factory` canister is currently not part of the stable deployment. The instructions below are provided for reference in case the token factory is re-enabled or for development purposes.
+**Note on Minting:** The `icrc1_mint` method is not available in the standard ICRC-1 ledger WASM. Tokens are initialized via `initial_balances` in the `farm1_ledger.args` file during deployment.
 
-First, ensure your `token_factory` canister has enough cycles. You can deposit cycles using:
+After deploying the `farm1_ledger` canister (e.g., using `dfx deploy farm1_ledger --argument-file farm1_ledger.args --mode reinstall --yes`), you can verify its state:
+
+**Check Token Metadata:**
 ```bash
-dfx canister deposit-cycles 10000000000000 $(dfx canister id token_factory)
+dfx canister call farm1_ledger icrc1_metadata
 ```
 
-Then, you can deploy the `token_factory` canister:
+**Check Total Supply:**
 ```bash
-dfx deploy token_factory
+dfx canister call farm1_ledger icrc1_total_supply
 ```
 
-Notice the canister id at the end of the url
+**Check Admin Balance (replace with your admin principal):**
 ```bash
-dfx canister status <put the canister_id here>
-dfx canister update-settings <put the canister_id here> --add-controller <put the canister_id here>
-confirm controllers
-dfx canister status <put the canister_id here>
+dfx canister call farm1_ledger icrc1_balance_of '(record { owner = principal "YOUR_ADMIN_PRINCIPAL"; subaccount = null })'
 ```
 
-Example `createFarmLedger` call (note the `opt 900_000_000_000` for `cyclesToSpend`):
+**Transfer Tokens to an Investor (from your admin identity):**
+First, ensure you are using your admin identity (e.g., `dfx identity use mike`).
+Then, get the investor's principal (e.g., `dfx identity get-principal --identity investor`).
+Finally, execute the transfer (replace `INVESTOR_PRINCIPAL` with the actual principal and adjust `amount` as needed):
 ```bash
-dfx canister call token_factory createFarmLedger '(
-  "MyToken",
-  "MTK",
-  principal "w7x7r-cok77-xa",
-  1000000,
-  vec { record { owner = principal "w7x7r-cok77-xa"; allocation = 10000 } },
-  null,
-  365,
-  1000,
-  vec { principal "w7x7r-cok77-xa" },
-  opt 900_000_000_000
-)'
+dfx canister call farm1_ledger icrc1_transfer \
+  '(record {
+     to = record { owner = principal "INVESTOR_PRINCIPAL"; subaccount = null };
+     amount = 1_000_000_000; # Example: 10 tokens (10 * 10^8 smallest units)
+     fee = null;
+     memo = null;
+     from_subaccount = null;
+     created_at_time = null
+   })'
 ```
 
 ### Testing `mshamba_backend` (User Profiles)
@@ -205,3 +201,31 @@ dfx canister call mshamba_backend listFarms
 ```bash
 dfx canister call mshamba_backend myFarms
 ```
+
+#### `handleInvest` Function Explained
+
+The `handleInvest` function allows an investor to invest a certain `amount` into a specific farm identified by its `farmId`.
+
+**Function Signature:**
+`handleInvest: (farmId: text, amount: nat) -> (Result);`
+
+**Parameters:**
+- `farmId`: A `Text` (string) representing the unique identifier of the farm the investor wants to invest in.
+- `amount`: A `Nat` (natural number) representing the amount of investment.
+
+**Return Type:**
+- `Result`: A Candid `variant` type that can be either:
+    - `#ok(Farm)`: If the investment is successful, it returns the updated `Farm` record.
+    - `#err(Text)`: If there's an error, it returns an error message as `Text`.
+
+**Internal Logic:**
+
+1.  **Retrieve the Farm:** The function retrieves the farm record using the provided `farmId`.
+2.  **Check Investment Status:** It verifies if the farm is open for investment.
+3.  **Verify Ledger Canister:** It ensures the farm has a `ledgerCanister` associated, as investments are tied to the token ledger.
+4.  **Simulate Token Transfer (Placeholder):** This section is currently a placeholder. In a real-world scenario, this is where the investor's tokens would be transferred to the farm's ledger canister.
+5.  **Update Farm Funding and Investors:** It updates the farm's `fundedAmount` and adds the caller (investor's principal) to the `investors` list.
+6.  **Store Investment Record:** It creates and stores a new `Investment` record with details like `investmentId`, `investor`, `farmId`, `amount`, and timestamp.
+7.  **Return Updated Farm:** If successful, it returns the updated farm record.
+
+**In essence, `handleInvest` orchestrates the process of recording an investment in a farm, updating the farm's state, and (in a complete implementation) facilitating the actual token transfer.**

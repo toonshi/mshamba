@@ -168,4 +168,22 @@ module {
       case null { #err("Farm not found") };
     }
   };
+
+  public func updateLedgerCanister(
+    farmId: Text,
+    farms: HashMap.HashMap<Text, Farm>,
+    ledgerCanisterId: Principal
+  ) : Types.Result<Farm> {
+    switch (farms.get(farmId)) {
+      case (?farm) {
+        let updatedFarm: Farm = {
+          farm with
+          ledgerCanister = ?ledgerCanisterId;
+        };
+        farms.put(farmId, updatedFarm);
+        #ok(updatedFarm)
+      };
+      case null { #err("Farm not found") };
+    }
+  };
 };

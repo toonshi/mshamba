@@ -11,6 +11,8 @@ import Iter "mo:base/Iter";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
 
+import LedgerTypes "canister:farm1_ledger";
+
 actor {
 
   public type Allocation = TF.Allocation;
@@ -202,6 +204,24 @@ actor {
         };
         let updateResult = Farm.updateFarmInvestmentStatus(farmId, farmStore, newStatus);
         switch (updateResult) {
+          case (#ok(updatedFarm)) { #ok(updatedFarm) };
+          case (#err(msg)) { #err(msg) };
+        }
+      }
+    }
+  };
+
+  public shared ({ caller }) func updateFarmLedger(
+    farmId : Text,
+    ledgerCanisterId : Principal
+  ) : async Farm.Result<Farm.Farm> {
+    switch (Farm.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        if (farm.owner != caller) {
+          return #err("Only the farm owner can update the ledger canister");
+        };
+        switch (Farm.updateLedgerCanister(farmId, farmStore, ledgerCanisterId)) {
           case (#ok(updatedFarm)) { #ok(updatedFarm) };
           case (#err(msg)) { #err(msg) };
         }
