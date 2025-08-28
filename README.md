@@ -2,7 +2,7 @@
 
 # 🌾 Mshamba
 
-**IMPORTANT NOTE:** This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from the deployment to ensure stability and address ongoing development. Investment functionalities that rely on the token factory are currently not active.
+**IMPORTANT NOTE:** This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from the deployment to ensure stability and address ongoing development. Investment functionalities that rely on the token factory are currently not active. The `openFarmInvestment` function in the backend currently returns an error and is not functional.
 
 **Mshamba** is a decentralized platform for tokenizing agricultural projects on the Internet Computer Protocol (ICP). It enables urban investors to invest directly in farms, allows landowners to lease unused land, and empowers farmers to raise capital transparently without predatory loans. It also facilitates cooperation across the entire agricultural supply chain.
 
@@ -18,6 +18,7 @@
 * [Testing Canisters](#testing-canisters)
   * [Testing `farm1_ledger` (Token Ledger)](#testing-farm1_ledger-token-ledger)
   * [Testing `mshamba_backend` (User Profiles)](#testing-mshamba_backend-user-profiles)
+* [Frontend Customization](#frontend-customization)
 
 ---
 
@@ -42,7 +43,7 @@ Manages user profiles across all roles:
 - Functions:
   - `upsertProfile`: create or update your profile.
   - `myProfile`: view your own profile.
-  - `getProfileOf`: view another user's profile.
+  - `getProfile`: view another user's profile.
   - `listUsers`: get all registered users.
 
 ---
@@ -94,6 +95,9 @@ dfxt deploy
 ```
 
 Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+
+*Note: The site name is "Mshamba" and the favicon is `sprout.svg`.*
+*Note: The routing issue for `/ProfileSelection` has been fixed to `/profile-selection`.*
 
 If you have made changes to your backend canister, you can generate a new candid interface with
 
@@ -240,7 +244,7 @@ dfx canister call mshamba_backend myFarms
 The `handleInvest` function allows an investor to invest a certain `amount` into a specific farm identified by its `farmId`.
 
 **Function Signature:**
-`handleInvest: (farmId: text, amount: nat) -> (Result);`
+`handleInvest: (farmId: text, amount: nat) -> (Result);
 
 **Parameters:**
 - `farmId`: A `Text` (string) representing the unique identifier of the farm the investor wants to invest in.
@@ -271,3 +275,17 @@ The following canisters have been deployed to the mainnet:
 - `farm2_ledger`: `ovft7-6yaaa-aaaac-a4bcq-cai`
 - `farm3_ledger`: `o4gyd-iqaaa-aaaac-a4bda-cai`
 - `farm4_ledger`: `o3h6x-fiaaa-aaaac-a4bdq-cai`
+
+## Frontend Customization
+
+This section provides guidance on customizing the frontend of the Mshamba application.
+
+### Changing Site Name and Logo
+
+The site name "Mshamba" and the logo (favicon and header icon) can be customized.
+
+-   **Site Title (Browser Tab):**
+    To change the title displayed in the browser tab, modify the `<title>` tag in `src/mshamba_frontend/index.html`.
+
+-   **Favicon (Browser Icon):**
+    The favicon is the small icon displayed in the browser tab. It is currently set to `sprout.svg`. To change it, replace the `sprout.svg` file in `src/mshamba_frontend/public/` with your desired SVG file, and update the `<link rel=
