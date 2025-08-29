@@ -34,6 +34,11 @@ actor {
   }
 };
 
+  type LedgerActor = actor {
+    icrc1_transfer : (LedgerTypes.TransferArg) -> async LedgerTypes.TransferResult;
+    icrc1_fee : () -> async Nat;
+  };
+
   // ==============================
   // PROFILES
   // ==============================
@@ -127,46 +132,68 @@ actor {
           return #err("Investment amount is too small to receive any tokens.");
         };
 
-        // Define Token Reserve Account (placeholder for now)
-        let tokenReservePrincipal = Principal.fromText("aaaaa-aa"); // Replace with actual Token Reserve Principal
+        // 4. Perform Transfers
+        let ledgerActor : LedgerActor = actor(Principal.toText(ledgerId));
 
-        // 4. Perform Transfers (Minting from mike - the minting_account)
-        let ledgerCanister = LedgerTypes;
+        let fee = await ledgerActor.icrc1_fee();
+        if (tokensToIssue <= fee) {
+          return #err("Investment amount is too small to cover the transfer fee.");
+        };
 
-        // 5. Update farm funding and investors
-        let updateResult = Farm.investInFarm(caller, farmId, amount, farmStore);
-        switch (updateResult) {
-          case (#ok(updatedFarm)) {
-            // Update totalShares
-            let finalFarm : Farm.Farm = {
-              updatedFarm with
-              totalShares = updatedFarm.totalShares + tokensToIssue;
-            };
-            farmStore.put(farmId, finalFarm);
+        let transferAmount = tokensToIssue - fee;
 
-            // Create and store the investment record
-            let investmentId = "inv-" # Int.toText(Time.now());
-            let newInvestment : Types.Investment = {
-              investmentId = investmentId;
-              investor = caller;
-              farmId = farmId;
-              amount = amount;
-              sharesReceived = tokensToIssue; // Now actual tokens
-              pricePerShare = farm.sharePrice; // Actual price
-              timestamp = Time.now();
-            };
+        let transferArgs : LedgerTypes.TransferArg = {
+          from_subaccount = null;
+          to = { owner = caller; subaccount = null };
+          amount = transferAmount;
+          fee = ?fee;
+          memo = null;
+          created_at_time = null;
+        };
 
-            let existingInvestments = switch (investmentStore.get(caller)) {
-              case (?investments) { investments };
-              case null { [] };
-            };
+        let transferResult = await ledgerActor.icrc1_transfer(transferArgs);
 
-            let updatedInvestments = Array.append(existingInvestments, [newInvestment]);
-            investmentStore.put(caller, updatedInvestments);
-
-            #ok(finalFarm)
+        switch (transferResult) {
+          case (#Err(err)) {
+            return #err("Token transfer failed: " # debug_transfer_error(err));
           };
-          case (#err(msg)) { #err(msg) };
+          case (#Ok(_)) {
+            // 5. Update farm funding and investors
+            let updateResult = Farm.investInFarm(caller, farmId, amount, farmStore);
+            switch (updateResult) {
+              case (#ok(updatedFarm)) {
+                // Update totalShares
+                let finalFarm : Farm.Farm = {
+                  updatedFarm with
+                  totalShares = updatedFarm.totalShares + tokensToIssue;
+                };
+                farmStore.put(farmId, finalFarm);
+
+                // Create and store the investment record
+                let investmentId = "inv-" # Int.toText(Time.now());
+                let newInvestment : Types.Investment = {
+                  investmentId = investmentId;
+                  investor = caller;
+                  farmId = farmId;
+                  amount = amount;
+                  sharesReceived = tokensToIssue; // Now actual tokens
+                  pricePerShare = farm.sharePrice; // Actual price
+                  timestamp = Time.now();
+                };
+
+                let existingInvestments = switch (investmentStore.get(caller)) {
+                  case (?investments) { investments };
+                  case null { [] };
+                };
+
+                let updatedInvestments = Array.append(existingInvestments, [newInvestment]);
+                investmentStore.put(caller, updatedInvestments);
+
+                #ok(finalFarm)
+              };
+              case (#err(msg)) { #err(msg) };
+            }
+          }
         }
       }
     }

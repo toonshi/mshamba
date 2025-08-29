@@ -247,6 +247,7 @@ const Farms = () => {
       // Request connection to Plug Wallet
       const connected = await window.ic.plug.requestConnect({
         whitelist: [process.env.CANISTER_ID_MSHAMBA_BACKEND],
+        host: process.env.DFX_NETWORK === 'ic' ? 'https://mainnet.dfinity.network' : 'http://localhost:4943',
       });
 
       if (!connected) {
