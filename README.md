@@ -20,18 +20,20 @@ It enables:
 
 ## 📑 Table of Contents
 
-- [🧠 Project Architecture](#-project-architecture)  
-  - [1. `main.mo` — Central Controller](#1-mainmo--central-controller)  
-  - [2. `profiles.mo` — User Identity & Roles](#2-profilesmo--user-identity--roles)  
-  - [3. `farms.mo` — Farm Project Management](#3-farmsmo--farm-project-management)  
-  - [7. `types.mo` — Shared Type Definitions](#7-typesmo--shared-type-definitions)  
-- [⚙️ Running Locally](#️-running-locally)  
-- [🧪 Testing Canisters](#-testing-canisters)  
-  - [Testing `farm1_ledger` (Token Ledger)](#testing-farm1_ledger-token-ledger)  
-  - [Testing `mshamba_backend` (User Profiles)](#testing-mshamba_backend-user-profiles)  
-- [🎨 Frontend Customization](#-frontend-customization)  
-- [🌍 Mainnet Canister IDs](#-mainnet-canister-ids)  
-- [🌱 Farm Image References](#-farm-image-references)  
+- [🌾 Mshamba](#-mshamba)
+  - [📌 Overview](#-overview)
+  - [🧠 Project Architecture](#-project-architecture)
+    - [Central Controller (`main.mo`)](#1-mainmo--central-controller)
+    - [User Identity & Roles (`profiles.mo`)](#2-profilesmo--user-identity--roles)
+    - [Farm Project Management (`farms.mo`)](#3-farmsmo--farm-project-management)
+    - [Shared Type Definitions (`types.mo`)](#7-typesmo--shared-type-definitions)
+  - [⚙️ Running Locally](#️-running-locally)
+  - [🧪 Testing Canisters](#-testing-canisters)
+    - [Token Ledger (`farm1_ledger`)](#-farm1_ledger-token-ledger)
+    - [User Profiles (`mshamba_backend`)](#-mshamba_backend-user-profiles)
+  - [🎨 Frontend Customization](#-frontend-customization)
+  - [🌍 Mainnet Canister IDs](#-mainnet-canister-ids)
+  - [🌱 Farm Image References](#-farm-image-references)
 
 ---
 
