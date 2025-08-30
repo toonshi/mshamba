@@ -1,11 +1,5 @@
 # 🌾 Mshamba
-
-**IMPORTANT NOTE:**  
-This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from deployment to ensure stability and address ongoing development. As a result:  
-- Investment functionalities that rely on the token factory are not active.  
-- The `openFarmInvestment` function in the backend currently returns an error and is non-functional.  
-
----
+The site is live on main net at: [https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/](url)
 
 ## 📌 Overview
 
@@ -239,3 +233,11 @@ Here are free placeholder images for different farm types (Unsplash):
 | 6  | Fish Farm   | 🐟    | [Link](https://images.unsplash.com/photo-1529107386315-e1a2ed48a620) |
 
 ---
+
+**IMPORTANT NOTE:**  
+This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from deployment to ensure stability and address ongoing development. As a result:  
+- Investment functionalities that rely on the token factory are not active.  
+- The `openFarmInvestment` function in the backend currently returns an error and is non-functional.  
+
+---
+
