@@ -28,16 +28,17 @@ module {
   public func createFarm(
     caller: Principal,
     farms: HashMap.HashMap<Text, Farm>,
-    name: Text,
-    description: Text,
-    location: Text,
-    fundingGoal: Nat,
-    image: Text, // New parameter
-    crop: Text, // New parameter
-    size: Text, // New parameter
-    minInvestment: Nat, // New parameter
-    duration: Nat // New parameter
+    farmPayload: Types.FarmPayload
   ) : Types.Result<Farm> {
+    let name = farmPayload.name;
+    let description = farmPayload.description;
+    let location = farmPayload.location;
+    let fundingGoal = farmPayload.fundingGoal;
+    let image = farmPayload.image;
+    let crop = farmPayload.crop;
+    let size = farmPayload.size;
+    let minInvestment = farmPayload.minInvestment;
+    let duration = farmPayload.duration;
 
     let farmId = "farm-" # Int.toText(Time.now());
 

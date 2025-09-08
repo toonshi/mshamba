@@ -30,6 +30,18 @@ module {
     #Closed;
   };
 
+  public type FarmPayload = {
+    name : Text;
+    description : Text;
+    location : Text;
+    fundingGoal : Nat;
+    image : Text;
+    crop : Text;
+    size : Text;
+    minInvestment : Nat;
+    duration : Nat;
+  };
+
 public type Farm = {
   farmId: Text;
   name: Text;

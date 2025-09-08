@@ -59,21 +59,8 @@ actor {
   // ==============================
   // FARMS (Farmer-only actions)
   // ==============================
-  public shared ({ caller }) func createFarm(
-    name : Text,
-    description : Text,
-    location : Text,
-    fundingGoal : Nat,
-    image: Text, // New parameter
-    crop: Text, // New parameter
-    size: Text, // New parameter
-    minInvestment: Nat, // New parameter
-    duration: Nat // New parameter
-  ) : async Farm.Result<Farm.Farm> {
-    switch (getFarmerProfile(caller)) {
-      case (?_) { Farm.createFarm(caller, farmStore, name, description, location, fundingGoal, image, crop, size, minInvestment, duration) };
-      case null { #err("Only farmers can create farms or profile not found") };
-    }
+      public shared ({ caller }) func createFarm(farm: Types.FarmPayload) : async Types.Result<Types.Farm> {
+    Farm.createFarm(caller, farmStore, farm)
   };
 
   public shared query ({ caller }) func myFarms() : async [Farm.Farm] {

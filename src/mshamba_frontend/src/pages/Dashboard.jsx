@@ -56,12 +56,7 @@ const Dashboard = () => {
   const handleCreateFarm = async (farmData) => {
     setIsCreatingFarm(true);
     try {
-      const result = await mshamba_backend.createFarm(
-        farmData.name,
-        farmData.description,
-        farmData.location,
-        farmData.fundingGoal
-      );
+      const result = await mshamba_backend.createFarm(farmData);
       if (result.Ok) {
         fetchMyFarms(); // Refresh the list of farms
       } else {
