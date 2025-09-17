@@ -99,6 +99,22 @@ const Farms = () => {
 
   
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedFarm, setSelectedFarm] = useState(null);
+
+  const handleInvestClick = (farmId) => {
+    const farm = farms.find(f => f.id === farmId);
+    setSelectedFarm(farm);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmInvestment = () => {
+    // Logic to handle investment confirmation
+    console.log('Investment confirmed for farm:', selectedFarm);
+    setIsModalOpen(false);
+    setSelectedFarm(null);
+  };
+
   const handleEmailOwner = async (farm) => {
     try {
       // TODO: Implement email functionality with backend
