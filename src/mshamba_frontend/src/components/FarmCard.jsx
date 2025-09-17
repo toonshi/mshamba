@@ -1,7 +1,7 @@
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
 
-export const FarmCard = ({ farm, onInvest, hasWallet }) => {
+const FarmCard = ({ farm, onInvest, hasWallet }) => {
   const IconComponent = farm.icon;
 
   return (
@@ -79,3 +79,5 @@ export const FarmCard = ({ farm, onInvest, hasWallet }) => {
     </div>
   );
 };
+
+export default FarmCard;

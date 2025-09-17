@@ -7,6 +7,7 @@ import { mshamba_assets } from 'declarations/mshamba_assets'; // Import assets c
 import * as LucideIcons from 'lucide-react';
 import toast from 'react-hot-toast';
 import { canisterId, createActor } from 'declarations/mshamba_backend'; // Moved to top
+import FarmCard from '../../components/FarmCard';
 
 const backendActor = createActor(canisterId); // Moved to top
 
