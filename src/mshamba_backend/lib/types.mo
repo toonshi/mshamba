@@ -64,6 +64,7 @@ public type Farm = {
   size: Text;
   minInvestment: Nat;
   duration: Nat; // in months
+  documents: [Text]; // NEW: List of document IDs/URLs from FileVault
 };
 
 

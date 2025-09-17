@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { DollarSign, Users, Calendar, Target, Mail } from 'lucide-react';
+import { DollarSign, Users, Calendar, Target, Mail, UploadCloud } from 'lucide-react'; // Added UploadCloud icon
 import { mshamba_backend } from 'declarations/mshamba_backend';
+
+// import { Filevault } from 'declarations/Filevault'; // Import Filevault actor
+import toast from 'react-hot-toast';
 
 const SetupInvestment = () => {
   const { farmId } = useParams();
@@ -15,7 +18,9 @@ const SetupInvestment = () => {
     purpose: ''
   });
   const [farmName, setFarmName] = useState('');
-  const [currentInvestments, setCurrentInvestments] = useState([]); // Keep for local display if needed
+  const [currentInvestments, setCurrentInvestments] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null); // New state for selected file
+  const [uploadedDocuments, setUploadedDocuments] = useState([]); // New state for uploaded documents
 
   useEffect(() => {
     const fetchFarmDetails = async () => {
@@ -30,17 +35,33 @@ const SetupInvestment = () => {
               description: `Funding opportunity for ${result.ok.name}.`
             }));
           } else {
-            alert(`Error fetching farm details: ${result.err}`);
+            toast.error(`Error fetching farm details: ${result.err}`);
             navigate('/farmer/dashboard'); // Redirect if farm not found
           }
         } catch (error) {
           console.error("Error fetching farm details:", error);
-          alert("An unexpected error occurred while fetching farm details.");
+          toast.error("An unexpected error occurred while fetching farm details.");
           navigate('/farmer/dashboard');
         }
       }
     };
+    const fetchInvestments = async () => {
+      if (farmId) {
+        try {
+          const result = await mshamba_backend.getFarmInvestments(farmId);
+          if (result.ok) {
+            setCurrentInvestments(result.ok);
+          } else {
+            toast.error(`Error fetching investments: ${result.err}`);
+          }
+        } catch (error) {
+          console.error("Error fetching investments:", error);
+          toast.error("An unexpected error occurred while fetching investments.");
+        }
+      }
+    };
     fetchFarmDetails();
+    fetchInvestments();
   }, [farmId, navigate]);
 
   const handleInputChange = (e) => {
@@ -50,10 +71,84 @@ const SetupInvestment = () => {
     });
   };
 
+  const handleSaveDraft = () => {
+    setCurrentInvestments([...currentInvestments, { ...investmentData, status: 'Draft' }]);
+    setInvestmentData({
+      title: '',
+      description: '',
+      targetAmount: '',
+      minimumInvestment: '',
+      duration: '',
+      purpose: ''
+    });
+  };
+
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  /*
+  const handleUploadDocument = async () => {
+    if (!selectedFile || !farmId) {
+      toast.error("Please select a file and ensure farm ID is available.");
+      return;
+    }
+
+    const fileName = selectedFile.name;
+    const fileType = selectedFile.type || 'application/octet-stream';
+    const chunkSize = 1024 * 1024; // 1MB chunk size
+    let offset = 0;
+    let index = 0;
+
+    toast.loading(`Uploading ${fileName}...`);
+
+    try {
+      // Check if file already exists (optional, but good for UX)
+      const fileExists = await Filevault.checkFileExists(fileName);
+      if (fileExists) {
+        toast.dismiss();
+        toast.error(`File "${fileName}" already exists. Please rename or delete the existing one.`);
+        return;
+      }
+
+      while (offset < selectedFile.size) {
+        const chunk = selectedFile.slice(offset, offset + chunkSize);
+        const blob = new Blob([chunk], { type: fileType });
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+
+        await Filevault.uploadFileChunk(fileName, uint8Array, index, fileType);
+
+        offset += chunkSize;
+        index += 1;
+        toast.loading(`Uploading ${fileName}... Chunk ${index} of ${Math.ceil(selectedFile.size / chunkSize)}`);
+      }
+
+      // After successful upload to Filevault, associate with farm in mshamba_backend
+      const result = await mshamba_backend.addFarmDocument(farmId, fileName);
+
+      if (result.ok) {
+        toast.dismiss();
+        toast.success(`Document "${fileName}" uploaded and linked to farm successfully!`);
+        setUploadedDocuments(prev => [...prev, fileName]);
+        setSelectedFile(null); // Clear selected file
+      } else {
+        toast.dismiss();
+        toast.error(`Failed to link document to farm: ${result.err}`);
+      }
+
+    } catch (error) {
+      toast.dismiss();
+      console.error("Error uploading document:", error);
+      toast.error(`An error occurred during document upload: ${error.message}`);
+    }
+  };
+  */
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!farmId) {
-      alert("Error: Farm ID is missing. Please navigate from a specific farm.");
+      toast.error("Error: Farm ID is missing. Please navigate from a specific farm.");
       return;
     }
 
@@ -80,7 +175,7 @@ const SetupInvestment = () => {
       );
 
       if (result.ok) {
-        alert(`Investment opportunity "${investmentData.title}" published successfully! Ledger ID: ${result.ok.toText()}`);
+        toast.success(`Investment opportunity "${investmentData.title}" published successfully! Ledger ID: ${result.ok.toText()}`);
         // Clear form and navigate back to farmer dashboard
         setInvestmentData({
           title: '',
@@ -92,20 +187,12 @@ const SetupInvestment = () => {
         });
         navigate('/farmer/dashboard');
       } else {
-        alert(`Failed to publish investment: ${result.err}`);
+        toast.error(`Failed to publish investment: ${result.err}`);
       }
     } catch (error) {
       console.error("Error publishing investment:", error);
-      alert("An unexpected error occurred while publishing investment.");
+      toast.error("An unexpected error occurred while publishing investment.");
     }
-  };
-
-  const openInvestment = (index) => {
-    // This function is for local state management, not directly related to backend openFarmInvestment
-    alert(`Launching investment: ${currentInvestments[index].title}`);
-    const updated = [...currentInvestments];
-    updated[index].status = 'Live';
-    setCurrentInvestments(updated);
   };
 
   return (
@@ -209,8 +296,43 @@ const SetupInvestment = () => {
             </div>
           </div>
 
+          {/* Document Upload Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Supporting Documents</h3>
+            <div className="flex items-center space-x-4">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-gray-500
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-full file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-green-50 file:text-green-700
+                  hover:file:bg-green-100"
+              />
+              <button
+                type="button"
+                onClick={handleUploadDocument}
+                disabled={!selectedFile}
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <UploadCloud className="h-5 w-5 mr-2" /> Upload Document
+              </button>
+            </div>
+            {uploadedDocuments.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-700 mb-2">Uploaded Documents:</p>
+                <ul className="list-disc list-inside text-gray-600">
+                  {uploadedDocuments.map((docName, index) => (
+                    <li key={index}>{docName}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-end space-x-4">
-            <button type="button" className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+            <button type="button" onClick={handleSaveDraft} className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
               Save Draft
             </button>
             <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
@@ -252,13 +374,6 @@ const SetupInvestment = () => {
 
             {/* Action Buttons */}
             <div className="flex space-x-2 mt-2">
-              <button
-                onClick={() => openInvestment(index)}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Open Investment
-              </button>
-
               <a
                 href="mailto:investor@example.com"
                 className="flex items-center bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 text-gray-700"

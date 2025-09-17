@@ -3,9 +3,10 @@ import { useAuth } from "../../context/AuthContext";
 import * as LucideIcons from 'lucide-react';
 import { mshamba_assets } from 'declarations/mshamba_assets'; // Import assets canister
 import { mshamba_backend } from 'declarations/mshamba_backend'; // Import backend canister
+import toast from 'react-hot-toast';
 
 const InvestorProfile = () => {
-  const { profile } = useAuth();
+  const { profile, login } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [totalInvestment, setTotalInvestment] = useState(0);
@@ -80,6 +81,22 @@ const InvestorProfile = () => {
     }
   };
 
+  const handleSaveProfile = async () => {
+    try {
+      const result = await mshamba_backend.updateInvestorProfile(formData);
+      if (result.ok) {
+        toast.success("Profile updated successfully!");
+        login(result.ok); // Update the profile in the context
+        setIsEditing(false);
+      } else {
+        toast.error(`Error updating profile: ${result.err}`);
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("An unexpected error occurred while updating your profile.");
+    }
+  };
+
 
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8">
@@ -108,7 +125,7 @@ const InvestorProfile = () => {
             </div>
           </div>
           <button
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={() => { isEditing ? handleSaveProfile() : setIsEditing(true) }}
             className="flex items-center justify-center px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
           >
             <LucideIcons.Edit className="h-4 w-4 mr-2" />
@@ -121,7 +138,7 @@ const InvestorProfile = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard
           label="Total Invested"
-          value={`$${totalInvestment.toLocaleString()}`}
+          value={`${totalInvestment.toLocaleString()}`}
           icon={<LucideIcons.DollarSign className="h-6 w-6 text-green-600" />}
           bg="bg-green-100"
         />
@@ -244,7 +261,7 @@ const InvestorProfile = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {["Farm ID", "Amount", "Timestamp"].map((col) => (
+                {["Farm Name", "Amount", "Timestamp"].map((col) => (
                   <th key={col} className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     {col}
                   </th>
@@ -254,7 +271,11 @@ const InvestorProfile = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {investments.map((investment) => (
                 <tr key={investment.investmentId} className="hover:bg-gray-50">
-                  <td className="px-4 sm:px-6 py-2 sm:py-4">{investment.farmId}</td>
+                  <td className="px-4 sm:px-6 py-2 sm:py-4">
+                    <Link to={`/investor/dashboard/farms/${investment.farmId}`} className="text-blue-600 hover:underline">
+                      {investment.farmName}
+                    </Link>
+                  </td>
                   <td className="px-4 sm:px-6 py-2 sm:py-4">${Number(investment.amount).toLocaleString()}</td>
                   <td className="px-4 sm:px-6 py-2 sm:py-4">
                     {new Date(Number(investment.timestamp) / 1000000).toLocaleDateString()}

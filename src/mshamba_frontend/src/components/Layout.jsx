@@ -47,6 +47,7 @@ const Layout = ({ children, userType }) => {
 
   const investorNavItems = [
     { path: '/investor/dashboard', icon: LucideIcons.MapPin, label: 'Browse Farms' },
+    { path: '/investor/dashboard/my-investments', icon: LucideIcons.Briefcase, label: 'My Investments' },
     { path: '/investor/dashboard/profile', icon: LucideIcons.User, label: 'My Profile' },
     { path: '/investor/dashboard/analysis', icon: LucideIcons.BarChart3, label: 'Market Analysis' },
   ];

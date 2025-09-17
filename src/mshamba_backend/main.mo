@@ -10,6 +10,7 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
+import Debug "mo:base/Debug";
 
 
 import LedgerTypes "canister:farm1_ledger";
@@ -295,10 +296,96 @@ actor {
     }
   };
 
+  public shared ({ caller }) func addFarmDocument(
+    farmId : Text,
+    documentId : Text
+  ) : async Farm.Result<Farm.Farm> {
+    switch (Farm.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        if (farm.owner != caller) {
+          return #err("Only the farm owner can add documents to their farm");
+        };
+        let updatedFarm : Farm.Farm = {
+          farm with
+          documents = Array.append(farm.documents, [documentId]);
+        };
+        farmStore.put(farmId, updatedFarm);
+        #ok(updatedFarm)
+      }
+    }
+  };
+
   public shared query ({ caller }) func getMyInvestments() : async [Types.Investment] {
     switch (investmentStore.get(caller)) {
       case (?investments) { investments };
       case null { [] };
     }
   };
+
+  public shared ({ caller }) func sendEmailToFarmOwner(farmId: Text, message: Text) : async Types.Result<Bool> {
+    // In a real application, this would integrate with an external email service.
+    // For now, we'll simulate success and log the attempt.
+    Debug.print("Simulating email to farm owner for farm ID: " # farmId # " with message: " # message);
+    return #ok(true);
+  };
+
+  public shared query func getInvestmentDetails(investmentId: Text) : async Types.Result<Types.Investment> {
+    // Iterate through all investors' investments to find the matching investmentId
+    for (investorInvestments in investmentStore.vals()) {
+      for (investment in investorInvestments.vals()) {
+        if (investment.investmentId == investmentId) {
+          return #ok(investment);
+        };
+      };
+    };
+    return #err("Investment not found.");
+  };
+
+  public shared ({ caller }) func sellFarmTokens(
+    farmId : Text,
+    recipient : Principal,
+    amount : Nat
+  ) : async Types.Result<Bool> {
+    // 1. Retrieve the farm to get its ledger canister ID
+    let farmResult = Farm.getFarm(farmId, farmStore);
+    switch (farmResult) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        let ledgerId = switch (farm.ledgerCanister) {
+          case (?id) { id };
+          case null { return #err("Farm does not have a deployed ledger canister.") };
+        };
+
+        // 2. Create an actor for the farm's ledger canister
+        let ledgerActor : LedgerActor = actor(Principal.toText(ledgerId));
+
+        // 3. Get the transfer fee
+        let fee = await ledgerActor.icrc1_fee();
+
+        // 4. Prepare transfer arguments
+        let transferArgs : LedgerTypes.TransferArg = {
+          from_subaccount = null;
+          to = { owner = recipient; subaccount = null };
+          amount = amount;
+          fee = ?fee;
+          memo = null;
+          created_at_time = null;
+        };
+
+        // 5. Perform the transfer
+        let transferResult = await ledgerActor.icrc1_transfer(transferArgs);
+
+        switch (transferResult) {
+          case (#Err(err)) {
+            return #err("Token transfer failed: " # debug_transfer_error(err));
+          };
+          case (#Ok(_)) {
+            Debug.print("Tokens successfully transferred from " # Principal.toText(caller) # " to " # Principal.toText(recipient) # " for farm " # farmId);
+            return #ok(true);
+        };
+      };
+    };
+  };
+};
 };

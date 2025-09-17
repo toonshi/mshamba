@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import * as LucideIcons from 'lucide-react';
+import { useFarms } from "../../context/FarmContext";
 
 export const FarmListing = ({ onBack }) => {
-  const [farms, setFarms] = useState([]);
+  const { farms, addFarm } = useFarms();
   const [formData, setFormData] = useState({
     farmName: "",
     location: "",
@@ -34,7 +36,7 @@ export const FarmListing = ({ onBack }) => {
 
   const handleAddFarm = (e) => {
     e.preventDefault();
-    setFarms([...farms, { ...formData, images }]);
+    addFarm({ ...formData, images });
 
     setFormData({
       farmName: "",
@@ -327,6 +329,13 @@ export const FarmListing = ({ onBack }) => {
                       </div>
                     </div>
                   )}
+                   <div className="mt-4 pt-4 border-t border-gray-200">
+                        <Link to={`/farmer/dashboard/setup-investment/${farm.id}`}>
+                          <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg cursor-pointer text-sm sm:text-base inline-block">
+                            Setup Investment
+                          </button>
+                        </Link>
+                      </div>
                 </div>
               ))}
             </div>

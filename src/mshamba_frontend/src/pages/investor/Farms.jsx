@@ -5,165 +5,14 @@ import { Principal } from '@dfinity/principal';
 import { idlFactory as mshamba_backend_idl } from 'declarations/mshamba_backend';
 import { mshamba_assets } from 'declarations/mshamba_assets'; // Import assets canister
 import * as LucideIcons from 'lucide-react';
+import toast from 'react-hot-toast';
+import { canisterId, createActor } from 'declarations/mshamba_backend'; // Moved to top
 
-const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
-  const [imageUrl, setImageUrl] = useState('');
+const backendActor = createActor(canisterId); // Moved to top
 
-  useEffect(() => {
-    const fetchImage = async () => {
-      if (farm.image) {
-        // Check if farm.image is a direct URL (http/https) or a local path starting with /
-        if (farm.image.startsWith('http://') || farm.image.startsWith('https://') || farm.image.startsWith('/')) {
-          setImageUrl(farm.image);
-        } else {
-          // Assume it's an asset ID for mshamba_assets canister
-          try {
-            const imageData = await mshamba_assets.getImage(farm.image);
-            if (imageData && imageData.length > 0) {
-              const blob = new Blob([new Uint8Array(imageData)], { type: 'image/jpeg' }); // Assuming JPEG, adjust type if needed
-              const url = URL.createObjectURL(blob);
-              setImageUrl(url);
-            } else {
-              setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback
-            }
-          } catch (error) {
-            console.error("Error fetching image from mshamba_assets:", error);
-            setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Fallback on error
-          }
-        }
-      } else {
-        setImageUrl('https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'); // Default image if no ID
-      }
-    };
-    fetchImage();
-  }, [farm.image]); // Re-fetch if farm.image changes
 
-  const progressPercentage = (farm.currentAmount / farm.targetAmount) * 100;
-  
-  const getStatusColor = (currentAmount, targetAmount) => {
-    const percentage = (currentAmount / targetAmount) * 100;
-    if (percentage >= 100) return 'text-blue-600 bg-blue-100';
-    if (percentage >= 75) return 'text-green-600 bg-green-100';
-    if (percentage >= 50) return 'text-orange-600 bg-orange-100';
-    return 'text-red-600 bg-red-100';
-  };
 
-  const getStatusText = (currentAmount, targetAmount) => {
-    const percentage = (currentAmount / targetAmount) * 100;
-    if (percentage >= 100) return 'Fully Funded';
-    if (percentage >= 75) return 'Almost Funded';
-    if (percentage >= 50) return 'Half Funded';
-    return 'Seeking Investment';
-  };
 
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="relative">
-        <img
-          src={imageUrl} // Use the fetched image URL
-          alt={farm.name}
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute top-4 right-4">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(farm.currentAmount || 0, farm.targetAmount || 1)}`}>
-            {getStatusText(farm.currentAmount || 0, farm.targetAmount || 1)}
-          </span>
-        </div>
-      </div>
-      
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-1">{farm.name}</h3>
-            <div className="flex items-center text-gray-600 text-sm">
-              <LucideIcons.MapPin className="h-4 w-4 mr-1" />
-              {farm.location}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-          <div className="flex items-center">
-            <LucideIcons.Sprout className="h-4 w-4 text-green-600 mr-2" />
-            <span className="text-gray-600">{farm.size} • {farm.crop}</span>
-          </div>
-          <div className="flex items-center">
-            <LucideIcons.DollarSign className="h-4 w-4 text-blue-600 mr-2" />
-            <span className="text-gray-600">Min: ${farm.minInvestment?.toLocaleString() || 'N/A'}</span>
-          </div>
-        </div>
-
-        {farm.targetAmount && (
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Funding Progress</span>
-              <span>${(farm.currentAmount || 0).toLocaleString()} of ${farm.targetAmount.toLocaleString()}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-green-600 h-2 rounded-full" 
-                style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-              ></div>
-            </div>
-            <div className="text-xs text-gray-500 mt-1">{progressPercentage.toFixed(0)}% funded</div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <LucideIcons.DollarSign className="h-4 w-4 text-green-600" />
-            </div>
-            <p className="font-medium text-gray-900">${farm.minInvestment?.toLocaleString() || 'N/A'}</p>
-            <p className="text-gray-500">Min. Investment</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <LucideIcons.Clock className="h-4 w-4 text-orange-600" />
-            </div>
-            <p className="font-medium text-gray-900">{farm.duration || 'N/A'}m</p>
-            <p className="text-gray-500">Duration</p>
-          </div>
-        </div>
-
-        <div className="flex space-x-3">
-          <button 
-            onClick={() => onInvest(farm)}
-            className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
-          >
-            Invest Now
-          </button>
-          <button 
-            onClick={() => onEmailOwner(farm)}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
-          >
-            <LucideIcons.Mail className="h-4 w-4 mr-1" />
-            Email
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const canisterId = process.env.CANISTER_ID_MSHAMBA_BACKEND;
-const host = process.env.DFX_NETWORK === 'ic' ? `https://icp-api.io` : `http://localhost:4943`;
-
-const agent = new HttpAgent({ host });
-
-// Fetch root key for certificate validation during development
-if (process.env.DFX_NETWORK !== 'ic') {
-  agent.fetchRootKey().catch(err => {
-    console.warn("Unable to fetch root key. Check to ensure that your local replica is running");
-    console.error(err);
-  });
-}
-
-const backendActor = Actor.createActor(mshamba_backend_idl, {
-  agent,
-  canisterId,
-});
 
 const Farms = () => {
   const [farms, setFarms] = useState([]);
@@ -237,49 +86,17 @@ const Farms = () => {
     }
   });
 
-  const handleInvest = async (farm) => {
-    try {
-      if (!window.ic || !window.ic.plug) {
-        alert("Plug Wallet is not installed or not available. Please install it to invest.");
-        return;
-      }
+  
 
-      // Request connection to Plug Wallet
-      const connected = await window.ic.plug.requestConnect({
-        whitelist: [process.env.CANISTER_ID_MSHAMBA_BACKEND],
-        host: process.env.DFX_NETWORK === 'ic' ? 'https://mainnet.dfinity.network' : 'http://localhost:4943',
-      });
 
-      if (!connected) {
-        alert("Plug Wallet connection refused.");
-        return;
-      }
 
-      // Create an actor for mshamba_backend using Plug's agent
-      const plugAgent = window.ic.plug.agent;
-      const backendActor = Actor.createActor(mshamba_backend_idl, {
-        agent: plugAgent,
-        canisterId: process.env.CANISTER_ID_MSHAMBA_BACKEND,
-      });
 
-      // Placeholder for investment amount (e.g., 1 token unit)
-      const investmentAmount = BigInt(1_000_000_000_000); 
 
-      // Call the new handleInvest function on the backend
-      const result = await backendActor.handleInvest(farm.id, investmentAmount);
 
-      if (result.ok) {
-        alert(`Successfully invested in ${farm.name}! Funded amount updated.`);
-        // Refresh the farms list to show updated funded amount
-        fetchFarms(); 
-      } else {
-        alert(`Investment failed: ${result.err}`);
-      }
-    } catch (error) {
-      console.error('Error investing in farm:', error);
-      alert('An unexpected error occurred during investment. Please try again.');
-    }
-  };
+
+  
+
+  
 
   const handleEmailOwner = async (farm) => {
     try {
@@ -332,6 +149,7 @@ const Farms = () => {
         </div>
 
         {/* Search and Filters */}
+        <div className="bg-white rounded-xl shadow-sm border p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <LucideIcons.Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -365,6 +183,7 @@ const Farms = () => {
           </select>
         </div>
       </div>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -382,7 +201,7 @@ const Farms = () => {
           </div>
           <div className="text-2xl font-bold text-purple-600">
             {farms.length > 0 
-              ? `$${Math.min(...farms.map(farm => farm.minInvestment || Infinity)).toLocaleString()}`
+              ? `${Math.min(...farms.map(farm => farm.minInvestment || Infinity)).toLocaleString()}`
               : 'N/A'
             }
           </div>
@@ -408,7 +227,7 @@ const Farms = () => {
             <FarmCard
               key={farm.id}
               farm={farm}
-              onInvest={handleInvest}
+              onInvest={handleInvestClick}
               onEmailOwner={handleEmailOwner}
             />
           ))}
@@ -429,8 +248,20 @@ const Farms = () => {
           </div>
         </div>
       )}
+
+      {selectedFarm && (
+        <InvestmentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleConfirmInvestment}
+          farm={selectedFarm}
+        />
+      )}
     </div>
   );
 };
 
 export default Farms;
+
+        
+

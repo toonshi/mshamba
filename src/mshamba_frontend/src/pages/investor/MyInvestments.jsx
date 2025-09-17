@@ -1,69 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, TrendingUp, DollarSign, Calendar, BarChart3, Eye, Download } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, AreaChart, Area } from 'recharts';
+import { mshamba_backend } from 'declarations/mshamba_backend';
+import { Link } from 'react-router-dom';
 
-export const MyInvestments = ({ onBack }) => {
+const MyInvestments = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [myInvestments, setMyInvestments] = useState([]);
+  const [performanceData, setPerformanceData] = useState([]);
 
-  const myInvestments = [
-    {
-      id: 1,
-      farmName: 'Green Valley Farm',
-      location: 'Nakuru, Kenya',
-      invested: 12000,
-      currentValue: 14160,
-      tokens: 1200,
-      tokenSymbol: 'GVFT',
-      roi: 18,
-      status: 'Active',
-      duration: '6 months',
-      startDate: '2024-06-15',
-      expectedHarvest: '2024-12-15',
-      farmer: 'John Kamau',
-      crop: 'Maize & Beans'
-    },
-    {
-      id: 2,
-      farmName: 'Sunrise Coffee Estate',
-      location: 'Kiambu, Kenya',
-      invested: 8000,
-      currentValue: 9760,
-      tokens: 800,
-      tokenSymbol: 'SCET',
-      roi: 22,
-      status: 'Harvesting',
-      duration: '12 months',
-      startDate: '2024-01-10',
-      expectedHarvest: '2025-01-10',
-      farmer: 'Mary Wanjiku',
-      crop: 'Coffee'
-    },
-    {
-      id: 3,
-      farmName: 'Fresh Harvest Gardens',
-      location: 'Meru, Kenya',
-      invested: 5000,
-      currentValue: 5750,
-      tokens: 500,
-      tokenSymbol: 'FHGT',
-      roi: 15,
-      status: 'Growing',
-      duration: '4 months',
-      startDate: '2024-08-01',
-      expectedHarvest: '2024-12-01',
-      farmer: 'Peter Mwangi',
-      crop: 'Vegetables'
-    }
-  ];
+  useEffect(() => {
+    const fetchInvestments = async () => {
+      try {
+        const investmentsResult = await mshamba_backend.getMyInvestments();
+        setMyInvestments(investmentsResult);
 
-  const performanceData = [
-    { month: 'Jun', value: 25000 },
-    { month: 'Jul', value: 26200 },
-    { month: 'Aug', value: 27100 },
-    { month: 'Sep', value: 28300 },
-    { month: 'Oct', value: 29200 },
-    { month: 'Nov', value: 29670 },
-  ];
+        // Create performance data from investments
+        const performance = investmentsResult.reduce((acc, inv) => {
+          const date = new Date(Number(inv.timestamp) / 1000000);
+          const month = date.toLocaleString('default', { month: 'short' });
+          const existing = acc.find(item => item.month === month);
+          if (existing) {
+            existing.value += Number(inv.amount);
+          } else {
+            acc.push({ month, value: Number(inv.amount) });
+          }
+          return acc;
+        }, []);
+        setPerformanceData(performance);
+
+      } catch (error) {
+        console.error("Error fetching investments:", error);
+      }
+    };
+
+    fetchInvestments();
+  }, []);
+
 
   const totalInvested = myInvestments.reduce((sum, inv) => sum + inv.invested, 0);
   const totalCurrentValue = myInvestments.reduce((sum, inv) => sum + inv.currentValue, 0);
@@ -230,10 +203,10 @@ export const MyInvestments = ({ onBack }) => {
                     <span>Expected Harvest: {new Date(investment.expectedHarvest).toLocaleDateString()}</span>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors">
+                    <Link to={`/investor/dashboard/my-investments/${investment.investmentId}`} className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition-colors">
                       <Eye className="w-4 h-4" />
                       <span>View Details</span>
-                    </button>
+                    </Link>
                     <button className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg text-sm transition-colors">
                       <Download className="w-4 h-4" />
                       <span>Report</span>
@@ -290,3 +263,5 @@ export const MyInvestments = ({ onBack }) => {
     </div>
   );
 };
+
+export default MyInvestments;

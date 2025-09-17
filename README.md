@@ -211,13 +211,7 @@ Steps:
 
 ---
 
-## 🎨 Frontend Customization
 
-- **Site Title:** edit `<title>` in `src/mshamba_frontend/index.html`  
-- **Favicon:** replace `sprout.svg` in `src/mshamba_frontend/public/`  
-- **Routing:** `/ProfileSelection` → `/profile-selection` (fixed)  
-
----
 
 ## 🌱 Farm Image References
 

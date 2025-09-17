@@ -1,5 +1,6 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 // Pages
 import Home from "./pages/Home";
@@ -21,10 +22,13 @@ import InvestorDashboard from "./pages/investor/InvestorDashboard";
 import InvestorProfile from "./pages/investor/InvestorProfile";
 import Farms from "./pages/investor/Farms";
 import MarketAnalysis from "./pages/investor/MarketAnalysis";
+import MyInvestments from "./pages/investor/MyInvestments";
+import InvestmentDetails from "./pages/investor/InvestmentDetails";
 
 function App() {
   return (
     <Router>
+      <Toaster />
       <Routes>
         {/* General Routes */}
         <Route path="/" element={<Home />} />
@@ -49,6 +53,8 @@ function App() {
           <Route index element={<Farms />} />
           <Route path="farms" element={<Farms />} />
           <Route path="analysis" element={<MarketAnalysis />} />
+          <Route path="my-investments" element={<MyInvestments />} />
+          <Route path="my-investments/:investmentId" element={<InvestmentDetails />} />
         </Route>
       </Routes>
     </Router>

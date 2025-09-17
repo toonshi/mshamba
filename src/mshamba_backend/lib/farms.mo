@@ -39,6 +39,7 @@ module {
     let size = farmPayload.size;
     let minInvestment = farmPayload.minInvestment;
     let duration = farmPayload.duration;
+    
 
     let farmId = "farm-" # Int.toText(Time.now());
 
@@ -64,6 +65,7 @@ module {
       valuationHistory = [];
       sharePriceHistory = [];
       ledgerCanister = null; // Initially no ledger canister deployed
+      documents = []; // Initialize new field
     };
 
     farms.put(farmId, newFarm);
