@@ -57,8 +57,7 @@
       "type": "custom",
       "wasm": "wasm/ic-icrc1-index-ng.wasm",
       "candid": "wasm/index-ng.did",
-      "init_arg": "(opt variant { Init = record {\n        ledger_id = principal \"uxrrr-q7777-77774-qaaaa-cai\"
-      } })",
+          "init_arg": "(opt variant { Init = record {\n        ledger_id = principal \"uxrrr-q7777-77774-qaaaa-cai\" } })",
       "controllers": [
         "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
       ]
@@ -67,10 +66,6 @@
     "mshamba_assets": {
       "type": "motoko",
       "main": "src/mshamba_assets/main.mo"
-    },
-    "Filevault": {
-      "type": "motoko",
-      "main": "FileVault/backend/app.mo"
     }
   },
 
