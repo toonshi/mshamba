@@ -10,6 +10,13 @@
       "canister_id": "pwj2z-kaaaa-aaaac-a4bea-cai",
       "controllers": [
         "4qesy-eqkkq-3gwkk-oyyov-ivmyr-tfav4-w7x7b-2qi7k-hl4yb-bz6im-7ae"
+      ],
+      "dependencies": [
+        "farm1_ledger",
+        "farm2_ledger",
+        "farm3_ledger",
+        "farm4_ledger",
+        "farm1_index"
       ]
     },
     "mshamba_frontend": {
