@@ -6,10 +6,14 @@ import Nat "mo:base/Nat";
 import Array "mo:base/Array";
 // import TF "canister:token_factory";
 import Types "lib/types";
-import HashMap "mo:base/HashMap";
+import TrieMap "mo:base/TrieMap";
 import Iter "mo:base/Iter";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
+
+
+import TrieMapUtils "lib/TrieMapUtils";
+import Hash "mo:base/Hash";
 
 
 import LedgerTypes "canister:farm1_ledger";
@@ -18,9 +22,36 @@ actor {
 
   // public type Allocation = TF.Allocation;
 
-   var farmStore = Farm.newFarmStore();
-   var profileStore = UserProfile.newProfileStore();
-  var investmentStore = HashMap.HashMap<Principal, [Types.Investment]>(10, Principal.equal, Principal.hash);
+  var farmStore = Farm.newFarmStore();
+  var profileStore = UserProfile.newProfileStore();
+  var investmentStore = TrieMap.TrieMap<Principal, [Types.Investment]>(Principal.equal, Principal.hash);
+
+  stable var farmStoreData : [(Text, Farm.Farm)] = [];
+  stable var profileStoreData : [(Principal, UserProfile.Profile)] = [];
+  stable var investmentStoreData : [(Principal, [Types.Investment])] = [];
+
+  system func preupgrade() {
+    farmStoreData := Iter.toArray(farmStore.entries());
+    profileStoreData := Iter.toArray(profileStore.entries());
+    investmentStoreData := Iter.toArray(investmentStore.entries());
+  };
+
+  system func postupgrade() {
+    farmStore := Farm.newFarmStore();
+    for ((k, v) in Iter.fromArray(farmStoreData)) {
+      farmStore.put(k, v);
+    };
+
+    profileStore := UserProfile.newProfileStore();
+    for ((k, v) in Iter.fromArray(profileStoreData)) {
+      profileStore.put(k, v);
+    };
+
+    investmentStore := TrieMap.TrieMap<Principal, [Types.Investment]>(Principal.equal, Principal.hash);
+    for ((k, v) in Iter.fromArray(investmentStoreData)) {
+      investmentStore.put(k, v);
+    };
+  };
 
   // ==============================
   // HELPERS

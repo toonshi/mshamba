@@ -1,0 +1,4 @@
+[dependencies]
+base = "0.14.9"
+map = "9.0.1"
+stableheapbtreemap = "0.2.1"

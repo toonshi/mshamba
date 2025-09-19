@@ -24,6 +24,7 @@
       "type": "custom",
       "candid": "wasm/ledger.did",
       "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "init_arg": "(variant { Init = record { token_symbol = \"FARM1\"; token_name = \"Farm One Token\"; decimals = opt 8; minting_account = record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; transfer_fee = 10_000; metadata = vec { record { \"project:name\"; variant { Text = \"Farm One\" } }; record { \"project:location\"; variant { Text = \"Kenya\" } }; record { \"project:crop\"; variant { Text = \"Maize\" } }; record { \"project:land_size\"; variant { Text = \"50 acres\" } }; record { \"project:url\"; variant { Text = \"https://mshamba.example\" } } }; initial_balances = vec { record { record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; 10_000_000_000_000 } }; archive_options = record { num_blocks_to_archive = 10_000; trigger_threshold = 20_000; controller_id = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; cycles_for_archive_creation = opt 4_000_000_000_000 } } })",
       "controllers": [
         "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
       ]
@@ -32,6 +33,7 @@
       "type": "custom",
       "candid": "wasm/ledger.did",
       "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "init_arg": "(variant { Init = record { token_symbol = \"FARM2\"; token_name = \"Farm Two Token\"; decimals = opt 8; minting_account = record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; transfer_fee = 10_000; metadata = vec { record { \"project:name\"; variant { Text = \"Sunny Fields\" } }; record { \"project:location\"; variant { Text = \"Nairobi, Kenya\" } }; record { \"project:crop\"; variant { Text = \"Tomatoes\" } }; record { \"project:land_size\"; variant { Text = \"5 acres\" } }; record { \"project:url\"; variant { Text = \"https://example.com/sunny_fields.jpg\" } } }; initial_balances = vec { record { record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; 10_000_000_000_000 } }; archive_options = record { num_blocks_to_archive = 10_000; trigger_threshold = 20_000; controller_id = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; cycles_for_archive_creation = opt 4_000_000_000_000 } } })",
       "controllers": [
         "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
       ]
@@ -40,6 +42,7 @@
       "type": "custom",
       "candid": "wasm/ledger.did",
       "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "init_arg": "(variant { Init = record { token_symbol = \"FARM3\"; token_name = \"Farm Three Token\"; decimals = opt 8; minting_account = record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; transfer_fee = 10_000; metadata = vec { record { \"project:name\"; variant { Text = \"Golden Harvest\" } }; record { \"project:location\"; variant { Text = \"Nakuru, Kenya\" } }; record { \"project:crop\"; variant { Text = \"Wheat\" } }; record { \"project:land_size\"; variant { Text = \"15 acres\" } }; record { \"project:url\"; variant { Text = \"https://example.com/golden_harvest.jpg\" } } }; initial_balances = vec { record { record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; 10_000_000_000_000 } }; archive_options = record { num_blocks_to_archive = 10_000; trigger_threshold = 20_000; controller_id = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; cycles_for_archive_creation = opt 4_000_000_000_000 } } })",
       "controllers": [
         "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
       ]
@@ -48,6 +51,7 @@
       "type": "custom",
       "candid": "wasm/ledger.did",
       "wasm": "wasm/ic-icrc1-ledger.wasm",
+      "init_arg": "(variant { Init = record { token_symbol = \"FARM4\"; token_name = \"Farm Four Token\"; decimals = opt 8; minting_account = record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; transfer_fee = 10_000; metadata = vec { record { \"project:name\"; variant { Text = \"Aqua Farms\" } }; record { \"project:location\"; variant { Text = \"Mombasa, Kenya\" } }; record { \"project:crop\"; variant { Text = \"Fish\" } }; record { \"project:land_size\"; variant { Text = \"2 acres\" } }; record { \"project:url\"; variant { Text = \"https://example.com/aqua_farms.jpg\" } } }; initial_balances = vec { record { record { owner = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; subaccount = null }; 10_000_000_000_000 } }; archive_options = record { num_blocks_to_archive = 10_000; trigger_threshold = 20_000; controller_id = principal \"nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe\"; cycles_for_archive_creation = opt 4_000_000_000_000 } } })",
       "controllers": [
         "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
       ]
@@ -57,7 +61,7 @@
       "type": "custom",
       "wasm": "wasm/ic-icrc1-index-ng.wasm",
       "candid": "wasm/index-ng.did",
-      "init_arg": "(opt variant { Init = record {\n        ledger_id = principal \"uxrrr-q7777-77774-qaaaq-cai\"\n      } })",
+      "init_arg": "(opt variant { Init = record { ledger_id = principal \"vt46d-j7777-77774-qaagq-cai\" } })",
       "controllers": [
         "nebfo-nlhqi-oqa3e-kgpja-bmkud-iymq2-aqnjc-wfigz-hclu6-npvgz-tqe"
       ]

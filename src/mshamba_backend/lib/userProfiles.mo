@@ -1,7 +1,7 @@
 // lib/UserProfile.mo
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
-import HashMap "mo:base/HashMap";
+import TrieMap "mo:base/TrieMap";
 import Iter "mo:base/Iter";
 
 module {
@@ -16,10 +16,10 @@ module {
     profilePicture: Text;
   };
 
-  public type ProfileStore = HashMap.HashMap<Principal, Profile>;
+  public type ProfileStore = TrieMap.TrieMap<Principal, Profile>;
 
   public func newProfileStore() : ProfileStore {
-    HashMap.HashMap<Principal, Profile>(10, Principal.equal, Principal.hash)
+    TrieMap.TrieMap<Principal, Profile>(Principal.equal, Principal.hash)
   };
 
   public func createProfile(

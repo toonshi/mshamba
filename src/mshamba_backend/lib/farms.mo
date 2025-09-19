@@ -2,7 +2,7 @@
 import Time "mo:base/Time";
 import Text "mo:base/Text";
 import Int "mo:base/Int";
-import HashMap "mo:base/HashMap";
+import TrieMap "mo:base/TrieMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Types "types";
@@ -18,8 +18,8 @@ module {
   // ==============================
   // Farm Store
   // ==============================
-  public func newFarmStore() : HashMap.HashMap<Text, Farm> {
-    HashMap.HashMap<Text, Farm>(10, Text.equal, Text.hash)
+  public func newFarmStore() : TrieMap.TrieMap<Text, Farm> {
+    TrieMap.TrieMap<Text, Farm>(Text.equal, Text.hash)
   };
 
   // ==============================
@@ -27,7 +27,7 @@ module {
   // ==============================
   public func createFarm(
     caller: Principal,
-    farms: HashMap.HashMap<Text, Farm>,
+    farms: TrieMap.TrieMap<Text, Farm>,
     name: Text,
     description: Text,
     location: Text,
@@ -74,7 +74,7 @@ module {
   // ==============================
   public func getFarm(
     farmId: Text,
-    farms: HashMap.HashMap<Text, Farm>
+    farms: TrieMap.TrieMap<Text, Farm>
   ) : Types.Result<Farm> {
     switch (farms.get(farmId)) {
       case (?farm) { #ok(farm) };
@@ -85,7 +85,7 @@ module {
   // ==============================
   // List all Farms
   // ==============================
-  public func listFarms(farms: HashMap.HashMap<Text, Farm>) : [Farm] {
+  public func listFarms(farms: TrieMap.TrieMap<Text, Farm>) : [Farm] {
     Iter.toArray(
       Iter.map<(Text, Farm), Farm>(
         farms.entries(),
@@ -98,7 +98,7 @@ module {
   // List Farms by Owner
   // ==============================
   public func listFarmsByOwner(
-    farms: HashMap.HashMap<Text, Farm>,
+    farms: TrieMap.TrieMap<Text, Farm>,
     owner: Principal
   ) : [Farm] {
     let ownedFarms = Iter.filter<(Text, Farm)>(
@@ -121,7 +121,7 @@ module {
     caller: Principal,
     farmId: Text,
     amount: Nat,
-    farms: HashMap.HashMap<Text, Farm>
+    farms: TrieMap.TrieMap<Text, Farm>
   ) : Types.Result<Farm> {
 
     switch (farms.get(farmId)) {
@@ -153,7 +153,7 @@ module {
   // ==============================
   public func updateFarmInvestmentStatus(
     farmId: Text,
-    farms: HashMap.HashMap<Text, Farm>,
+    farms: TrieMap.TrieMap<Text, Farm>,
     newStatus: Bool
   ) : Types.Result<Farm> {
     switch (farms.get(farmId)) {
@@ -171,7 +171,7 @@ module {
 
   public func updateLedgerCanister(
     farmId: Text,
-    farms: HashMap.HashMap<Text, Farm>,
+    farms: TrieMap.TrieMap<Text, Farm>,
     ledgerCanisterId: Principal
   ) : Types.Result<Farm> {
     switch (farms.get(farmId)) {
