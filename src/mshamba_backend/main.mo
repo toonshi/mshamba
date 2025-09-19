@@ -13,7 +13,7 @@ import Int "mo:base/Int";
 
 
 import TrieMapUtils "lib/TrieMapUtils";
-import Hash "mo:base/Hash";
+import Hash "mo:base/Hash";import Debug "mo:base/Debug";
 
 
 import LedgerTypes "canister:farm1_ledger";
@@ -159,6 +159,7 @@ actor {
         };
 
         let tokensToIssue = amount / farm.sharePrice;
+        Debug.print("Tokens to Issue: " # Nat.toText(tokensToIssue));
         if (tokensToIssue == 0) {
           return #err("Investment amount is too small to receive any tokens.");
         };
@@ -167,6 +168,7 @@ actor {
         let ledgerActor : LedgerActor = actor(Principal.toText(ledgerId));
 
         let fee = await ledgerActor.icrc1_fee();
+        Debug.print("Fee: " # Nat.toText(fee));
         if (tokensToIssue <= fee) {
           return #err("Investment amount is too small to cover the transfer fee.");
         };
@@ -255,6 +257,9 @@ actor {
     switch (Farm.getFarm(farmId, farmStore)) {
       case (#err(msg)) { return #err(msg) };
       case (#ok(farm)) {
+        Debug.print("Farm Owner: " # Principal.toText(farm.owner));
+        Debug.print("Caller: " # Principal.toText(caller));
+        Debug.print("Are they equal? " # Principal.toText(farm.owner) # " == " # Principal.toText(caller));
         if (farm.owner != caller) {
           return #err("Only the farm owner can change investment status");
         };
