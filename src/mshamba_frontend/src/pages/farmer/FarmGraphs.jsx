@@ -18,11 +18,11 @@ const FarmGraphs = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Revenue This Year</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">$425K</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">Ksh425K</p>
               <p className="text-sm text-green-600 mt-1">+18.5% vs last year</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
-              <DollarSign className="h-6 w-6 text-green-600" />
+             <p>K</p>
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@ const FarmGraphs = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Operating Costs</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">$285K</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">Ksh 285K</p>
               <p className="text-sm text-red-600 mt-1">+5.2% vs last year</p>
             </div>
             <div className="bg-purple-100 p-3 rounded-lg">
@@ -117,7 +117,7 @@ const FarmGraphs = () => {
               <span className="text-2xl font-bold text-green-600">42%</span>
             </div>
             <p className="font-medium text-gray-900">Labor Costs</p>
-            <p className="text-sm text-gray-500">$119,700</p>
+            <p className="text-sm text-gray-500">Ksh 119,700</p>
           </div>
 
           <div className="text-center">
@@ -125,7 +125,7 @@ const FarmGraphs = () => {
               <span className="text-2xl font-bold text-blue-600">28%</span>
             </div>
             <p className="font-medium text-gray-900">Equipment & Fuel</p>
-            <p className="text-sm text-gray-500">$79,800</p>
+            <p className="text-sm text-gray-500">Ksh79,800</p>
           </div>
 
           <div className="text-center">
@@ -133,7 +133,7 @@ const FarmGraphs = () => {
               <span className="text-2xl font-bold text-orange-600">30%</span>
             </div>
             <p className="font-medium text-gray-900">Materials & Other</p>
-            <p className="text-sm text-gray-500">$85,500</p>
+            <p className="text-sm text-gray-500">Ksh85,500</p>
           </div>
         </div>
       </div>
@@ -160,7 +160,7 @@ const FarmGraphs = () => {
 
           <div className="flex items-center p-4 bg-blue-50 rounded-lg">
             <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center mr-4">
-              <DollarSign className="h-4 w-4 text-blue-600" />
+             <p>K</p>
             </div>
             <div>
               <p className="font-medium text-gray-900">

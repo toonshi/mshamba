@@ -10,11 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dfinity/agent": "^3.2.2",
-    "@dfinity/auth-client": "^3.2.2",
-    "@dfinity/candid": "^3.2.2",
-    "@dfinity/identity": "^3.2.2",
-    "@dfinity/principal": "^3.2.2",
+    "@dfinity/agent": "^3.2.1",
+    "@dfinity/auth-client": "^3.2.1",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

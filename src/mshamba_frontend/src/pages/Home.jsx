@@ -139,7 +139,7 @@ const HomePage = () => {
                 About
               </a>
               <a 
-               href="/profile-selection"
+               href="/ProfileSelection"
                 className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium transition-colors inline-block text-center"
               >
                 Get Started

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default function RecordOptions() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold mb-6">Farm Record Books</h1>
+      <h1 className="text-3xl font-bold mb-6">To setep your investment enter your Farm Record Books</h1>
       <p className="mb-6">Manage your farm records, expenses, and progress tracking</p>
 
       <div className="grid gap-4 w-full max-w-md">

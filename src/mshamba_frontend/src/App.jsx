@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import { Auth } from "./pages/Auth";
 import ProfileSelection from "./pages/ProfileSelection";
-import CreateProfile from "./pages/CreateProfile";
 
 // Farmer pages
 import FarmerDashboard from "./pages/farmer/FarmerDashboard";  
@@ -31,15 +30,14 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<FarmListing />} /> 
-        <Route key="profile-selection-route" path="/profile-selection" element={<ProfileSelection />} />
-        <Route path="/createprofile" element={<CreateProfile />} />
+        <Route path="/profile-selection" element={<ProfileSelection />} />
 
         {/* Farmer Routes */}
         <Route path="/farmer/dashboard" element={<FarmerDashboard />}>
         <Route index element={<FarmListing />} /> 
         <Route path="profile" element={<FarmListing />} /> 
           <Route path="records" element={<FarmRecords />} />
-          <Route path="setup-investment/:farmId" element={<SetupInvestment />} />
+          <Route path="setup-investment" element={<SetupInvestment />} />
           <Route path="valuation" element={<ValuationReport />} />
           <Route path="investors" element={<InvestorsList />} />
           <Route path="graphs" element={<FarmGraphs />} />
