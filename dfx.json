@@ -6,7 +6,10 @@
     },
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "dependencies": [
+        "token_factory"
+      ]
     },
     "mshamba_frontend": {
       "type": "assets",

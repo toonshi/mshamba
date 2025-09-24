@@ -18,18 +18,18 @@ actor {
 
   // Stable variables for persistence (manual serialization)
   stable var stableFarmKeys : [Text] = [];
-  stable var stableFarmValues : [Farm] = [];
+  stable var stableFarmValues : [FarmModule.Farm] = [];
   stable var stableProfileKeys : [Principal] = [];
-  stable var stableProfileValues : [Profile] = [];
+  stable var stableProfileValues : [UserProfileModule.Profile] = [];
 
   // Non-stable variables, initialized from stable memory in post_upgrade
-  var farmStore : HashMap.HashMap<Text, Farm> = FarmModule.newFarmStore();
-  var profileStore : HashMap.HashMap<Principal, Profile> = UserProfileModule.newProfileStore();
+  var farmStore : HashMap.HashMap<Text, FarmModule.Farm> = FarmModule.newFarmStore();
+  var profileStore : HashMap.HashMap<Principal, UserProfileModule.Profile> = UserProfileModule.newProfileStore();
 
   // ==============================
   // HELPERS
   // ==============================
-  func getFarmerProfile(caller: Principal) : ?Profile {
+  func getFarmerProfile(caller: Principal) : ?UserProfileModule.Profile {
   switch (UserProfileModule.getProfile(profileStore, caller)) {
     case (?(p)) {
       if (p.role == #Farmer) { ?p } else { null }
@@ -50,7 +50,7 @@ actor {
     UserProfileModule.createProfile(profileStore, caller, name, bio, role, certifications)
   };
 
-  public query func getProfile(owner : Principal) : async ?Profile {
+  public query func getProfile(owner : Principal) : async ?UserProfileModule.Profile {
     UserProfileModule.getProfile(profileStore, owner)
   };
 
@@ -62,18 +62,18 @@ actor {
     description : Text,
     location : Text,
     fundingGoal : Nat
-  ) : async FarmModule.Result<Farm> {
+  ) : async FarmModule.Result<FarmModule.Farm> {
     switch (getFarmerProfile(caller)) {
       case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal) };
       case null { #err("Only farmers can create farms or profile not found") };
     }
   };
 
-  public shared query ({ caller }) func myFarms() : async [Farm] {
+  public shared query ({ caller }) func myFarms() : async [FarmModule.Farm] {
     FarmModule.listFarmsByOwner(farmStore, caller)
   };
 
-  public query func listFarms() : async [Farm] {
+  public query func listFarms() : async [FarmModule.Farm] {
     FarmModule.listFarms(farmStore)
   };
 
@@ -90,7 +90,7 @@ actor {
     transferFee : Nat,
     extraControllers : [Principal],
     cyclesToSpend : ?Nat
-  ) : async FarmModule.Result<Farm> {
+  ) : async FarmModule.Result<FarmModule.Farm> {
 
     // 1️⃣ Retrieve the farm and ensure it exists & is open
     let farmResult = FarmModule.getFarm(farmId, farmStore);
@@ -133,7 +133,7 @@ actor {
   public shared ({ caller }) func toggleFarmInvestmentStatus(
     farmId : Text,
     newStatus : Bool
-  ) : async FarmModule.Result<Farm> {
+  ) : async FarmModule.Result<FarmModule.Farm> {
     switch (FarmModule.getFarm(farmId, farmStore)) {
       case (#err(msg)) { return #err(msg) };
       case (#ok(farm)) {
