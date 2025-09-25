@@ -58,6 +58,7 @@ export const FarmListing = ({ onBack }) => {
         setFarms([...farms, result.ok]);
       } else {
         setError(result.err);
+        console.error("Backend error creating farm:", result.err);
       }
     } catch (err) {
       setError("An error occurred while creating the farm.");
