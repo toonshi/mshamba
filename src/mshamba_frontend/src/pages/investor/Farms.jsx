@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, DollarSign, Clock, Mail, Sprout } from 'lucide-react';
-import { mshamba_backend } from 'declarations/mshamba_backend'; // Import backend actor
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
-  // Ensure currentAmount and targetAmount are numbers for calculations
-  const currentAmount = Number(farm.currentAmount || 0);
-  const targetAmount = Number(farm.targetAmount || 1); // Avoid division by zero
-  const progressPercentage = (currentAmount / targetAmount) * 100;
-
+  const progressPercentage = (farm.currentAmount / farm.targetAmount) * 100;
+  
   const getStatusColor = (currentAmount, targetAmount) => {
     const percentage = (currentAmount / targetAmount) * 100;
     if (percentage >= 100) return 'text-blue-600 bg-blue-100';
@@ -33,12 +29,12 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
           className="w-full h-48 object-cover"
         />
         <div className="absolute top-4 right-4">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(currentAmount, targetAmount)}`}>
-            {getStatusText(currentAmount, targetAmount)}
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(farm.currentAmount || 0, farm.targetAmount || 1)}`}>
+            {getStatusText(farm.currentAmount || 0, farm.targetAmount || 1)}
           </span>
         </div>
       </div>
-
+      
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -53,39 +49,39 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
         <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
           <div className="flex items-center">
             <Sprout className="h-4 w-4 text-green-600 mr-2" />
-            <span className="text-gray-600">{farm.size || 'N/A'} • {farm.crop || 'N/A'}</span>
+            <span className="text-gray-600">{farm.size} • {farm.crop}</span>
           </div>
-          <div className="flex items-center">
-            <DollarSign className="h-4 w-4 text-blue-600 mr-2" />
-            <span className="text-gray-600">Min: ${farm.minInvestment?.toLocaleString() || 'N/A'}</span>
-          </div>
-        </div>
+          <div className="flex items-center">             
+               
+  <span className="text-gray-600">Min: KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</span>           
+</div>         
+</div>          
 
-        {targetAmount && (
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Funding Progress</span>
-              <span>${currentAmount.toLocaleString()} of ${targetAmount.toLocaleString()}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-green-600 h-2 rounded-full"
-                style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-              ></div>
-            </div>
-            <div className="text-xs text-gray-500 mt-1">{progressPercentage.toFixed(0)}% funded</div>
-          </div>
-        )}
+{farm.targetAmount && (           
+  <div className="mb-4">             
+    <div className="flex justify-between text-sm text-gray-600 mb-2">               
+      <span>Funding Progress</span>               
+      <span>KSH {(farm.currentAmount || 0).toLocaleString('en-KE')} of KSH {farm.targetAmount.toLocaleString('en-KE')}</span>             
+    </div>             
+    <div className="w-full bg-gray-200 rounded-full h-2">               
+      <div                  
+        className="bg-green-600 h-2 rounded-full"                  
+        style={{ width: `${Math.min(progressPercentage, 100)}%` }}               
+      ></div>             
+    </div>             
+    <div className="text-xs text-gray-500 mt-1">{progressPercentage.toFixed(0)}% funded</div>           
+  </div>         
+)}          
 
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <DollarSign className="h-4 w-4 text-green-600" />
-            </div>
-            <p className="font-medium text-gray-900">Min. Investment</p>
-            <p className="text-gray-500">${farm.minInvestment?.toLocaleString() || 'N/A'}</p>
-          </div>
-
+<div className="grid grid-cols-2 gap-4 mb-4 text-sm">           
+  <div className="text-center">             
+    <div className="flex items-center justify-center mb-1">               
+                 
+    </div>             
+    <p className="font-medium text-gray-900">KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</p>             
+    <p className="text-gray-500">Min. Investment</p>           
+  </div>
+          
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <Clock className="h-4 w-4 text-orange-600" />
@@ -96,13 +92,13 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
         </div>
 
         <div className="flex space-x-3">
-          <button
+          <button 
             onClick={() => onInvest(farm)}
             className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
             Invest Now
           </button>
-          <button
+          <button 
             onClick={() => onEmailOwner(farm)}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
           >
@@ -122,25 +118,83 @@ const Farms = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
+  // TODO: Replace with actual backend API call
   useEffect(() => {
     const fetchFarms = async () => {
       try {
         setLoading(true);
-        const response = await mshamba_backend.listFarms();
-        const mappedFarms = response.map(farm => ({
-          id: farm.farmId,
-          name: farm.name,
-          location: farm.location,
-          crop: "N/A", // Placeholder
-          size: "N/A", // Placeholder
-          minInvestment: 0, // Placeholder
-          duration: 0, // Placeholder
-          targetAmount: Number(farm.fundingGoal),
-          currentAmount: Number(farm.fundedAmount),
-          createdAt: new Date(Number(farm.createdAt / 1_000_000n)).toISOString(),
-          image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400" // Placeholder
-        }));
-        setFarms(mappedFarms);
+        // Replace this with actual backend call
+        // const response = await backendActor.getAllFarms();
+        // setFarms(response);
+        
+        // Sample data for testing - remove when backend is connected
+        setFarms([
+          {
+            id: 1,
+            name: "Green Valley Maize Farm",
+            location: "Nakuru, Kenya",
+            crop: "Maize",
+            size: "10 acres",
+            minInvestment: 5000,
+            duration: 8,
+            targetAmount: 50000,
+            currentAmount: 15000,
+            createdAt: "2024-01-15",
+            image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 2,
+            name: "Highland Coffee Plantation",
+            location: "Kiambu, Kenya",
+            crop: "Coffee",
+            size: "15 acres",
+            minInvestment: 8000,
+            duration: 12,
+            targetAmount: 80000,
+            currentAmount: 35000,
+            createdAt: "2024-01-10",
+            image: "https://images.pexels.com/photos/894695/pexels-photo-894695.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 3,
+            name: "Sunrise Vegetable Gardens",
+            location: "Meru, Kenya",
+            crop: "Vegetables",
+            size: "5 acres",
+            minInvestment: 3000,
+            duration: 6,
+            targetAmount: 25000,
+            currentAmount: 8000,
+            createdAt: "2024-01-20",
+            image: "https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 4,
+            name: "Tropical Fruit Orchard",
+            location: "Machakos, Kenya",
+            crop: "Fruits",
+            size: "20 acres",
+            minInvestment: 10000,
+            duration: 10,
+            targetAmount: 100000,
+            currentAmount: 75000,
+            createdAt: "2024-01-05",
+            image: "https://images.pexels.com/photos/1132047/pexels-photo-1132047.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 5,
+            name: "Golden Wheat Fields",
+            location: "Uasin Gishu, Kenya",
+            crop: "Maize",
+            size: "25 acres",
+            minInvestment: 12000,
+            duration: 7,
+            targetAmount: 120000,
+            currentAmount: 45000,
+            createdAt: "2024-01-25",
+            image: "https://images.pexels.com/photos/265216/pexels-photo-265216.jpeg?auto=compress&cs=tinysrgb&w=400"
+          }
+        ]);
       } catch (error) {
         console.error('Error fetching farms:', error);
         setFarms([]);
@@ -169,10 +223,10 @@ const Farms = () => {
     const matchesSearch = farm.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          farm.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          farm.crop?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesFilter = selectedFilter === 'all' ||
+    
+    const matchesFilter = selectedFilter === 'all' || 
                          farm.crop?.toLowerCase().includes(selectedFilter.toLowerCase());
-
+    
     return matchesSearch && matchesFilter;
   });
 
@@ -295,15 +349,15 @@ const Farms = () => {
         </div>
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center space-x-2 mb-2">
-            <DollarSign className="w-5 h-5 text-purple-600" />
             <span className="text-sm font-medium text-gray-600">Min Investment</span>
           </div>
           <div className="text-2xl font-bold text-purple-600">
-            {farms.length > 0
-              ? `$${Math.min(...farms.map(farm => farm.minInvestment || Infinity)).toLocaleString()}`
-              : 'N/A'
-            }
-          </div>
+  {farms.length > 0 
+    ? `KSH ${Math.min(...farms.map(farm => farm.minInvestment || Infinity)).toLocaleString('en-KE')}`
+    : 'N/A'
+  }
+</div>
+
         </div>
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center space-x-2 mb-2">
@@ -311,7 +365,7 @@ const Farms = () => {
             <span className="text-sm font-medium text-gray-600">Avg. Duration</span>
           </div>
           <div className="text-2xl font-bold text-orange-600">
-            {farms.length > 0
+            {farms.length > 0 
               ? `${(farms.reduce((sum, farm) => sum + (farm.duration || 0), 0) / farms.length).toFixed(1)}m`
               : 'N/A'
             }
@@ -339,7 +393,7 @@ const Farms = () => {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No farms available</h3>
             <p className="text-gray-600">
-              {farms.length === 0
+              {farms.length === 0 
                 ? 'No farms have been listed yet. Check back later for new opportunities.'
                 : 'Try adjusting your search criteria or filters to find more farms.'
               }

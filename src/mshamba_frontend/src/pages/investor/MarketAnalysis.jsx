@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TrendingUp, BarChart3, DollarSign, Calendar } from "lucide-react";
+import { TrendingUp, BarChart3, Banknote, Calendar } from "lucide-react";
 
 // Reusable Card
 const StatCard = ({ title, value, change, icon: Icon, color }) => (
@@ -100,17 +100,17 @@ const MarketAnalysis = () => {
   useEffect(() => {
     // Replace with API calls later
     setStats([
-      { title: "Market Size", value: "$24.8B", change: "+12.5% YoY", icon: DollarSign, color: "text-green-600" },
+      { title: "Market Size", value: "KSH 24.8B", change: "+12.5% YoY", icon: Banknote, color: "text-green-600" },
       { title: "Active Investments", value: "1,247", change: "+18% this month", icon: BarChart3, color: "text-blue-600" },
       { title: "Avg ROI", value: "9.4%", change: "+1.2% vs last year", icon: TrendingUp, color: "text-orange-600" },
       { title: "Success Rate", value: "94.2%", change: "Projects completed", icon: Calendar, color: "text-purple-600" }
     ]);
 
     setCrops([
-      { crop: { name: "Almonds", desc: "Premium varieties" }, price: "$2.85/lb", change: "+8.2%", roi: "9.8%", volume: "$4.2M", risk: "Low" },
-      { crop: { name: "Wine Grapes", desc: "Premium regions" }, price: "$1,850/ton", change: "+15.4%", roi: "12.1%", volume: "$2.8M", risk: "Medium" },
-      { crop: { name: "Citrus", desc: "Oranges & lemons" }, price: "$0.95/lb", change: "-3.1%", roi: "7.9%", volume: "$1.9M", risk: "Low" },
-      { crop: { name: "Walnuts", desc: "English varieties" }, price: "$1.45/lb", change: "+6.7%", roi: "10.3%", volume: "$3.1M", risk: "Low" }
+      { crop: { name: "Almonds", desc: "Premium varieties" }, price: "KSH 2.85/lb", change: "+8.2%", roi: "9.8%", volume: "KSH 4.2M", risk: "Low" },
+      { crop: { name: "Wine Grapes", desc: "Premium regions" }, price: "KSH 1,850/ton", change: "+15.4%", roi: "12.1%", volume: "KSH 2.8M", risk: "Medium" },
+      { crop: { name: "Citrus", desc: "Oranges & lemons" }, price: "KSH 0.95/lb", change: "-3.1%", roi: "7.9%", volume: "KSH 1.9M", risk: "Low" },
+      { crop: { name: "Walnuts", desc: "English varieties" }, price: "KSH 1.45/lb", change: "+6.7%", roi: "10.3%", volume: "KSH 3.1M", risk: "Low" }
     ]);
   }, []);
 

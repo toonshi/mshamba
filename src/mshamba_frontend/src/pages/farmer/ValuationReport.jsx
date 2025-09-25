@@ -21,7 +21,7 @@ const ValuationReport = () => {
     try {
       const data = {
         initialSupply: '1,000,000 TOK',
-        initialPrice: '$0.50 / token',
+        initialPrice: 'KSH 65.00 / token',
         vestingSchedule: '6 months cliff, 24 months linear',
         launchTimeline: 'Q1 2025',
       };
@@ -73,7 +73,6 @@ const ValuationReport = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white rounded-xl shadow-sm border p-4">
               <div className="flex items-center mb-2">
-                <DollarSign className="h-6 w-6 text-blue-600 mr-2" />
                 <p className="text-sm font-medium text-gray-600">Initial Supply</p>
               </div>
               <p className="text-gray-900 font-bold">{valuationData.initialSupply}</p>
