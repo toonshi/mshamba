@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent, Actor } from "@dfinity/agent";
-import { idlFactory as backend_idl, canisterId as backend_id } from "../../../declarations/mshamba_backend";
+import { canisterId, createActor } from "declarations/mshamba_backend";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
