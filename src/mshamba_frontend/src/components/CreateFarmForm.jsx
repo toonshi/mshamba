@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export const CreateFarmForm = ({ onSubmit, isLoading }) => {
+export const CreateFarmForm = ({ onSubmit, isLoading, disabled }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -26,6 +26,7 @@ export const CreateFarmForm = ({ onSubmit, isLoading }) => {
               className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
               placeholder="Green Acres"
               required
+              disabled={disabled}
             />
           </div>
           <div className="md:col-span-2">
@@ -38,6 +39,7 @@ export const CreateFarmForm = ({ onSubmit, isLoading }) => {
               rows="3"
               placeholder="A farm specializing in organic vegetables..."
               required
+              disabled={disabled}
             ></textarea>
           </div>
           <div>
@@ -50,6 +52,7 @@ export const CreateFarmForm = ({ onSubmit, isLoading }) => {
               className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
               placeholder="Rural Area, Kenya"
               required
+              disabled={disabled}
             />
           </div>
           <div>
@@ -62,11 +65,12 @@ export const CreateFarmForm = ({ onSubmit, isLoading }) => {
               className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
               placeholder="10000"
               required
+              disabled={disabled}
             />
           </div>
         </div>
         <div className="mt-6">
-          <button type="submit" disabled={isLoading} className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105 disabled:opacity-50">
+          <button type="submit" disabled={isLoading || disabled} className="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105 disabled:opacity-50">
             {isLoading ? 'Creating Farm...' : 'Create Farm'}
           </button>
         </div>
