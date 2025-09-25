@@ -2,14 +2,20 @@ import { useEffect, useState } from 'react';
 import { AuthClient } from '@dfinity/auth-client';
 import { ArrowLeft, Shield, User, TrendingUp, Moon, Sun } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+
+// Define Role type based on mshamba_backend.did
+const Role = {
+  Farmer: null,
+  Investor: null,
+};
 
 export const Auth = ({ onBack }) => {
-  const [authClient, setAuthClient] = useState(null);
-  const [principal, setPrincipal] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false); // Default to light mode
   const navigate = useNavigate();
   const location = useLocation();
+  const { actor, isAuthenticated, login: authLogin, identity, logout: authLogout } = useAuth(); // Use the useAuth hook
 
   // Read ?type=farmer or ?type=investor from URL
   const queryParams = new URLSearchParams(location.search);
@@ -20,50 +26,46 @@ export const Auth = ({ onBack }) => {
   };
 
   useEffect(() => {
-    const initAuth = async () => {
-      const client = await AuthClient.create();
-      setAuthClient(client);
+    const initAuthAndProfileCheck = async () => {
+      if (isAuthenticated && actor) {
+        const principal = identity.getPrincipal();
+        console.log("Authenticated principal (useEffect):", principal.toText());
 
-      if (await client.isAuthenticated()) {
-        const id = client.getIdentity();
-        setPrincipal(id.getPrincipal().toText());
+        // Check if profile exists using the authenticated actor
+        const profileResult = await actor.getProfile(principal);
+        console.log("Profile result (useEffect):", profileResult);
 
-        // If already logged in, redirect them immediately
-        if (userType === "farmer") {
-          navigate("/farmer/dashboard");
-        } else if (userType === "investor") {
-          navigate("/investor/dashboard");
+        if (profileResult.length === 0) { // No profile found
+          console.log("No profile found, redirecting to profile creation page (useEffect).");
+          navigate("/create-profile"); // Redirect to the new profile creation page
+        } else { // Profile exists, redirect
+          console.log("Profile found, redirecting (useEffect).");
+          if (userType === "farmer") {
+            navigate("/farmer/dashboard");
+          }
+          else if (userType === "investor") {
+            navigate("/investor/dashboard");
+          }
+          else {
+            navigate("/"); // fallback
+          }
         }
       }
     };
-    initAuth();
-  }, [navigate, userType]);
+    initAuthAndProfileCheck();
+  }, [isAuthenticated, actor, navigate, userType, identity]);
 
   const handleInternetIdentity = async () => {
     setIsLoading(true);
-    await authClient.login({
-      identityProvider: 'https://identity.ic0.app/#authorize',
-      onSuccess: async () => {
-        const id = authClient.getIdentity();
-        setPrincipal(id.getPrincipal().toText());
-        setIsLoading(false);
-
-        // Redirect based on role chosen on Home.jsx
-        if (userType === "farmer") {
-          navigate("/farmer/dashboard");
-        } else if (userType === "investor") {
-          navigate("/investor/dashboard");
-        } else {
-          navigate("/"); // fallback
-        }
-      },
-    });
+    await authLogin(); // Use the login function from useAuth
+    setIsLoading(false);
+    // The useEffect will handle profile check and redirection after authLogin updates state
   };
 
   const handleLogout = async () => {
-    await authClient.logout();
-    setPrincipal(null);
+    await authLogout(); // Use the logout function from useAuth
   };
+
   const handleBackToHome = () => {
     if (onBack) {
       onBack(); // Use the prop function if provided
@@ -281,12 +283,11 @@ export const Auth = ({ onBack }) => {
                       ? 'bg-black/20 border-white/10' 
                       : 'bg-gray-50 border-gray-200'
                   }`}>
-                    <p className={`font-mono text-sm break-all ${
-                      isDarkMode ? 'text-green-400' : 'text-green-600'
-                    }`}>
-                      {principal}
-                    </p>
-                  </div>
+                                      <p className={`font-mono text-sm break-all ${
+                                        isDarkMode ? 'text-green-400' : 'text-green-600'
+                                      }`}>
+                                        {identity.getPrincipal().toText()}
+                                      </p>                  </div>
                 </div>
 
                 <div className="space-y-3">
