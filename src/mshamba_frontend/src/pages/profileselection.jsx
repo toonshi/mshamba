@@ -1,104 +1,278 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sprout, TrendingUp, Users, ArrowRight } from 'lucide-react';
+import { 
+  Sprout, 
+  TrendingUp, 
+  ArrowRight, 
+  CheckCircle,
+  Sun,
+  Moon,
+  ArrowLeft,
+  Users,
+  BarChart3,
+  Shield,
+  Leaf
+} from 'lucide-react';
 
 const ProfileSelection = () => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const themeClasses = isDarkMode 
+    ? 'bg-green-950 text-white' 
+    : 'bg-white text-gray-900';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full">
-        <div className="text-center mb-12">
-          <div className="flex justify-center items-center mb-4">
-            <Sprout className="h-12 w-12 text-green-600 mr-3" />
-            <span className="text-3xl font-bold text-gray-900">Mshamba</span>
+    <div className={`min-h-screen transition-all duration-300 ${themeClasses} relative overflow-hidden`}>
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-10">
+        <div className={`absolute top-16 left-16 w-56 h-56 rounded-full mix-blend-multiply filter blur-3xl animate-pulse ${
+          isDarkMode ? 'bg-green-500' : 'bg-green-400'
+        }`}></div>
+        <div className={`absolute bottom-16 right-16 w-56 h-56 rounded-full mix-blend-multiply filter blur-3xl animate-pulse delay-1000 ${
+          isDarkMode ? 'bg-green-600' : 'bg-green-500'
+        }`}></div>
+      </div>
+
+      {/* Header with back button and theme toggle */}
+      <div className="relative z-10 flex justify-between items-center p-3 sm:p-4">
+        <Link
+          to="/"
+          className={`p-2 rounded-lg transition-all duration-300 backdrop-blur-sm border group ${
+            isDarkMode 
+              ? 'hover:bg-white/10 border-white/10 hover:border-white/20' 
+              : 'hover:bg-gray-100 border-gray-200 hover:border-gray-300'
+          }`}
+        >
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform duration-300" />
+        </Link>
+
+        <button
+          onClick={toggleDarkMode}
+          className={`p-2 rounded-lg transition-all duration-300 ${
+            isDarkMode 
+              ? 'bg-green-900/40 text-yellow-400 hover:bg-green-800/60 border border-green-700' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200'
+          }`}
+        >
+          {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+      </div>
+
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4 pt-0">
+        <div className="max-w-5xl w-full">
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-10">
+            {/* Logo */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-500 rounded-xl blur-md opacity-60"></div>
+                <div className={`relative backdrop-blur-sm p-2 rounded-xl border ${
+                  isDarkMode ? 'bg-white/10 border-white/20' : 'bg-white border-gray-200'
+                }`}>
+                  <img 
+                    src="/images/Mshamba Logo.jpg"
+                    alt="Mshamba Logo" 
+                    className="w-8 h-8 sm:w-9 sm:h-9"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <h1 className="text-xl sm:text-2xl font-bold mb-1 bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
+              Mshamba
+            </h1>
+
+            <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium mb-4 ${
+              isDarkMode 
+                ? 'bg-green-900/40 text-green-300 border border-green-800' 
+                : 'bg-green-50 text-green-700 border border-green-200'
+            }`}>
+              <Leaf className="h-3 w-3 mr-1.5" />
+              Choose Your Journey
+            </div>
+
+            <h2 className={`text-2xl sm:text-3xl font-bold mb-3 ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              How do you want to
+              <span className="bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
+                {' '}grow with us?
+              </span>
+            </h2>
+            <p className={`text-sm sm:text-base max-w-2xl mx-auto ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              Select your role to unlock the perfect dashboard designed for your agricultural journey
+            </p>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Choose Your Path</h1>
-          <p className="text-xl text-gray-600">
-            Select your role to get started with the perfect dashboard for your needs
-          </p>
-        </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Farmer Card */}
-          <Link 
-            to="/farmer/dashboard"
-            className="group bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="text-center">
-              <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors">
-                <Sprout className="h-10 w-10 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">I'm a Farmer</h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Get funding for your agricultural projects, track farm records, 
-                set up investment opportunities, and connect with investors.
-              </p>
-              
-              <div className="space-y-2 text-left mb-8">
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Setup investment opportunities
+          {/* Role Selection Cards */}
+          <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Farmer Card */}
+            <Link 
+              to="/auth?type=farmer"
+              className={`group backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+                isDarkMode 
+                  ? 'bg-white/10 border-white/20 hover:border-green-500/30' 
+                  : 'bg-white/95 border-gray-200 hover:border-green-300'
+              }`}
+            >
+              <div className="text-center">
+                <div className="relative mb-4">
+                  <div className="relative bg-gradient-to-r from-green-600 to-green-500 w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center mx-auto group-hover:scale-105 transition-transform duration-300">
+                    <Sprout className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                  </div>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Track farm records and analytics
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Get professional valuations
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  Connect with investors
-                </div>
-              </div>
 
-              <div className="flex items-center justify-center text-green-600 font-medium group-hover:text-green-700">
-                Get Started as Farmer
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <h3 className={`text-lg sm:text-xl font-bold mb-2 ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  I'm a Farmer
+                </h3>
+                <p className={`text-sm sm:text-base mb-4 leading-relaxed ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  Get funding for your projects, track farm records, and connect with global investors.
+                </p>
+                <div className="flex justify-center">
+                  <span className="text-xs text-green-700 bg-green-100 rounded px-2 py-1 tooltip relative group">
+                    What does this mean?
+                    <span className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 p-2 bg-white border border-green-300 rounded shadow-lg text-xs text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      As a Farmer, you can register your farm, submit required documents, and manage your farm profile. You’ll also be able to apply for funding and track your farm’s performance.
+                    </span>
+                  </span>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  {[
+                    { icon: Shield, text: "Tokenize your farm assets" },
+                    { icon: BarChart3, text: "Track farm analytics & records" },
+                    { icon: TrendingUp, text: "Access transparent funding" },
+                    { icon: Users, text: "Connect with global investors" }
+                  ].map(({ icon: Icon, text }, index) => (
+                    <div key={index} className="flex items-center text-left">
+                      <div className={`w-7 h-7 rounded-md flex items-center justify-center mr-2 flex-shrink-0 ${
+                        isDarkMode ? 'bg-green-500/20' : 'bg-green-100'
+                      }`}>
+                        <Icon className={`w-4 h-4 ${
+                          isDarkMode ? 'text-green-400' : 'text-green-600'
+                        }`} />
+                      </div>
+                      <span className={`text-xs sm:text-sm ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
+                        {text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="relative group/btn">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-green-500 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative py-2 sm:py-3 rounded-lg font-medium border flex items-center justify-center space-x-2 text-white">
+                    <span className="text-xs sm:text-sm font-semibold">
+                      Start as Farmer
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
+            </Link>
+
+            {/* Investor Card */}
+            <Link 
+              to="/auth?type=investor"
+              className={`group backdrop-blur-xl rounded-xl p-4 sm:p-6 shadow-lg border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+                isDarkMode 
+                  ? 'bg-white/10 border-white/20 hover:border-blue-500/30' 
+                  : 'bg-white/95 border-gray-200 hover:border-blue-300'
+              }`}
+            >
+              <div className="text-center">
+                <div className="relative mb-4">
+                  <div className="relative bg-gradient-to-r from-blue-600 to-blue-500 w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center mx-auto group-hover:scale-105 transition-transform duration-300">
+                    <TrendingUp className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                  </div>
+                </div>
+
+                <h3 className={`text-lg sm:text-xl font-bold mb-2 ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  I'm an Investor
+                </h3>
+                <p className={`text-sm sm:text-base mb-4 leading-relaxed ${
+                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  Discover verified farm opportunities, analyze trends, and build your portfolio.
+                </p>
+                <div className="flex justify-center">
+                  <span className="text-xs text-blue-700 bg-blue-100 rounded px-2 py-1 tooltip relative group">
+                    What does this mean?
+                    <span className="absolute left-1/2 -translate-x-1/2 mt-2 w-64 p-2 bg-white border border-blue-300 rounded shadow-lg text-xs text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                      As an Investor, you can browse and analyze farms, view their records, and invest in promising agricultural projects. You’ll also receive updates on your investments.
+                    </span>
+                  </span>
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  {[
+                    { icon: Shield, text: "Browse verified farm tokens" },
+                    { icon: BarChart3, text: "Access detailed market analysis" },
+                    { icon: TrendingUp, text: "Track investment performance" },
+                    { icon: Users, text: "Connect with farmers directly" }
+                  ].map(({ icon: Icon, text }, index) => (
+                    <div key={index} className="flex items-center text-left">
+                      <div className={`w-7 h-7 rounded-md flex items-center justify-center mr-2 flex-shrink-0 ${
+                        isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'
+                      }`}>
+                        <Icon className={`w-4 h-4 ${
+                          isDarkMode ? 'text-blue-400' : 'text-blue-600'
+                        }`} />
+                      </div>
+                      <span className={`text-xs sm:text-sm ${
+                        isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                      }`}>
+                        {text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="relative group/btn">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative py-2 sm:py-3 rounded-lg font-medium border flex items-center justify-center space-x-2 text-white">
+                    <span className="text-xs sm:text-sm font-semibold">
+                      Start as Investor
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="mt-8 sm:mt-10 text-center">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-5 text-xs sm:text-sm">
+              {[
+                'Blockchain Secured', 
+                'Zero Collateral Required', 
+                'Transparent Returns', 
+                'Africa-First Platform'
+              ].map((item) => (
+                <div key={item} className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-600 mr-1.5" />
+                  <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                    {item}
+                  </span>
+                </div>
+              ))}
             </div>
-          </Link>
-
-          {/* Investor Card */}
-          <Link 
-            to="/investor/dashboard"
-            className="group bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="text-center">
-              <div className="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors">
-                <TrendingUp className="h-10 w-10 text-blue-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">I'm an Investor</h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Discover agricultural investment opportunities, analyze market trends, 
-                and build a sustainable investment portfolio.
-              </p>
-              
-              <div className="space-y-2 text-left mb-8">
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Browse verified farm investments
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Access detailed market analysis
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Track investment performance
-                </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  Connect with farmers directly
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center text-blue-600 font-medium group-hover:text-blue-700">
-                Get Started as Investor
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </Link>
+          </div>
         </div>
       </div>
     </div>

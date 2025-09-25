@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, FileText, DollarSign, TrendingUp, Calendar, BookOpen, Sprout } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, DollarSign, TrendingUp, Calendar, BookOpen, Sprout, Moon, Sun } from 'lucide-react';
 
 const categories = {
-  inputs: { name: 'Inputs', icon: Sprout, color: 'bg-green-500', items: ['Seeds', 'Fertilizers', 'Pesticides', 'Tools'] },
-  labor: { name: 'Labor', icon: FileText, color: 'bg-blue-500', items: ['Planting', 'Weeding', 'Harvesting', 'General'] },
-  opex: { name: 'OpEx', icon: DollarSign, color: 'bg-purple-500', items: ['Transport', 'Storage', 'Processing', 'Marketing'] },
-  yields: { name: 'Yields', icon: TrendingUp, color: 'bg-orange-500', items: ['Harvest Records', 'Quality Assessment', 'Storage'] },
-  sales: { name: 'Sales', icon: DollarSign, color: 'bg-indigo-500', items: ['Direct Sales', 'Market Sales', 'Contract Sales'] }
+  inputs: { name: 'Inputs', icon: Sprout, items: ['Seeds', 'Fertilizers', 'Pesticides', 'Tools'] },
+  labor: { name: 'Labor', icon: FileText, items: ['Planting', 'Weeding', 'Harvesting', 'General'] },
+  opex: { name: 'OpEx', icon: DollarSign, items: ['Transport', 'Storage', 'Processing', 'Marketing'] },
+  yields: { name: 'Yields', icon: TrendingUp, items: ['Harvest Records', 'Quality Assessment', 'Storage'] },
+  sales: { name: 'Sales', icon: DollarSign, items: ['Direct Sales', 'Market Sales', 'Contract Sales'] }
 };
 
 export const FarmerRecords = ({ onBack, onSaveRecord }) => {
@@ -17,49 +17,84 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '2024-01-01', to: '2024-12-31' });
+  const [darkMode, setDarkMode] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   const handleInputChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleFileUpload = e => setUploadedFiles([...uploadedFiles, ...Array.from(e.target.files)]);
 
   const handleSubmit = async () => {
-    if (!selectedCategory || !selectedSubcategory) return;
+    if (!selectedCategory || !selectedSubcategory) {
+      setValidationError('Please select a category and subcategory.');
+      return;
+    }
+    if (!formData.name || !formData.cost || !formData.date) {
+      setValidationError('Please fill in all required fields (name, cost, date).');
+      return;
+    }
+    setValidationError('');
     const payload = { category: selectedCategory, subcategory: selectedSubcategory, ...formData, files: uploadedFiles };
     try {
       await onSaveRecord(payload);
       setFormData({ name: '', cost: '', date: '', supplier: '', description: '' });
       setUploadedFiles([]);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
       setView('categories');
     } catch (err) {
       console.error('Error saving record:', err);
     }
   };
 
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+
+  const themeClasses = {
+    bg: darkMode ? 'bg-green-950' : 'bg-gray-50',
+    text: darkMode ? 'text-white' : 'text-gray-900',
+    textSecondary: darkMode ? 'text-gray-300' : 'text-gray-600',
+    card: darkMode ? 'bg-green-900/30' : 'bg-white',
+    input: darkMode ? 'bg-green-900/50 border-green-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900',
+    buttonSecondary: darkMode ? 'bg-green-900/50 hover:bg-green-800/50 text-white border border-green-700' : 'bg-gray-200 hover:bg-gray-300 text-gray-900',
+    subcategoryButton: darkMode ? 'bg-green-900/50 hover:bg-green-800/50 text-white border border-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+  };
+
   // Books View
   if (view === 'books') return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 p-6">
-      <button onClick={onBack} className="flex items-center space-x-2 text-green-600 mb-6">
-        <ArrowLeft /> Back to Dashboard
-      </button>
+    <div className={`min-h-screen ${themeClasses.bg} ${themeClasses.text} p-6`}>
+     {/* Dark Mode Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <button
+          onClick={toggleDarkMode}
+          className={`p-3 rounded-full shadow-lg transition-all duration-300 ${
+            darkMode 
+              ? 'bg-green-900 text-yellow-400 hover:bg-green-800' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
+      </div>
 
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-green-500 rounded flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-green-500 rounded flex items-center justify-center shadow-lg">
             <BookOpen className="w-6 h-6 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-bold">Farm Record Books</h1>
-            <p className="text-gray-600">Manage your farm records, expenses, and yields</p>
+            <p className={themeClasses.textSecondary}>Manage your farm records, expenses, and yields</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button onClick={() => setView('categories')} className="bg-green-500 text-white py-4 rounded-lg shadow hover:bg-green-600 flex items-center justify-center space-x-2">
+          <button onClick={() => setView('categories')} className="bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg shadow-lg hover:from-green-700 hover:to-green-600 transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2">
             <FileText /> <span>Enter Records</span>
           </button>
-          <button onClick={() => document.getElementById('image-upload').click()} className="bg-blue-500 text-white py-4 rounded-lg shadow hover:bg-blue-600 flex items-center justify-center space-x-2">
+          <button onClick={() => document.getElementById('image-upload').click()} className="bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg shadow-lg hover:from-green-700 hover:to-green-600 transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2">
             <Upload /> <span>Upload Images</span>
           </button>
-          <button onClick={() => document.getElementById('csv-upload').click()} className="bg-purple-500 text-white py-4 rounded-lg shadow hover:bg-purple-600 flex items-center justify-center space-x-2">
+          <button onClick={() => document.getElementById('csv-upload').click()} className="bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg shadow-lg hover:from-green-700 hover:to-green-600 transform hover:scale-105 transition-all duration-200 flex items-center justify-center space-x-2">
             <Upload /> <span>Upload CSV</span>
           </button>
         </div>
@@ -72,9 +107,19 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
 
   // Categories View
   if (view === 'categories') return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <button onClick={() => setView('books')} className="flex items-center space-x-2 text-green-600 mb-6">
-        <ArrowLeft /> Back to Books
+    <div className={`min-h-screen ${themeClasses.bg} ${themeClasses.text} p-6`}>
+      {/* Dark Mode Toggle */}
+      <div className="absolute top-6 right-6">
+        <button
+          onClick={toggleDarkMode}
+          className="p-3 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full shadow-lg hover:from-green-700 hover:to-green-600 transition-all duration-200"
+        >
+          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+        </button>
+      </div>
+
+      <button onClick={() => setView('books')} className="flex items-center space-x-2 text-green-500 hover:text-green-400 mb-6 transition-colors">
+        <ArrowLeft /> <span>Back to Books</span>
       </button>
 
       <h1 className="text-3xl font-bold mb-6">Select Category</h1>
@@ -83,7 +128,7 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
           const Icon = cat.icon;
           return (
             <button key={key} onClick={() => { setSelectedCategory(key); setView('subcategories'); }}
-              className={`${cat.color} p-6 rounded-lg shadow hover:scale-105 transform transition flex flex-col items-center`}>
+              className="bg-gradient-to-r from-green-600 to-green-500 p-6 rounded-lg shadow-lg hover:from-green-700 hover:to-green-600 hover:scale-105 transform transition-all duration-200 flex flex-col items-center">
               <Icon className="w-6 h-6 text-white mb-2" />
               <span className="text-white font-medium">{cat.name}</span>
             </button>
@@ -97,15 +142,25 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
   if (view === 'subcategories') {
     const cat = categories[selectedCategory];
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <button onClick={() => setView('categories')} className="flex items-center space-x-2 text-green-600 mb-6">
-          <ArrowLeft /> Back to Categories
+      <div className={`min-h-screen ${themeClasses.bg} ${themeClasses.text} p-6`}>
+        {/* Dark Mode Toggle */}
+        <div className="absolute top-6 right-6">
+          <button
+            onClick={toggleDarkMode}
+            className="p-3 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full shadow-lg hover:from-green-700 hover:to-green-600 transition-all duration-200"
+          >
+            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
+
+        <button onClick={() => setView('categories')} className="flex items-center space-x-2 text-green-500 hover:text-green-400 mb-6 transition-colors">
+          <ArrowLeft /> <span>Back to Categories</span>
         </button>
         <h1 className="text-3xl font-bold mb-6">{cat.name} Subcategories</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {cat.items.map((sub, idx) => (
             <button key={idx} onClick={() => { setSelectedSubcategory(sub); setView('inputs'); }}
-              className="bg-gray-100 p-6 rounded-lg shadow hover:bg-gray-200">{sub}</button>
+              className="bg-gradient-to-r from-green-600 to-green-500 p-6 rounded-lg shadow-lg hover:from-green-700 hover:to-green-600 transform hover:scale-105 transition-all duration-200 text-white font-medium">{sub}</button>
           ))}
         </div>
       </div>
@@ -116,25 +171,53 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
   if (view === 'inputs') {
     const cat = categories[selectedCategory];
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <button onClick={() => setView('subcategories')} className="flex items-center space-x-2 text-green-600 mb-6">
-          <ArrowLeft /> Back to Subcategories
+      <div className={`min-h-screen ${themeClasses.bg} ${themeClasses.text} p-6`}>
+        {/* Dark Mode Toggle */}
+        <div className="absolute top-6 right-6">
+          <button
+            onClick={toggleDarkMode}
+            className="p-3 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-full shadow-lg hover:from-green-700 hover:to-green-600 transition-all duration-200"
+          >
+            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
+
+        <button onClick={() => setView('subcategories')} className="flex items-center space-x-2 text-green-500 hover:text-green-400 mb-6 transition-colors">
+          <ArrowLeft /> <span>Back to Subcategories</span>
         </button>
         <h1 className="text-3xl font-bold mb-4">Add {cat.name} Record - {selectedSubcategory}</h1>
 
-        <div className="bg-white p-6 rounded-xl shadow space-y-4 max-w-2xl mx-auto">
-          <input name="name" placeholder="Item Name" value={formData.name} onChange={handleInputChange} className="w-full border px-3 py-2 rounded" />
-          <input name="cost" type="number" placeholder="Cost / Quantity" value={formData.cost} onChange={handleInputChange} className="w-full border px-3 py-2 rounded" />
-          <input name="date" type="date" value={formData.date} onChange={handleInputChange} className="w-full border px-3 py-2 rounded" />
-          <input name="supplier" placeholder="Supplier/Source" value={formData.supplier} onChange={handleInputChange} className="w-full border px-3 py-2 rounded" />
-          <textarea name="description" placeholder="Description" value={formData.description} onChange={handleInputChange} className="w-full border px-3 py-2 rounded" rows={4} />
+        <div className={`${themeClasses.card} p-6 rounded-xl shadow-lg space-y-4 max-w-2xl mx-auto`}>
+          <input name="name" placeholder="Item Name" value={formData.name} onChange={handleInputChange} className={`w-full border px-3 py-2 rounded ${themeClasses.input}`} />
+          <input name="cost" type="number" placeholder="Cost / Quantity" value={formData.cost} onChange={handleInputChange} className={`w-full border px-3 py-2 rounded ${themeClasses.input}`} />
+          <input name="date" type="date" value={formData.date} onChange={handleInputChange} className={`w-full border px-3 py-2 rounded ${themeClasses.input}`} />
+          <input name="supplier" placeholder="Supplier/Source" value={formData.supplier} onChange={handleInputChange} className={`w-full border px-3 py-2 rounded ${themeClasses.input}`} />
+          <textarea name="description" placeholder="Description" value={formData.description} onChange={handleInputChange} className={`w-full border px-3 py-2 rounded ${themeClasses.input}`} rows={4} />
 
-          <input type="file" multiple onChange={handleFileUpload} className="w-full" />
+          <input type="file" multiple onChange={handleFileUpload} className={`w-full ${darkMode ? 'text-white' : 'text-gray-900'}`} />
+
+          {/* File/Image Preview */}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {uploadedFiles.map((file, idx) => (
+                <div key={idx} className="bg-gray-100 rounded p-2 flex flex-col items-center">
+                  {file.type && file.type.startsWith('image') ? (
+                    <img src={URL.createObjectURL(file)} alt={file.name} className="w-20 h-20 object-cover rounded mb-1" />
+                  ) : (
+                    <span className="text-xs text-gray-600">{file.name}</span>
+                  )}
+                  <span className="text-xs text-gray-500 truncate">{file.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="flex space-x-4">
-            <button onClick={() => setView('subcategories')} className="flex-1 bg-gray-200 py-2 rounded">Cancel</button>
-            <button onClick={handleSubmit} className="flex-1 bg-green-500 text-white py-2 rounded hover:bg-green-600">Save</button>
+            <button onClick={() => setView('subcategories')} className={`flex-1 py-2 rounded transition-colors ${themeClasses.buttonSecondary}`}>Cancel</button>
+            <button onClick={handleSubmit} className="flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-2 rounded hover:from-green-700 hover:to-green-600 transition-all duration-200">Save</button>
           </div>
+          {validationError && <p className="text-red-500">{validationError}</p>}
+          {showToast && <p className="text-green-500">Record saved successfully!</p>}
         </div>
       </div>
     );

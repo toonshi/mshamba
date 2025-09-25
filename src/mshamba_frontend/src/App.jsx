@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 // Pages
 import Home from "./pages/Home";
 import { Auth } from "./pages/Auth";
-import ProfileSelection from "./pages/profileselection";
+import ProfileSelection from "./pages/ProfileSelection";
 
 // Farmer pages
 import FarmerDashboard from "./pages/farmer/FarmerDashboard";  

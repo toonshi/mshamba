@@ -1,6 +1,36 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Animations and transitions */
+.animated-card {
+  transition: box-shadow 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+.animated-card:hover {
+  box-shadow: 0 8px 32px 0 rgba(34,197,94,0.18), 0 1.5px 6px 0 rgba(0,0,0,0.06);
+  transform: translateY(-4px) scale(1.02);
+}
+.animated-btn {
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.animated-btn:hover {
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px 0 rgba(34,197,94,0.12);
+  transform: scale(1.04);
+}
+.animated-input:focus {
+  outline: 2px solid #22c55e;
+  box-shadow: 0 0 0 2px #bbf7d0;
+  transition: box-shadow 0.2s, outline 0.2s;
+}
+.bg-gradient-panel {
+  background: linear-gradient(120deg, #f0fdf4 0%, #bbf7d0 100%);
+}
+.spaced-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+}
 html,
 body,
 #root {

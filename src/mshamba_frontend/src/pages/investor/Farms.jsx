@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, DollarSign, Clock, Mail, Sprout } from 'lucide-react';
-import { mshamba_backend as backendActor } from "declarations/mshamba_backend"; // New import
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
-  const progressPercentage = (Number(farm.currentAmount) / Number(farm.targetAmount)) * 100;
+  const progressPercentage = (farm.currentAmount / farm.targetAmount) * 100;
   
   const getStatusColor = (currentAmount, targetAmount) => {
-    const percentage = (Number(currentAmount) / Number(targetAmount)) * 100;
+    const percentage = (currentAmount / targetAmount) * 100;
     if (percentage >= 100) return 'text-blue-600 bg-blue-100';
     if (percentage >= 75) return 'text-green-600 bg-green-100';
     if (percentage >= 50) return 'text-orange-600 bg-orange-100';
@@ -14,7 +13,7 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
   };
 
   const getStatusText = (currentAmount, targetAmount) => {
-    const percentage = (Number(currentAmount) / Number(targetAmount)) * 100;
+    const percentage = (currentAmount / targetAmount) * 100;
     if (percentage >= 100) return 'Fully Funded';
     if (percentage >= 75) return 'Almost Funded';
     if (percentage >= 50) return 'Half Funded';
@@ -25,7 +24,7 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative">
         <img
-          src={`/farm-image/${farm.farmId}`} // Construct URL to fetch image from backend
+          src={farm.image || 'https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'}
           alt={farm.name}
           className="w-full h-48 object-cover"
         />
@@ -52,42 +51,42 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
             <Sprout className="h-4 w-4 text-green-600 mr-2" />
             <span className="text-gray-600">{farm.size} • {farm.crop}</span>
           </div>
-          <div className="flex items-center">
-            <DollarSign className="h-4 w-4 text-blue-600 mr-2" />
-            <span className="text-gray-600">Min: ${Number(farm.minInvestment)?.toLocaleString() || 'N/A'}</span>
-          </div>
-        </div>
+          <div className="flex items-center">             
+               
+  <span className="text-gray-600">Min: KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</span>           
+</div>         
+</div>          
 
-        {farm.targetAmount && (
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Funding Progress</span>
-              <span>${Number(farm.currentAmount || 0).toLocaleString()} of ${Number(farm.targetAmount).toLocaleString()}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-green-600 h-2 rounded-full" 
-                style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-              ></div>
-            </div>
-            <div className="text-xs text-gray-500 mt-1">{progressPercentage.toFixed(0)}% funded</div>
-          </div>
-        )}
+{farm.targetAmount && (           
+  <div className="mb-4">             
+    <div className="flex justify-between text-sm text-gray-600 mb-2">               
+      <span>Funding Progress</span>               
+      <span>KSH {(farm.currentAmount || 0).toLocaleString('en-KE')} of KSH {farm.targetAmount.toLocaleString('en-KE')}</span>             
+    </div>             
+    <div className="w-full bg-gray-200 rounded-full h-2">               
+      <div                  
+        className="bg-green-600 h-2 rounded-full"                  
+        style={{ width: `${Math.min(progressPercentage, 100)}%` }}               
+      ></div>             
+    </div>             
+    <div className="text-xs text-gray-500 mt-1">{progressPercentage.toFixed(0)}% funded</div>           
+  </div>         
+)}          
 
-        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-1">
-              <DollarSign className="h-4 w-4 text-green-600" />
-            </div>
-            <p className="font-medium text-gray-900">${Number(farm.minInvestment)?.toLocaleString() || 'N/A'}</p>
-            <p className="text-gray-500">Min. Investment</p>
-          </div>
+<div className="grid grid-cols-2 gap-4 mb-4 text-sm">           
+  <div className="text-center">             
+    <div className="flex items-center justify-center mb-1">               
+                 
+    </div>             
+    <p className="font-medium text-gray-900">KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</p>             
+    <p className="text-gray-500">Min. Investment</p>           
+  </div>
           
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <Clock className="h-4 w-4 text-orange-600" />
             </div>
-            <p className="font-medium text-gray-900">{Number(farm.duration) || 'N/A'}m</p>
+            <p className="font-medium text-gray-900">{farm.duration || 'N/A'}m</p>
             <p className="text-gray-500">Duration</p>
           </div>
         </div>
@@ -119,26 +118,83 @@ const Farms = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
+  // TODO: Replace with actual backend API call
   useEffect(() => {
     const fetchFarms = async () => {
       try {
         setLoading(true);
-        const response = await backendActor.listFarms(); // Call backend API
-        const formattedFarms = response.map(farm => ({
-          id: farm.farmId,
-          name: farm.name,
-          location: farm.location,
-          crop: farm.crop,
-          size: farm.size,
-          minInvestment: Number(farm.minInvestment),
-          duration: Number(farm.duration),
-          targetAmount: Number(farm.fundingGoal),
-          currentAmount: Number(farm.fundedAmount),
-          createdAt: new Date(Number(farm.createdAt) / 1_000_000).toISOString().split('T')[0], // Convert nanoseconds to milliseconds
-          farmId: farm.farmId, // Keep farmId for image fetching
-          isOpenForInvestment: farm.isOpenForInvestment,
-        }));
-        setFarms(formattedFarms);
+        // Replace this with actual backend call
+        // const response = await backendActor.getAllFarms();
+        // setFarms(response);
+        
+        // Sample data for testing - remove when backend is connected
+        setFarms([
+          {
+            id: 1,
+            name: "Green Valley Maize Farm",
+            location: "Nakuru, Kenya",
+            crop: "Maize",
+            size: "10 acres",
+            minInvestment: 5000,
+            duration: 8,
+            targetAmount: 50000,
+            currentAmount: 15000,
+            createdAt: "2024-01-15",
+            image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 2,
+            name: "Highland Coffee Plantation",
+            location: "Kiambu, Kenya",
+            crop: "Coffee",
+            size: "15 acres",
+            minInvestment: 8000,
+            duration: 12,
+            targetAmount: 80000,
+            currentAmount: 35000,
+            createdAt: "2024-01-10",
+            image: "https://images.pexels.com/photos/894695/pexels-photo-894695.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 3,
+            name: "Sunrise Vegetable Gardens",
+            location: "Meru, Kenya",
+            crop: "Vegetables",
+            size: "5 acres",
+            minInvestment: 3000,
+            duration: 6,
+            targetAmount: 25000,
+            currentAmount: 8000,
+            createdAt: "2024-01-20",
+            image: "https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 4,
+            name: "Tropical Fruit Orchard",
+            location: "Machakos, Kenya",
+            crop: "Fruits",
+            size: "20 acres",
+            minInvestment: 10000,
+            duration: 10,
+            targetAmount: 100000,
+            currentAmount: 75000,
+            createdAt: "2024-01-05",
+            image: "https://images.pexels.com/photos/1132047/pexels-photo-1132047.jpeg?auto=compress&cs=tinysrgb&w=400"
+          },
+          {
+            id: 5,
+            name: "Golden Wheat Fields",
+            location: "Uasin Gishu, Kenya",
+            crop: "Maize",
+            size: "25 acres",
+            minInvestment: 12000,
+            duration: 7,
+            targetAmount: 120000,
+            currentAmount: 45000,
+            createdAt: "2024-01-25",
+            image: "https://images.pexels.com/photos/265216/pexels-photo-265216.jpeg?auto=compress&cs=tinysrgb&w=400"
+          }
+        ]);
       } catch (error) {
         console.error('Error fetching farms:', error);
         setFarms([]);
@@ -156,7 +212,6 @@ const Farms = () => {
     { value: 'coffee', label: 'Coffee' },
     { value: 'vegetables', label: 'Vegetables' },
     { value: 'fruits', label: 'Fruits' },
-    { value: 'openForInvestment', label: 'Open for Investment' }, // New filter
   ];
 
   const sortOptions = [
@@ -170,7 +225,7 @@ const Farms = () => {
                          farm.crop?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFilter = selectedFilter === 'all' || 
-                         (selectedFilter === 'openForInvestment' ? farm.isOpenForInvestment : farm.crop?.toLowerCase().includes(selectedFilter.toLowerCase()));
+                         farm.crop?.toLowerCase().includes(selectedFilter.toLowerCase());
     
     return matchesSearch && matchesFilter;
   });
@@ -180,7 +235,7 @@ const Farms = () => {
       case 'investment':
         return (a.minInvestment || 0) - (b.minInvestment || 0);
       case 'newest':
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       default:
         return 0;
     }
@@ -294,15 +349,15 @@ const Farms = () => {
         </div>
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center space-x-2 mb-2">
-            <DollarSign className="w-5 h-5 text-purple-600" />
             <span className="text-sm font-medium text-gray-600">Min Investment</span>
           </div>
           <div className="text-2xl font-bold text-purple-600">
-            {farms.length > 0 
-              ? `${Math.min(...farms.map(farm => farm.minInvestment || Infinity)).toLocaleString()}`
-              : 'N/A'
-            }
-          </div>
+  {farms.length > 0 
+    ? `KSH ${Math.min(...farms.map(farm => farm.minInvestment || Infinity)).toLocaleString('en-KE')}`
+    : 'N/A'
+  }
+</div>
+
         </div>
         <div className="bg-white rounded-xl shadow-sm border p-6">
           <div className="flex items-center space-x-2 mb-2">
