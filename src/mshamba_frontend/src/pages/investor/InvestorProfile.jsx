@@ -121,34 +121,32 @@ const InvestorProfile = () => {
         </div>
       </div>
 
-      {/* Investment Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <StatCard
-          label="Total Invested"
-          value={`$${totalInvested.toLocaleString()}`}
-          icon={<DollarSign className="h-6 w-6 text-green-600" />}
-          bg="bg-green-100"
-        />
-        <StatCard
-          label="Current Value"
-          value={`$${totalCurrentValue.toLocaleString()}`}
-          icon={<TrendingUp className="h-6 w-6 text-blue-600" />}
-          bg="bg-blue-100"
-        />
-        <StatCard
-          label="Total Returns"
-          value={`$${totalReturns.toLocaleString()}`}
-          icon={<TrendingUp className="h-6 w-6 text-green-600" />}
-          bg="bg-green-100"
-        />
-        <StatCard
-          label="Avg Return"
-          value={`${averageReturn}%`}
-          icon={<Calendar className="h-6 w-6 text-blue-600" />}
-          bg="bg-blue-100"
-        />
-      </div>
-
+     {/* Investment Overview */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+  <StatCard
+    label="Total Invested"
+    value={`KSH ${totalInvested.toLocaleString('en-KE')}`}
+    bg="bg-green-100"
+  />
+  <StatCard
+    label="Current Value"
+    value={`KSH ${totalCurrentValue.toLocaleString('en-KE')}`}
+    icon={<TrendingUp className="h-6 w-6 text-blue-600" />}
+    bg="bg-blue-100"
+  />
+  <StatCard
+    label="Total Returns"
+    value={`KSH ${totalReturns.toLocaleString('en-KE')}`}
+    icon={<TrendingUp className="h-6 w-6 text-green-600" />}
+    bg="bg-green-100"
+  />
+  <StatCard
+    label="Avg Return"
+    value={`${averageReturn}%`}
+    icon={<Calendar className="h-6 w-6 text-blue-600" />}
+    bg="bg-blue-100"
+  />
+</div>
       {/* Profile Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Personal Info */}
@@ -233,10 +231,10 @@ const InvestorProfile = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              <p>
-                <strong>Capacity:</strong> $
-                {profileData.investmentCapacity.toLocaleString()}
-              </p>
+             <p>
+  <strong>Capacity:</strong> KSH {profileData.investmentCapacity.toLocaleString('en-KE')}
+</p>
+
               <p>
                 <strong>Risk:</strong> {profileData.riskTolerance}
               </p>
@@ -285,8 +283,12 @@ const InvestorProfile = () => {
               {investments.map((investment) => (
                 <tr key={investment.id} className="hover:bg-gray-50">
                   <td className="px-4 sm:px-6 py-2 sm:py-4">{investment.farmName}</td>
-                  <td className="px-4 sm:px-6 py-2 sm:py-4">${Number(investment.amount).toLocaleString()}</td>
-                  <td className="px-4 sm:px-6 py-2 sm:py-4">${Number(investment.currentValue).toLocaleString()}</td>
+                  <td className="px-4 sm:px-6 py-2 sm:py-4">
+  KSH {Number(investment.amount).toLocaleString('en-KE')}
+</td>
+<td className="px-4 sm:px-6 py-2 sm:py-4">
+  KSH {Number(investment.currentValue).toLocaleString('en-KE')}
+</td>
                   <td className="px-4 sm:px-6 py-2 sm:py-4 text-green-600">
                     +{(((investment.currentValue / investment.amount) - 1) * 100).toFixed(1)}%
                   </td>

@@ -45,8 +45,14 @@ public type Farm = {
   investors: [Principal];
   valuationHistory: [Nat];
   sharePriceHistory: [Nat];
-  ledgerCanister: ?Principal;   // NEW: the deployed ledger canister for this farm
-  isOpenForInvestment: Bool;   // NEW: flag to indicate if farm is open for investment
+  ledgerCanister: ?Principal;
+  isOpenForInvestment: Bool;
+  imageContent: Blob; // Image content as Blob
+  imageContentType: Text; // e.g., "image/jpeg", "image/png"
+  crop: Text;
+  size: Text;
+  duration: Nat; // in months
+  minInvestment: Nat;
 };
 
 
@@ -188,6 +194,19 @@ public type Farm = {
     netProfit : Nat;
     yieldPerAcre : Float;
     qualityGrade : Text;
+  };
+
+  public type HttpRequest = {
+    method: Text;
+    url: Text;
+    headers: [(Text, Text)];
+    body: Blob;
+  };
+
+  public type HttpResponse = {
+    status_code: Nat;
+    headers: [(Text, Text)];
+    body: Blob;
   };
 
   public type Result<T> = { #ok : T; #err : Text };

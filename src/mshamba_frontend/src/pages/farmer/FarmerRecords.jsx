@@ -18,17 +18,29 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateRange, setDateRange] = useState({ from: '2024-01-01', to: '2024-12-31' });
   const [darkMode, setDarkMode] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   const handleInputChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleFileUpload = e => setUploadedFiles([...uploadedFiles, ...Array.from(e.target.files)]);
 
   const handleSubmit = async () => {
-    if (!selectedCategory || !selectedSubcategory) return;
+    if (!selectedCategory || !selectedSubcategory) {
+      setValidationError('Please select a category and subcategory.');
+      return;
+    }
+    if (!formData.name || !formData.cost || !formData.date) {
+      setValidationError('Please fill in all required fields (name, cost, date).');
+      return;
+    }
+    setValidationError('');
     const payload = { category: selectedCategory, subcategory: selectedSubcategory, ...formData, files: uploadedFiles };
     try {
       await onSaveRecord(payload);
       setFormData({ name: '', cost: '', date: '', supplier: '', description: '' });
       setUploadedFiles([]);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
       setView('categories');
     } catch (err) {
       console.error('Error saving record:', err);
@@ -70,8 +82,8 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
             <BookOpen className="w-6 h-6 text-white" />
           </div>
           <div>
-          <h1 className="text-3xl font-bold">To setup your investment enter your farmer record books</h1>
-  <p className="text-gray-400">Track capital investments, operating expenses, and revenue to monitor farm profitability and make informed financial decisions</p>
+            <h1 className="text-3xl font-bold">Farm Record Books</h1>
+            <p className={themeClasses.textSecondary}>Manage your farm records, expenses, and yields</p>
           </div>
         </div>
 
@@ -184,10 +196,28 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
 
           <input type="file" multiple onChange={handleFileUpload} className={`w-full ${darkMode ? 'text-white' : 'text-gray-900'}`} />
 
+          {/* File/Image Preview */}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {uploadedFiles.map((file, idx) => (
+                <div key={idx} className="bg-gray-100 rounded p-2 flex flex-col items-center">
+                  {file.type && file.type.startsWith('image') ? (
+                    <img src={URL.createObjectURL(file)} alt={file.name} className="w-20 h-20 object-cover rounded mb-1" />
+                  ) : (
+                    <span className="text-xs text-gray-600">{file.name}</span>
+                  )}
+                  <span className="text-xs text-gray-500 truncate">{file.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex space-x-4">
             <button onClick={() => setView('subcategories')} className={`flex-1 py-2 rounded transition-colors ${themeClasses.buttonSecondary}`}>Cancel</button>
             <button onClick={handleSubmit} className="flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-2 rounded hover:from-green-700 hover:to-green-600 transition-all duration-200">Save</button>
           </div>
+          {validationError && <p className="text-red-500">{validationError}</p>}
+          {showToast && <p className="text-green-500">Record saved successfully!</p>}
         </div>
       </div>
     );

@@ -74,10 +74,9 @@ const InvestorsList = () => {
           
           <div className="bg-blue-50 rounded-lg p-3 sm:p-4">
             <div className="flex items-center mb-2">
-              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 mr-2" />
               <span className="font-medium text-gray-900 text-xs sm:text-sm lg:text-base">Total Investment</span>
             </div>
-            <p className="text-lg sm:text-2xl font-bold text-blue-600">${totalInvestment.toLocaleString()}</p>
+            <p className="text-lg sm:text-2xl font-bold text-blue-600">KSh{totalInvestment.toLocaleString('en-KE')}</p>
           </div>
           
           <div className="bg-orange-50 rounded-lg p-3 sm:p-4">
@@ -144,7 +143,7 @@ const InvestorsList = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      ${investor.investment.toLocaleString()}
+                      KSh{investor.investment.toLocaleString('en-KE')}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -209,7 +208,7 @@ const InvestorsList = () => {
                   <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                     <div>
                       <p className="text-gray-500">Investment</p>
-                      <p className="font-medium text-gray-900">${investor.investment.toLocaleString()}</p>
+                      <p className="font-medium text-gray-900">KSh{investor.investment.toLocaleString('en-KE')}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Projects</p>
@@ -243,7 +242,7 @@ const InvestorsList = () => {
                 <DollarSign className="h-4 w-4 text-green-600" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900">David Thompson invested $25,000</p>
+                <p className="text-sm font-medium text-gray-900">David Thompson invested KSh25,000</p>
                 <p className="text-sm text-gray-500 truncate">Almond Grove Expansion Project</p>
               </div>
             </div>
@@ -257,7 +256,7 @@ const InvestorsList = () => {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-900">New investor joined: Lisa Wang</p>
-                <p className="text-sm text-gray-500 truncate">Invested $30,000 in irrigation project</p>
+                <p className="text-sm text-gray-500 truncate">Invested KSh30,000 in irrigation project</p>
               </div>
             </div>
             <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap ml-2">1 day ago</span>
@@ -270,7 +269,7 @@ const InvestorsList = () => {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-900">Return payment processed</p>
-                <p className="text-sm text-gray-500 truncate">$3,200 distributed to Sarah Johnson</p>
+                <p className="text-sm text-gray-500 truncate">KSh3,200 distributed to Sarah Johnson</p>
               </div>
             </div>
             <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap ml-2">3 days ago</span>

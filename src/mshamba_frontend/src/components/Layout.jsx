@@ -7,19 +7,16 @@ import {
   Users, 
   BarChart3, 
   User,
-  LogIn,
   LogOut,
   TrendingUp,
   MapPin,
   Menu,
   X
 } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
 
 const Layout = ({ children, userType, userName = "User" }) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { login, logout, isAuthenticated } = useAuth();
   
   const farmerNavItems = [
     { path: '/farmer/dashboard', icon: LayoutDashboard, label: 'Farm Profile' },
@@ -105,34 +102,23 @@ const Layout = ({ children, userType, userName = "User" }) => {
 
         {/* User Profile & Logout */}
         <div className="p-4 border-t bg-green-50">
-          {isAuthenticated ? (
-            <>
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0 shadow-md">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-green-800 truncate">{userName}</p>
-                  <p className="text-sm text-green-600 capitalize font-medium">{userType}</p>
-                </div>
-              </div>
-              <button
-                onClick={logout}
-                className="flex items-center px-4 py-2 text-green-700 hover:bg-green-200 hover:text-green-800 rounded-lg transition-colors w-full font-medium"
-              >
-                <LogOut className="h-4 w-4 mr-3" />
-                Logout
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={login}
-              className="flex items-center px-4 py-2 text-green-700 hover:bg-green-200 hover:text-green-800 rounded-lg transition-colors w-full font-medium"
-            >
-              <LogIn className="h-4 w-4 mr-3" />
-              Login
-            </button>
-          )}
+          <div className="flex items-center mb-4">
+            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0 shadow-md">
+              <User className="h-5 w-5 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-green-800 truncate">{userName}</p>
+              <p className="text-sm text-green-600 capitalize font-medium">{userType}</p>
+            </div>
+          </div>
+          <Link
+            to="/auth"
+            onClick={closeSidebar}
+            className="flex items-center px-4 py-2 text-green-700 hover:bg-green-200 hover:text-green-800 rounded-lg transition-colors w-full font-medium"
+          >
+            <LogOut className="h-4 w-4 mr-3" />
+            Logout
+          </Link>
         </div>
       </div>
 
