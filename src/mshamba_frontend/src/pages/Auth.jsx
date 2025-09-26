@@ -37,7 +37,7 @@ export const Auth = ({ onBack }) => {
 
         if (profileResult.length === 0) { // No profile found
           console.log("No profile found, redirecting to profile creation page (useEffect).");
-          navigate("/create-profile"); // Redirect to the new profile creation page
+          navigate(`/create-profile?type=${userType}`); // Redirect to the new profile creation page
         } else { // Profile exists, redirect
           console.log("Profile found, redirecting (useEffect).");
           if (userType === "farmer") {
@@ -195,7 +195,7 @@ export const Auth = ({ onBack }) => {
             </div>
 
             {/* Authentication section */}
-            {!principal ? (
+            {!isAuthenticated ? (
               <div className="space-y-6">
                 <div className="text-center">
                   <h3 className={`text-lg font-medium mb-2 ${
