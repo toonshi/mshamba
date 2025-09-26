@@ -53,6 +53,12 @@ public type Farm = {
   size: Text;
   duration: Nat; // in months
   minInvestment: Nat;
+  expectedYield: Text;
+  expectedROI: Text;
+  farmerName: Text;
+  experience: Text;
+  phone: Text;
+  email: Text;
 };
 
 

@@ -31,7 +31,16 @@ module {
     name: Text,
     description: Text,
     location: Text,
-    fundingGoal: Nat
+    fundingGoal: Nat,
+    size: Text,
+    crop: Text,
+    duration: Nat,
+    expectedYield: Text,
+    expectedROI: Text,
+    farmerName: Text,
+    experience: Text,
+    phone: Text,
+    email: Text
   ) : Types.Result<Farm> {
 
     let farmId = "farm-" # Int.toText(Time.now());
@@ -55,10 +64,16 @@ module {
       ledgerCanister = null; // Initially no ledger canister deployed
       imageContent = ""; // Initialize new field
       imageContentType = ""; // Initialize new field
-      crop = ""; // Initialize new field
-      size = ""; // Initialize new field
-      duration = 0; // Initialize new field
+      crop = crop;
+      size = size;
+      duration = duration;
       minInvestment = 0; // Initialize new field
+      expectedYield = expectedYield;
+      expectedROI = expectedROI;
+      farmerName = farmerName;
+      experience = experience;
+      phone = phone;
+      email = email;
     };
 
     farms.put(farmId, newFarm);

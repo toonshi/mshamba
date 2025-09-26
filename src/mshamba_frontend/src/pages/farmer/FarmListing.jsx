@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Upload,
@@ -10,8 +10,10 @@ import {
   TrendingUp,
   FileText,
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 export const FarmListing = ({ onBack }) => {
+  const { actor } = useAuth();
   const [farms, setFarms] = useState([]);
   const [formData, setFormData] = useState({
     farmName: "",
@@ -32,6 +34,18 @@ export const FarmListing = ({ onBack }) => {
   const [step, setStep] = useState(1);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [validationError, setValidationError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchFarms = async () => {
+    if (actor) {
+      const userFarms = await actor.myFarms();
+      setFarms(userFarms);
+    }
+  };
+
+  useEffect(() => {
+    fetchFarms();
+  }, [actor]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -68,28 +82,57 @@ export const FarmListing = ({ onBack }) => {
 
   const handlePrev = () => setStep(step - 1);
 
-  const handleAddFarm = (e) => {
+  const handleAddFarm = async (e) => {
     e.preventDefault();
     if (!validateStep()) return;
-    setFarms([...farms, { ...formData, images }]);
-    setShowConfirmation(true);
-    setFormData({
-      farmName: "",
-      location: "",
-      size: "",
-      cropType: "",
-      expectedYield: "",
-      investmentNeeded: "",
-      duration: "",
-      expectedROI: "",
-      description: "",
-      farmerName: "",
-      experience: "",
-      phone: "",
-      email: "",
-    });
-    setImages([]);
-    setStep(1);
+
+    setIsLoading(true);
+    try {
+      const result = await actor.createFarm(
+        formData.farmName,
+        formData.description,
+        formData.location,
+        BigInt(formData.investmentNeeded),
+        formData.size,
+        formData.cropType,
+        BigInt(formData.duration),
+        formData.expectedYield,
+        formData.expectedROI,
+        formData.farmerName,
+        formData.experience,
+        formData.phone,
+        formData.email
+      );
+
+      if (result.ok) {
+        setShowConfirmation(true);
+        setFormData({
+          farmName: "",
+          location: "",
+          size: "",
+          cropType: "",
+          expectedYield: "",
+          investmentNeeded: "",
+          duration: "",
+          expectedROI: "",
+          description: "",
+          farmerName: "",
+          experience: "",
+          phone: "",
+          email: "",
+        });
+        setImages([]);
+        setStep(1);
+        fetchFarms(); // Refresh the list of farms
+      } else {
+        setValidationError(result.err);
+      }
+    } catch (error) {
+      console.error("Failed to create farm:", error);
+      setValidationError("An error occurred while creating the farm.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

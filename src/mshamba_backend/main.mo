@@ -9,7 +9,7 @@ import Types "lib/types";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter"; // Added import for Iter
 
-actor {
+persistent actor {
 
   public type Allocation = TF.Allocation;
 
@@ -23,8 +23,8 @@ actor {
   stable var stableProfileValues : [UserProfileModule.Profile] = [];
 
   // Non-stable variables, initialized from stable memory in post_upgrade
-  var farmStore : HashMap.HashMap<Text, FarmModule.Farm> = FarmModule.newFarmStore();
-  var profileStore : HashMap.HashMap<Principal, UserProfileModule.Profile> = UserProfileModule.newProfileStore();
+  transient var farmStore : HashMap.HashMap<Text, FarmModule.Farm> = FarmModule.newFarmStore();
+  transient var profileStore : HashMap.HashMap<Principal, UserProfileModule.Profile> = UserProfileModule.newProfileStore();
 
   // ==============================
   // HELPERS
@@ -61,10 +61,19 @@ actor {
     name : Text,
     description : Text,
     location : Text,
-    fundingGoal : Nat
+    fundingGoal : Nat,
+    size: Text,
+    crop: Text,
+    duration: Nat,
+    expectedYield: Text,
+    expectedROI: Text,
+    farmerName: Text,
+    experience: Text,
+    phone: Text,
+    email: Text
   ) : async FarmModule.Result<FarmModule.Farm> {
     switch (getFarmerProfile(caller)) {
-      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal) };
+      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email) };
       case null { #err("Only farmers can create farms or profile not found") };
     }
   };
