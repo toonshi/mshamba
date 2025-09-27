@@ -8,6 +8,8 @@ import Array "mo:base/Array";
 import Types "lib/types";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter"; // Added import for Iter
+import Debug "mo:base/Debug";
+import Blob "mo:base/Blob";
 
 persistent actor {
 
@@ -47,7 +49,11 @@ persistent actor {
     role : UserProfileModule.Role,
     certifications : [Text]
   ) : async Bool {
-    UserProfileModule.createProfile(profileStore, caller, name, bio, role, certifications)
+    Debug.print("createProfile called by: " # Principal.toText(caller));
+    Debug.print("Name: " # name # ", Bio: " # bio # ", Role: " # debug_show(role) # ", Certs: " # debug_show(certifications));
+    let result = UserProfileModule.createProfile(profileStore, caller, name, bio, role, certifications);
+    Debug.print("UserProfileModule.createProfile returned: " # debug_show(result));
+    result
   };
 
   public query func getProfile(owner : Principal) : async ?UserProfileModule.Profile {
@@ -73,7 +79,7 @@ persistent actor {
     email: Text
   ) : async FarmModule.Result<FarmModule.Farm> {
     switch (getFarmerProfile(caller)) {
-      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email) };
+      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email, Blob.fromArray([]), "") };
       case null { #err("Only farmers can create farms or profile not found") };
     }
   };

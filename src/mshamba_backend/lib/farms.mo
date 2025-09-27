@@ -40,7 +40,9 @@ module {
     farmerName: Text,
     experience: Text,
     phone: Text,
-    email: Text
+    email: Text,
+    imageContent: Blob,
+    imageContentType: Text
   ) : Types.Result<Farm> {
 
     let farmId = "farm-" # Int.toText(Time.now());
@@ -62,8 +64,8 @@ module {
       valuationHistory = [];
       sharePriceHistory = [];
       ledgerCanister = null; // Initially no ledger canister deployed
-      imageContent = ""; // Initialize new field
-      imageContentType = ""; // Initialize new field
+      imageContent = imageContent;
+      imageContentType = imageContentType;
       crop = crop;
       size = size;
       duration = duration;

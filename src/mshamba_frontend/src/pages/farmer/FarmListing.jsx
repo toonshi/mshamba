@@ -87,6 +87,16 @@ export const FarmListing = ({ onBack }) => {
     if (!validateStep()) return;
 
     setIsLoading(true);
+    let imageContent = [];
+    let imageContentType = "";
+
+    if (images.length > 0) {
+      const file = images[0];
+      imageContentType = file.type;
+      const arrayBuffer = await file.arrayBuffer();
+      imageContent = new Uint8Array(arrayBuffer);
+    }
+
     try {
       const result = await actor.createFarm(
         formData.farmName,
@@ -101,7 +111,9 @@ export const FarmListing = ({ onBack }) => {
         formData.farmerName,
         formData.experience,
         formData.phone,
-        formData.email
+        formData.email,
+        imageContent,
+        imageContentType
       );
 
       if (result.ok) {
@@ -226,6 +238,15 @@ export const FarmListing = ({ onBack }) => {
                   value={formData.investmentNeeded}
                   onChange={handleInputChange}
                   placeholder="Investment Needed ($)"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
+                  required
+                />
+                <input
+                  type="number"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleInputChange}
+                  placeholder="Duration (in months)"
                   className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 sm:px-4 py-2 sm:py-3 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm sm:text-base"
                   required
                 />
