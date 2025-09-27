@@ -4,14 +4,14 @@ import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Array "mo:base/Array";
-import TF "canister:token_factory";
+
 import Types "lib/types";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter"; // Added import for Iter
 
 persistent actor {
 
-  public type Allocation = TF.Allocation;
+  
 
   type Farm = FarmModule.Farm;
   type Profile = UserProfileModule.Profile;
@@ -89,52 +89,7 @@ persistent actor {
   // ==============================
   // INVESTMENT (Token Factory Integration)
   // ==============================
-  public shared ({ caller }) func openFarmInvestment(
-    farmId : Text,
-    tokenName : Text,
-    tokenSymbol : Text,
-    initialSupply : Nat,
-    investorAllocs : [Allocation],
-    vestingDays : Nat,
-    transferFee : Nat,
-    extraControllers : [Principal],
-    cyclesToSpend : ?Nat
-  ) : async FarmModule.Result<FarmModule.Farm> {
 
-    // 1️⃣ Retrieve the farm and ensure it exists & is open
-    let farmResult = FarmModule.getFarm(farmId, farmStore);
-   switch (farmResult) {
-      case (#err(msg)) { return #err(msg) };
-      case (#ok(farm)) {
-    if (not farm.isOpenForInvestment) {
-      return #err("This farm is not open for investment");
-    };
-
-        // 2️⃣ Update farm funding and investors
-        let investedFarm = switch (FarmModule.investInFarm(caller, farmId, initialSupply, farmStore)) {
-          case (#ok(f)) { f };
-          case (#err(msg)) { return #err(msg) };
-        };
-
-        // 3️⃣ Call Token Factory to create investment tokens
-        let _ledgerId = await TF.createFarmLedger(
-          tokenName,
-          tokenSymbol,
-          investedFarm.owner,
-          initialSupply,
-          investorAllocs,
-          null,          // governance placeholder
-          vestingDays,
-          transferFee,
-          Array.append(extraControllers, [Principal.fromText("ulvla-h7777-77774-qaacq-cai")]),
-          cyclesToSpend
-        );
-
-        // 4️⃣ Return the updated farm
-        #ok(investedFarm)
-      }
-    }
-  };
 
   // ==============================
   // FARMER ACTIONS

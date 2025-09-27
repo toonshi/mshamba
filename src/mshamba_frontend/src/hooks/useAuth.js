@@ -16,7 +16,14 @@ export function useAuth() {
       if (await client.isAuthenticated()) {
         const identity = client.getIdentity();
         setIdentity(identity);
-        const actor = await createMshambaBackendActor(mshambaBackendCanisterId, { agentOptions: { identity } });
+        const agent = new HttpAgent({
+          identity,
+          host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
+        });
+        if (process.env.DFX_NETWORK !== "ic") {
+          await agent.fetchRootKey();
+        }
+        const actor = await createMshambaBackendActor(mshambaBackendCanisterId, { agent });
         setActor(actor);
         setIsAuthenticated(true);
       }
@@ -26,13 +33,20 @@ export function useAuth() {
   const login = async () => {
     if (!authClient) return;
     await authClient.login({
-      identityProvider: process.env.NODE_ENV === "development"
-        ? `http://localhost:4943?canisterId=${process.env.CANISTER_ID_INTERNET_IDENTITY}`
+      identityProvider: process.env.DFX_NETWORK === "local"
+        ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/`
         : "https://identity.ic0.app",
       onSuccess: async () => {
         const identity = authClient.getIdentity();
         setIdentity(identity);
-        const actor = await createMshambaBackendActor(mshambaBackendCanisterId, { agentOptions: { identity } });
+        const agent = new HttpAgent({
+          identity,
+          host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
+        });
+        if (process.env.DFX_NETWORK !== "ic") {
+          await agent.fetchRootKey();
+        }
+        const actor = await createMshambaBackendActor(mshambaBackendCanisterId, { agent });
         setActor(actor);
         setIsAuthenticated(true);
       },

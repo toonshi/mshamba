@@ -1,15 +1,23 @@
 {
   "canisters": {
-    "token_factory": {
-      "type": "motoko",
-      "main": "src/factory/main.mo"
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "shrink": false,
+      "remote": {
+        "candid": "internet_identity.did",
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      },
+      "hostname": "internet_identity.localhost",
+      "origin": "http://internet_identity.localhost:4943"
     },
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko",
-      "dependencies": [
-        "token_factory"
-      ]
+      "build": ["--enhanced-orthogonal-persistence"]
     },
     "mshamba_frontend": {
       "type": "assets",
@@ -52,7 +60,7 @@
   },
   "defaults": {
     "build": {
-      "args": "",
+      "args": "--enhanced-orthogonal-persistence",
       "packtool": ""
     }
   },
