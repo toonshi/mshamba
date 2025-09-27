@@ -3,12 +3,18 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent, Actor } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { canisterId as mshambaBackendCanisterId, createActor as createMshambaBackendActor } from "declarations/mshamba_backend";
+import { canisterId as icrc1LedgerCanisterId, createActor as createIcrc1LedgerActor } from "declarations/icrc1_ledger";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [actor, setActor] = useState(null); // Will be set to authenticated actor
   const [identity, setIdentity] = useState(null);
   const [authClient, setAuthClient] = useState(null);
+
+  // Plug Wallet states
+  const [isPlugConnected, setIsPlugConnected] = useState(false);
+  const [plugPrincipal, setPlugPrincipal] = useState(null);
+  const [plugActor, setPlugActor] = useState(null);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -82,5 +88,47 @@ export function useAuth() {
     setIdentity(null);
   };
 
-  return { isAuthenticated, actor, identity, login, logout };
+  const connectPlugWallet = async () => {
+    if (window.ic && window.ic.plug) {
+      try {
+        const whitelist = [mshambaBackendCanisterId, icrc1LedgerCanisterId]; // Add other ledger canister IDs as needed
+        await window.ic.plug.requestConnect({
+          whitelist,
+          host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
+        });
+        const principal = await window.ic.plug.agent.getPrincipal();
+        setPlugPrincipal(principal);
+        setIsPlugConnected(true);
+
+        // Create an actor for the ICRC-1 ledger using Plug's agent
+        const plugIcrc1Actor = createIcrc1LedgerActor(icrc1LedgerCanisterId, { agent: window.ic.plug.agent });
+        setPlugActor(plugIcrc1Actor);
+
+        console.log("Plug Wallet connected:", principal.toText());
+      } catch (error) {
+        console.error("Plug Wallet connection failed:", error);
+        setIsPlugConnected(false);
+        setPlugPrincipal(null);
+        setPlugActor(null);
+      }
+    } else {
+      alert("Plug Wallet not found. Please install it.");
+    }
+  };
+
+  const disconnectPlugWallet = async () => {
+    if (window.ic && window.ic.plug) {
+      try {
+        await window.ic.plug.disconnect();
+        setIsPlugConnected(false);
+        setPlugPrincipal(null);
+        setPlugActor(null);
+        console.log("Plug Wallet disconnected.");
+      } catch (error) {
+        console.error("Plug Wallet disconnection failed:", error);
+      }
+    }
+  };
+
+  return { isAuthenticated, actor, identity, login, logout, isPlugConnected, plugPrincipal, plugActor, connectPlugWallet, disconnectPlugWallet };
 }

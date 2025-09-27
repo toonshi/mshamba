@@ -219,20 +219,7 @@ Steps:
 
 ---
 
-## 🌱 Farm Image References
 
-Here are free placeholder images for different farm types (Unsplash):
-
-| ID | Farm Type   | Emoji | URL |
-|----|-------------|-------|-----|
-| 1  | Crop Farm   | 🌾    | [Link](https://images.unsplash.com/photo-1500530855697-b586d89ba3ee) |
-| 2  | Dairy Farm  | 🐄    | [Link](https://images.unsplash.com/photo-1502590464439-52a14f1b3d8c) |
-| 3  | Flower Farm | 🌸    | [Link](https://images.unsplash.com/photo-1501004318641-b39e6451bec6) |
-| 4  | Coffee Farm | ☕    | [Link](https://images.unsplash.com/photo-1509042239860-f550ce710b93) |
-| 5  | Fruit Farm  | 🍎    | [Link](https://images.unsplash.com/photo-1505253668822-42074d58a7d7) |
-| 6  | Fish Farm   | 🐟    | [Link](https://images.unsplash.com/photo-1529107386315-e1a2ed48a620) |
-
----
 
 **IMPORTANT NOTE:**  
 This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from deployment to ensure stability and address ongoing development. As a result:  

@@ -42,7 +42,8 @@ module {
     phone: Text,
     email: Text,
     imageContent: Blob,
-    imageContentType: Text
+    imageContentType: Text,
+    ledgerCanisterPrincipal: ?Principal
   ) : Types.Result<Farm> {
 
     let farmId = "farm-" # Int.toText(Time.now());
@@ -63,7 +64,7 @@ module {
       investors = [];
       valuationHistory = [];
       sharePriceHistory = [];
-      ledgerCanister = null; // Initially no ledger canister deployed
+      ledgerCanister = ledgerCanisterPrincipal; // Set ledgerCanister here
       imageContent = imageContent;
       imageContentType = imageContentType;
       crop = crop;

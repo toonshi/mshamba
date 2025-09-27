@@ -17,7 +17,13 @@
     "mshamba_backend": {
       "main": "src/mshamba_backend/main.mo",
       "type": "motoko",
-      "build": ["--enhanced-orthogonal-persistence"]
+      "build": ["--enhanced-orthogonal-persistence"],
+      "env": {
+        "FARM1_LEDGER_CANISTER_ID": {
+          "ic": "osevl-taaaa-aaaac-a4bca-cai",
+          "local": "r7inp-6aaaa-aaaaa-aaabq-cai" 
+        }
+      }
     },
     "mshamba_frontend": {
       "type": "assets",

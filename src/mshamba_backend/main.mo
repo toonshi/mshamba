@@ -11,9 +11,11 @@ import Iter "mo:base/Iter"; // Added import for Iter
 import Debug "mo:base/Debug";
 import Blob "mo:base/Blob";
 
-persistent actor {
-
-  
+actor {
+  // Environment variable for FARM1_LEDGER_CANISTER_ID
+  // This will be set by dfx.json during deployment
+  let FARM1_LEDGER_CANISTER_ID_TEXT : Text = actor.getenv("FARM1_LEDGER_CANISTER_ID");
+  let FARM1_LEDGER_PRINCIPAL : Principal = Principal.fromText(FARM1_LEDGER_CANISTER_ID_TEXT);
 
   type Farm = FarmModule.Farm;
   type Profile = UserProfileModule.Profile;
@@ -83,7 +85,7 @@ persistent actor {
     imageContentType: Text
   ) : async FarmModule.Result<FarmModule.Farm> {
     switch (getFarmerProfile(caller)) {
-      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email, imageContent, imageContentType) };
+      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email, imageContent, imageContentType, ?FARM1_LEDGER_PRINCIPAL) };
       case null { #err("Only farmers can create farms or profile not found") };
     }
   };

@@ -130,7 +130,16 @@ const Farms = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
-  const { actor } = useAuth();
+  const { actor, isPlugConnected, plugPrincipal, plugActor, connectPlugWallet } = useAuth();
+
+  // Mainnet ledger canister IDs provided by the user
+  const mainnetLedgerCanisterIds = {
+    "Green Valley Maize Farm": "osevl-taaaa-aaaac-a4bca-cai",
+    "Highland Coffee Plantation": "ovft7-6yaaa-aaaac-a4bcq-cai",
+    "Sunrise Vegetable Gardens": "o4gyd-iqaaa-aaaac-a4bda-cai",
+    "Tropical Fruit Orchard": "o3h6x-fiaaa-aaaac-a4bdq-cai",
+    // Add more mappings if needed for other dummy farms or backend farms
+  };
 
   const dummyFarms = [
     {
@@ -298,14 +307,69 @@ const Farms = () => {
   });
 
   const handleInvest = async (farm) => {
+    if (!isPlugConnected) {
+      alert("Please connect your Plug Wallet first.");
+      await connectPlugWallet(); // Attempt to connect if not already
+      return;
+    }
+
+    if (!plugActor || !plugPrincipal) {
+      alert("Plug Wallet actor not available. Please try connecting again.");
+      return;
+    }
+
+    // Determine the ledger canister ID for the farm
+    let ledgerCanisterId = farm.ledgerCanister ? farm.ledgerCanister.toText() : null;
+
+    // Fallback to hardcoded mainnet IDs for dummy farms or if not set in backend
+    if (!ledgerCanisterId && mainnetLedgerCanisterIds[farm.name]) {
+      ledgerCanisterId = mainnetLedgerCanisterIds[farm.name];
+    }
+
+    if (!ledgerCanisterId) {
+      alert("Could not determine ledger canister for this farm.");
+      return;
+    }
+
+    // Prompt user for investment amount
+    const investmentAmountStr = prompt(`How much would you like to invest in ${farm.name}? (Min: KSH ${farm.minInvestment})`);
+    if (!investmentAmountStr) return;
+
+    const investmentAmount = BigInt(parseInt(investmentAmountStr, 10));
+
+    if (isNaN(Number(investmentAmount)) || investmentAmount < farm.minInvestment) {
+      alert(`Please enter a valid amount, at least KSH ${farm.minInvestment}.`);
+      return;
+    }
+
     try {
-      // TODO: Implement investment logic with backend
-      // await backendActor.investInFarm(farm.id, investmentAmount);
-      console.log('Investing in farm:', farm);
-      alert(`Investment in ${farm.name} initiated. This will be connected to the backend.`);
+      // Assuming the farm owner is the recipient of the investment
+      // You might need to get the actual farm owner's principal from the farm object
+      // For now, let's assume a placeholder recipient or the farm's owner if available
+      const recipientPrincipal = farm.owner ? farm.owner : plugPrincipal; // Placeholder: send to self if owner not available
+
+      const transferArgs = {
+        to: { owner: recipientPrincipal, subaccount: [] },
+        amount: investmentAmount,
+        fee: [], // Optional: let the ledger determine the fee
+        memo: [],
+        from_subaccount: [],
+        created_at_time: [],
+      };
+
+      // The plugActor is created for icrc1_ledger, so it should have icrc1_transfer
+      const result = await plugActor.icrc1_transfer(transferArgs);
+
+      if (result.Ok) {
+        alert(`Successfully invested ${investmentAmountStr} in ${farm.name}! Transaction ID: ${result.Ok}`);
+        // Optionally, refresh farm data or update UI
+      } else if (result.Err) {
+        alert(`Investment failed: ${Object.keys(result.Err)[0]}`);
+        console.error("ICRC-1 Transfer Error:", result.Err);
+      }
     } catch (error) {
       console.error('Error investing in farm:', error);
-      alert('Error processing investment. Please try again.');
+      alert('Error processing investment. Please try again.' + error.message);
     }
   };
 
