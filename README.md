@@ -1,207 +1,243 @@
-# `mshamba`
-
 # 🌾 Mshamba
+The site is live on main net at: [https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/](url)
 
-**IMPORTANT NOTE:** This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from the deployment to ensure stability and address ongoing development. Investment functionalities that rely on the token factory are currently not active.
+## 📌 Overview
 
-**Mshamba** is a decentralized platform for tokenizing agricultural projects on the Internet Computer Protocol (ICP). It enables urban investors to invest directly in farms, allows landowners to lease unused land, and empowers farmers to raise capital transparently without predatory loans. It also facilitates cooperation across the entire agricultural supply chain.
-
----
-
-## Table of Contents
-* [🧠 Project Architecture Overview](#-project-architecture-overview)
-  * [1. `main.mo` — Central Controller](#1-mainmo--central-controller)
-  * [2. `profiles.mo` — User Identity & Roles](#2-profilesmo--user-identity--roles)
-  * [3. `farms.mo` — Farm Project Management](#3-farmsmo--farm-project-management)
-  * [7. `types.mo` — Shared Type Definitions](#7-typesmo--shared-type-definitions)
-* [Running the project locally](#running-the-project-locally)
-* [Testing Canisters](#testing-canisters)
-  * [Testing `token_factory`](#testing-token_factory)
-  * [Testing `mshamba_backend` (User Profiles)](#testing-mshamba_backend-user-profiles)
+**Mshamba** is a decentralized platform for tokenizing agricultural projects on the **Internet Computer Protocol (ICP)**.  
+It enables:  
+- Urban investors to invest directly in farms.  
+- Landowners to lease unused land.  
+- Farmers to raise capital transparently without predatory loans.  
+- Cooperation across the entire agricultural supply chain.  
 
 ---
 
-## 🧠 Project Architecture Overview
+## 📑 Table of Contents
 
-The project is structured into modular components, each handling a distinct domain of the system:
+- [🌾 Mshamba](#-mshamba)
+  - [📌 Overview](#-overview)
+  - [🧠 Project Architecture](#-project-architecture)
+    - [Central Controller (`main.mo`)](#1-mainmo--central-controller)
+    - [User Identity & Roles (`profiles.mo`)](#2-profilesmo--user-identity--roles)
+    - [Farm Project Management (`farms.mo`)](#3-farmsmo--farm-project-management)
+    - [Shared Type Definitions (`types.mo`)](#7-typesmo--shared-type-definitions)
+  - [⚙️ Running Locally](#️-running-locally)
+  - [🧪 Testing Canisters](#-testing-canisters)
+    - [Token Ledger (`farm1_ledger`)](#-farm1_ledger-token-ledger)
+    - [User Profiles (`mshamba_backend`)](#-mshamba_backend-user-profiles)
+  - [🎨 Frontend Customization](#-frontend-customization)
+  - [🌍 Mainnet Canister IDs](#-mainnet-canister-ids)
+  - [🌱 Farm Image References](#-farm-image-references)
 
 ---
+
+## 🧠 Project Architecture
 
 ### 1. `main.mo` — Central Controller
-
-- Acts as the orchestrator.
-- Connects all modules: profiles, farms, land, investments. (Token-related functionalities are currently inactive).
-- Routes API calls from the frontend or other actors.
+- Orchestrates all modules (`profiles`, `farms`, `land`, `investments`).  
+- Routes API calls from the frontend or other actors.  
+- Token-related functionalities are currently **inactive**.  
 
 ---
 
 ### 2. `profiles.mo` — User Identity & Roles
-
-Manages user profiles across all roles:
-- Stores: name, email, role, bio, location, joinedAt, wallet address.
-- Functions:
-  - `upsertProfile`: create or update your profile.
-  - `myProfile`: view your own profile.
-  - `getProfileOf`: view another user's profile.
-  - `listUsers`: get all registered users.
+Stores and manages user data:  
+- **Fields:** name, email, role, bio, location, joinedAt, wallet address.  
+- **Functions:**  
+  - `upsertProfile` → create or update a profile  
+  - `myProfile` → view your own profile  
+  - `getProfile` → view another user’s profile  
+  - `listUsers` → list all registered users  
 
 ---
 
 ### 3. `farms.mo` — Farm Project Management
-
-Handles creation and funding of farms:
-- Tracks: farm name, description, owner, funding goal, shares, status, investors.
-- Functions:
-  - `createFarm`: farmer posts a project.
-  - `getFarm`: retrieve a specific farm.
-  - `listFarms`: all farms in the system.
-  - `listFarmsByOwner`: farms owned by the caller.
-
-
-
-### 7. `types.mo` — Shared Type Definitions
-
-Defines global data types:
-- `Farm`, `UserProfile`, `FarmShare`, `Investment`, `LandListing`, `Role`, etc.
-- `Result<T>`: standard way to return success or error.
+Handles creation and funding of farms:  
+- **Fields:** farm name, description, owner, funding goal, shares, status, investors.  
+- **Functions:**  
+  - `createFarm` → post a new project  
+  - `getFarm` → retrieve a farm  
+  - `listFarms` → list all farms  
+  - `listFarmsByOwner` → farms owned by caller  
 
 ---
 
+### 7. `types.mo` — Shared Type Definitions
+Defines core data structures:  
+- Types: `Farm`, `UserProfile`, `FarmShare`, `Investment`, `LandListing`, `Role`, etc.  
+- `Result<T>`: standard success/error response wrapper.  
 
+---
 
-## Running the project locally
+## ⚙️ Running Locally
 
-If you want to test your project locally, you can use the following commands:
+Start the replica and install dependencies:  
 
 ```bash
+# Start replica in background
+dfx start --background  
 
-# Starts the replica, running in the background
-dfx start --background
+# Check Node installation
+node --version  
 
+# Install frontend dependencies
+npm install --save-dev vite @types/node  
+```
 
-# Make sure that you have node
-node --version
+Deploy canisters:  
 
-# Install Frontend Dependencies
-npm install --save-dev vite @types/node
+```bash
+chmod +x embed_icrc1_wasm.sh
+./embed_icrc1_wasm.sh
 
-Run the embed_icrc1_wasm.sh script after making it into an executable
-using chmod ....
-# Deploys your canisters to the replica and generates your candid interface
 dfx deploy
 ```
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+> **Note:**  
+> The `farm1_ledger` canister requires an initialization argument, provided in the `farm1_ledger.args` file at the project root.
 
-If you have made changes to your backend canister, you can generate a new candid interface with
+Once deployed, access your app at:  
+`http://localhost:4943?canisterId={asset_canister_id}`  
 
+### Frontend Development
 ```bash
-npm run generate
+npm run generate   # regenerate Candid after backend changes
+npm start          # start dev server at http://localhost:8080
 ```
 
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
-
-If you are making frontend changes, you can start a development server with
-
+### Recreating Test Data (after clean deploy)
 ```bash
-npm start
+# Use default identity
+dfx identity use default  
+
+# Create farmer profile
+dfx canister call mshamba_backend createProfile \
+  '("Default Farmer", "Bio", variant { Farmer }, vec { "General Farming" }, "https://example.com/farmer.jpg")'
+
+# Create a farm
+dfx canister call mshamba_backend createFarm \
+  '("Green Acres", "Organic vegetables", "Rural Kenya", 1000000, "https://example.com/green_acres.jpg", "Vegetables", "10 acres", 100, 365)'
+
+# Link farm to ledger
+dfx canister call mshamba_backend updateFarmLedger \
+  '("FARM_ID", principal "uxrrr-q7777-77774-qaaaq-cai")'
 ```
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+---
 
+## 🧪 Testing Canisters
 
-TO:DO: Rewrite the embed_icrc1 script in the root folder  so that it divides the wasm bytes into chunks. Canisters can only take in 2mb.
+### ✅ `farm1_ledger` (Token Ledger)
 
-## Testing Canisters
+- Tokens initialized via `farm1_ledger.args` → `initial_balances`.  
+- Behavior: `icrc1_transfer` from `minting_account` acts as **mint** (increasing supply).  
 
-This section provides examples of how to interact with the deployed canisters using `dfx canister call`.
-
-### Testing `token_factory`
-
-**Note:** The `token_factory` canister is currently not part of the stable deployment. The instructions below are provided for reference in case the token factory is re-enabled or for development purposes.
-
-First, ensure your `token_factory` canister has enough cycles. You can deposit cycles using:
 ```bash
-dfx canister deposit-cycles 10000000000000 $(dfx canister id token_factory)
+# Deploy with args
+dfx deploy farm1_ledger --argument-file farm1_ledger.args --mode reinstall --yes  
+
+# Check metadata
+dfx canister call farm1_ledger icrc1_metadata  
+
+# Check total supply
+dfx canister call farm1_ledger icrc1_total_supply  
+
+# Check balance
+dfx canister call farm1_ledger icrc1_balance_of '(record { owner = principal "YOUR_ADMIN_PRINCIPAL"; subaccount = null })'
 ```
 
-Then, you can deploy the `token_factory` canister:
+**Transfer Tokens (from admin):**
 ```bash
-dfx deploy token_factory
+dfx canister call farm1_ledger icrc1_transfer \
+  '(record {
+     to = record { owner = principal "INVESTOR_PRINCIPAL"; subaccount = null };
+     amount = 1_000_000_000;
+     fee = null;
+     memo = null;
+     from_subaccount = null;
+     created_at_time = null
+   })'
 ```
 
-Notice the canister id at the end of the url
-```bash
-dfx canister status <put the canister_id here>
-dfx canister update-settings <put the canister_id here> --add-controller <put the canister_id here>
-confirm controllers
-dfx canister status <put the canister_id here>
-```
+---
 
-Example `createFarmLedger` call (note the `opt 900_000_000_000` for `cyclesToSpend`):
-```bash
-dfx canister call token_factory createFarmLedger '(
-  "MyToken",
-  "MTK",
-  principal "w7x7r-cok77-xa",
-  1000000,
-  vec { record { owner = principal "w7x7r-cok77-xa"; allocation = 10000 } },
-  null,
-  365,
-  1000,
-  vec { principal "w7x7r-cok77-xa" },
-  opt 900_000_000_000
-)'
-```
+### ✅ `mshamba_backend` (User Profiles)
 
-### Testing `mshamba_backend` (User Profiles)
-
-First, deploy the `mshamba_backend` canister:
 ```bash
-dfx deploy mshamba_backend
-```
+# Deploy backend
+dfx deploy mshamba_backend  
 
-**Create a Farmer Profile:**
-```bash
-dfx canister call mshamba_backend createProfile '(
-  "John Doe",
-  "Experienced organic farmer.",
-  variant { #Farmer },
-  vec { "Organic Farming", "Sustainable Agriculture" }
-)'
-```
+# Create profiles
+dfx canister call mshamba_backend createProfile ("John Doe", "Organic farmer", variant { Farmer }, vec { "Organic" })
+dfx canister call mshamba_backend createProfile ("Jane Smith", "Sustainable investor", variant { Investor }, vec { "Finance" })
 
-**Create an Investor Profile:**
-```bash
-dfx canister call mshamba_backend createProfile '(
-  "Jane Smith",
-  "Passionate about sustainable investments.",
-  variant { #Investor },
-  vec { "Financial Analysis" }
-)'
-```
-
-**Get a Profile (replace <principal_id> with the principal of the user who created the profile):**
-```bash
+# Fetch profile
 dfx canister call mshamba_backend getProfile '(principal "<principal_id>")'
-```
 
-**Create a Farm:**
-```bash
-dfx canister call mshamba_backend createFarm '(
-  "Green Acres",
-  "A farm specializing in organic vegetables",
-  "Rural Area, Kenya",
-  1000000
-)'
-```
-
-**List All Farms:**
-```bash
+# Manage farms
+dfx canister call mshamba_backend createFarm ("Green Acres", "Organic vegetables", "Rural Kenya", 1000000)
 dfx canister call mshamba_backend listFarms
-```
-
-**List Farms by Current User:**
-```bash
 dfx canister call mshamba_backend myFarms
 ```
+
+---
+
+### 🔎 `handleInvest` Function
+```motoko
+handleInvest: (farmId: text, amount: nat) -> Result
+```
+- **Params:** `farmId` (Text), `amount` (Nat).  
+- **Returns:**  
+  - `#ok(Farm)` → updated farm  
+  - `#err(Text)` → error message  
+
+Steps:  
+1. Retrieve farm by `farmId`.  
+2. Check if open for investment.  
+3. Verify linked ledger canister.  
+4. Simulate token transfer (placeholder).  
+5. Update funding & investors.  
+6. Record new `Investment`.  
+7. Return updated farm.  
+
+---
+
+## 🌍 Mainnet Canister IDs
+
+- `farm1_ledger`: `osevl-taaaa-aaaac-a4bca-cai`  
+- `farm2_ledger`: `ovft7-6yaaa-aaaac-a4bcq-cai`  
+- `farm3_ledger`: `o4gyd-iqaaa-aaaac-a4bda-cai`  
+- `farm4_ledger`: `o3h6x-fiaaa-aaaac-a4bdq-cai`  
+
+---
+
+## 🎨 Frontend Customization
+
+- **Site Title:** edit `<title>` in `src/mshamba_frontend/index.html`  
+- **Favicon:** replace `sprout.svg` in `src/mshamba_frontend/public/`  
+- **Routing:** `/ProfileSelection` → `/profile-selection` (fixed)  
+
+---
+
+## 🌱 Farm Image References
+
+Here are free placeholder images for different farm types (Unsplash):
+
+| ID | Farm Type   | Emoji | URL |
+|----|-------------|-------|-----|
+| 1  | Crop Farm   | 🌾    | [Link](https://images.unsplash.com/photo-1500530855697-b586d89ba3ee) |
+| 2  | Dairy Farm  | 🐄    | [Link](https://images.unsplash.com/photo-1502590464439-52a14f1b3d8c) |
+| 3  | Flower Farm | 🌸    | [Link](https://images.unsplash.com/photo-1501004318641-b39e6451bec6) |
+| 4  | Coffee Farm | ☕    | [Link](https://images.unsplash.com/photo-1509042239860-f550ce710b93) |
+| 5  | Fruit Farm  | 🍎    | [Link](https://images.unsplash.com/photo-1505253668822-42074d58a7d7) |
+| 6  | Fish Farm   | 🐟    | [Link](https://images.unsplash.com/photo-1529107386315-e1a2ed48a620) |
+
+---
+
+**IMPORTANT NOTE:**  
+This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from deployment to ensure stability and address ongoing development. As a result:  
+- Investment functionalities that rely on the token factory are not active.  
+- The `openFarmInvestment` function in the backend currently returns an error and is non-functional.  
+
+---
+
