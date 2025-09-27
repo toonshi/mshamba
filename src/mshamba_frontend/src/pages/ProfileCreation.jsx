@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { mshamba_backend } from '../../../declarations/mshamba_backend';
+import { mshamba_backend } from 'declarations/mshamba_backend';
 import { useNavigate } from 'react-router-dom';
 
 const ProfileCreation = () => {
