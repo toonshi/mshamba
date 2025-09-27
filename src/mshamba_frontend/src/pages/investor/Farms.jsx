@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, DollarSign, Clock, Mail, Sprout } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth'; // Adjust path as necessary
+
+// Helper function to convert Blob (Uint8Array) to a base64 data URL
+const blobToBase64 = (blob, contentType) => {
+  if (!blob || blob.length === 0) {
+    return null;
+  }
+  const binary = Array.from(new Uint8Array(blob))
+    .map(byte => String.fromCharCode(byte))
+    .join('');
+  return `data:${contentType};base64,${btoa(binary)}`;
+};
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
   const progressPercentage = (farm.currentAmount / farm.targetAmount) * 100;
@@ -118,93 +130,137 @@ const Farms = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
-  // TODO: Replace with actual backend API call
+  const { actor } = useAuth();
+
+  const dummyFarms = [
+    {
+      id: "dummy-1",
+      name: "Green Valley Maize Farm",
+      location: "Nakuru, Kenya",
+      crop: "Maize",
+      size: "10 acres",
+      minInvestment: 5000,
+      duration: 8,
+      targetAmount: 50000,
+      currentAmount: 15000,
+      createdAt: new Date("2024-01-15").getTime(),
+      image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400"
+    },
+    {
+      id: "dummy-2",
+      name: "Highland Coffee Plantation",
+      location: "Kiambu, Kenya",
+      crop: "Coffee",
+      size: "15 acres",
+      minInvestment: 8000,
+      duration: 12,
+      targetAmount: 80000,
+      currentAmount: 35000,
+      createdAt: new Date("2024-01-10").getTime(),
+      image: "https://images.pexels.com/photos/894695/pexels-photo-894695.jpeg?auto=compress&cs=tinysrgb&w=400"
+    },
+    {
+      id: "dummy-3",
+      name: "Sunrise Vegetable Gardens",
+      location: "Meru, Kenya",
+      crop: "Vegetables",
+      size: "5 acres",
+      minInvestment: 3000,
+      duration: 6,
+      targetAmount: 25000,
+      currentAmount: 8000,
+      createdAt: new Date("2024-01-20").getTime(),
+      image: "https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=400"
+    },
+    {
+      id: "dummy-4",
+      name: "Tropical Fruit Orchard",
+      location: "Machakos, Kenya",
+      crop: "Fruits",
+      size: "20 acres",
+      minInvestment: 10000,
+      duration: 10,
+      targetAmount: 100000,
+      currentAmount: 75000,
+      createdAt: new Date("2024-01-05").getTime(),
+      image: "https://images.pexels.com/photos/1132047/pexels-photo-1132047.jpeg?auto=compress&cs=tinysrgb&w=400"
+    },
+    {
+      id: "dummy-5",
+      name: "Golden Wheat Fields",
+      location: "Uasin Gishu, Kenya",
+      crop: "Maize",
+      size: "25 acres",
+      minInvestment: 12000,
+      duration: 7,
+      targetAmount: 120000,
+      currentAmount: 45000,
+      createdAt: new Date("2024-01-25").getTime(),
+      image: "https://images.pexels.com/photos/265216/pexels-photo-265216.jpeg?auto=compress&cs=tinysrgb&w=400"
+    }
+  ];
+
   useEffect(() => {
     const fetchFarms = async () => {
+      if (!actor) {
+        setLoading(false);
+        setFarms(dummyFarms);
+        return;
+      }
+
       try {
         setLoading(true);
-        // Replace this with actual backend call
-        // const response = await backendActor.getAllFarms();
-        // setFarms(response);
+        const backendFarms = await actor.listFarms();
         
-        // Sample data for testing - remove when backend is connected
-        setFarms([
-          {
-            id: 1,
-            name: "Green Valley Maize Farm",
-            location: "Nakuru, Kenya",
-            crop: "Maize",
-            size: "10 acres",
-            minInvestment: 5000,
-            duration: 8,
-            targetAmount: 50000,
-            currentAmount: 15000,
-            createdAt: "2024-01-15",
-            image: "https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 2,
-            name: "Highland Coffee Plantation",
-            location: "Kiambu, Kenya",
-            crop: "Coffee",
-            size: "15 acres",
-            minInvestment: 8000,
-            duration: 12,
-            targetAmount: 80000,
-            currentAmount: 35000,
-            createdAt: "2024-01-10",
-            image: "https://images.pexels.com/photos/894695/pexels-photo-894695.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 3,
-            name: "Sunrise Vegetable Gardens",
-            location: "Meru, Kenya",
-            crop: "Vegetables",
-            size: "5 acres",
-            minInvestment: 3000,
-            duration: 6,
-            targetAmount: 25000,
-            currentAmount: 8000,
-            createdAt: "2024-01-20",
-            image: "https://images.pexels.com/photos/1459339/pexels-photo-1459339.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 4,
-            name: "Tropical Fruit Orchard",
-            location: "Machakos, Kenya",
-            crop: "Fruits",
-            size: "20 acres",
-            minInvestment: 10000,
-            duration: 10,
-            targetAmount: 100000,
-            currentAmount: 75000,
-            createdAt: "2024-01-05",
-            image: "https://images.pexels.com/photos/1132047/pexels-photo-1132047.jpeg?auto=compress&cs=tinysrgb&w=400"
-          },
-          {
-            id: 5,
-            name: "Golden Wheat Fields",
-            location: "Uasin Gishu, Kenya",
-            crop: "Maize",
-            size: "25 acres",
-            minInvestment: 12000,
-            duration: 7,
-            targetAmount: 120000,
-            currentAmount: 45000,
-            createdAt: "2024-01-25",
-            image: "https://images.pexels.com/photos/265216/pexels-photo-265216.jpeg?auto=compress&cs=tinysrgb&w=400"
+        const processedFarms = backendFarms.map(farm => {
+          const dummyFarm = dummyFarms.find(d => d.name === farm.name) || {};
+          
+          const imageUrl = farm.imageContent && farm.imageContentType
+            ? blobToBase64(farm.imageContent, farm.imageContentType)
+            : dummyFarm.image || 'https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400';
+
+          return {
+            id: farm.farmId || dummyFarm.id,
+            name: farm.name || dummyFarm.name,
+            location: farm.location || dummyFarm.location,
+            crop: farm.crop || dummyFarm.crop,
+            size: farm.size || dummyFarm.size,
+            minInvestment: Number(farm.minInvestment) || dummyFarm.minInvestment,
+            duration: Number(farm.duration) || dummyFarm.duration,
+            targetAmount: Number(farm.fundingGoal) || dummyFarm.targetAmount,
+            currentAmount: Number(farm.fundedAmount) || dummyFarm.currentAmount,
+            createdAt: Number(farm.createdAt) || dummyFarm.createdAt,
+            image: imageUrl,
+            description: farm.description || dummyFarm.description,
+            expectedYield: farm.expectedYield || dummyFarm.expectedYield,
+            expectedROI: farm.expectedROI || dummyFarm.expectedROI,
+            farmerName: farm.farmerName || dummyFarm.farmerName,
+            experience: farm.experience || dummyFarm.experience,
+            phone: farm.phone || dummyFarm.phone,
+            email: farm.email || dummyFarm.email,
+            // Add other fields as necessary, falling back to dummy data
+          };
+        });
+        
+        // Combine processed backend farms with any dummy farms that weren't matched
+        const finalFarms = [...processedFarms];
+        dummyFarms.forEach(dFarm => {
+          if (!processedFarms.some(bFarm => bFarm.name === dFarm.name)) {
+            finalFarms.push(dFarm);
           }
-        ]);
+        });
+
+        setFarms(finalFarms);
       } catch (error) {
         console.error('Error fetching farms:', error);
-        setFarms([]);
+        setFarms(dummyFarms); // Fallback to dummy farms on error
       } finally {
         setLoading(false);
       }
     };
 
     fetchFarms();
-  }, []);
+  }, [actor]);
 
   const filters = [
     { value: 'all', label: 'All Farms' },
