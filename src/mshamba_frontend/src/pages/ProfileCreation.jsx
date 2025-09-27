@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { mshamba_backend } from 'declarations/mshamba_backend';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth'; // Corrected import path
 
 const ProfileCreation = () => {
+  const { actor } = useAuth(); // Get the authenticated actor
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [role, setRole] = useState('Farmer'); // Default role
@@ -20,7 +21,8 @@ const ProfileCreation = () => {
       const certsArray = certifications.split(',').map(cert => cert.trim()).filter(cert => cert !== '');
       const roleVariant = role === 'Farmer' ? { Farmer: null } : { Investor: null };
 
-      const success = await mshamba_backend.createProfile(name, bio, roleVariant, certsArray);
+      // Use the authenticated actor
+      const success = await actor.createProfile(name, bio, roleVariant, certsArray);
 
       if (success) {
         alert('Profile created successfully!');

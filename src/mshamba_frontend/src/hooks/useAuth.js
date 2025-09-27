@@ -6,28 +6,41 @@ import { canisterId as mshambaBackendCanisterId, createActor as createMshambaBac
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [actor, setActor] = useState(null);
+  const [actor, setActor] = useState(null); // Will be set to authenticated actor
   const [identity, setIdentity] = useState(null);
   const [authClient, setAuthClient] = useState(null);
 
   useEffect(() => {
-    AuthClient.create().then(async (client) => {
+    const initAuth = async () => {
+      const client = await AuthClient.create();
       setAuthClient(client);
+
+      // Create an unauthenticated agent and actor initially
+      const unauthenticatedAgent = new HttpAgent({
+        host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
+      });
+      if (process.env.DFX_NETWORK !== "ic") {
+        await unauthenticatedAgent.fetchRootKey();
+      }
+      const unauthenticatedActor = createMshambaBackendActor(mshambaBackendCanisterId, { agent: unauthenticatedAgent });
+      setActor(unauthenticatedActor); // Set initial actor to unauthenticated
+
       if (await client.isAuthenticated()) {
-        const identity = client.getIdentity();
-        setIdentity(identity);
-        const agent = new HttpAgent({
-          identity,
+        const authenticatedIdentity = client.getIdentity();
+        setIdentity(authenticatedIdentity);
+        const authenticatedAgent = new HttpAgent({
+          identity: authenticatedIdentity,
           host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
         });
         if (process.env.DFX_NETWORK !== "ic") {
-          await agent.fetchRootKey();
+          await authenticatedAgent.fetchRootKey();
         }
-        const actor = await createMshambaBackendActor(mshambaBackendCanisterId, { agent });
-        setActor(actor);
+        const authenticatedActor = createMshambaBackendActor(mshambaBackendCanisterId, { agent: authenticatedAgent });
+        setActor(authenticatedActor); // Update actor to authenticated
         setIsAuthenticated(true);
       }
-    });
+    };
+    initAuth();
   }, []);
 
   const login = async () => {
@@ -37,17 +50,17 @@ export function useAuth() {
         ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/`
         : "https://identity.ic0.app",
       onSuccess: async () => {
-        const identity = authClient.getIdentity();
-        setIdentity(identity);
-        const agent = new HttpAgent({
-          identity,
+        const authenticatedIdentity = authClient.getIdentity();
+        setIdentity(authenticatedIdentity);
+        const authenticatedAgent = new HttpAgent({
+          identity: authenticatedIdentity,
           host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
         });
         if (process.env.DFX_NETWORK !== "ic") {
-          await agent.fetchRootKey();
+          await authenticatedAgent.fetchRootKey();
         }
-        const actor = await createMshambaBackendActor(mshambaBackendCanisterId, { agent });
-        setActor(actor);
+        const authenticatedActor = createMshambaBackendActor(mshambaBackendCanisterId, { agent: authenticatedAgent });
+        setActor(authenticatedActor); // Update actor to authenticated
         setIsAuthenticated(true);
       },
     });
@@ -57,7 +70,15 @@ export function useAuth() {
     if (!authClient) return;
     await authClient.logout();
     setIsAuthenticated(false);
-    setActor(null);
+    // Re-initialize with an unauthenticated actor after logout
+    const unauthenticatedAgent = new HttpAgent({
+      host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
+    });
+    if (process.env.DFX_NETWORK !== "ic") {
+      await unauthenticatedAgent.fetchRootKey();
+    }
+    const unauthenticatedActor = createMshambaBackendActor(mshambaBackendCanisterId, { agent: unauthenticatedAgent });
+    setActor(unauthenticatedActor);
     setIdentity(null);
   };
 

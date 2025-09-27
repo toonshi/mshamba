@@ -84,7 +84,11 @@ export const FarmListing = ({ onBack }) => {
 
   const handleAddFarm = async (e) => {
     e.preventDefault();
-    if (!validateStep()) return;
+    console.log("handleAddFarm called.");
+    if (!validateStep()) {
+      console.log("Validation failed.");
+      return;
+    }
 
     setIsLoading(true);
     let imageContent = [];
@@ -96,6 +100,10 @@ export const FarmListing = ({ onBack }) => {
       const arrayBuffer = await file.arrayBuffer();
       imageContent = new Uint8Array(arrayBuffer);
     }
+
+    console.log("FormData being sent:", formData);
+    console.log("Image content type:", imageContentType);
+    console.log("Actor before createFarm call:", actor);
 
     try {
       const result = await actor.createFarm(
@@ -115,6 +123,8 @@ export const FarmListing = ({ onBack }) => {
         imageContent,
         imageContentType
       );
+
+      console.log("Result from createFarm:", result);
 
       if (result.ok) {
         setShowConfirmation(true);
@@ -137,11 +147,12 @@ export const FarmListing = ({ onBack }) => {
         setStep(1);
         fetchFarms(); // Refresh the list of farms
       } else {
+        console.error("Backend error creating farm:", result.err);
         setValidationError(result.err);
       }
     } catch (error) {
-      console.error("Failed to create farm:", error);
-      setValidationError("An error occurred while creating the farm.");
+      console.error("Failed to create farm (frontend catch block):", error);
+      setValidationError("An error occurred while creating the farm: " + error.message);
     } finally {
       setIsLoading(false);
     }

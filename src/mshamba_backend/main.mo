@@ -32,13 +32,15 @@ persistent actor {
   // HELPERS
   // ==============================
   func getFarmerProfile(caller: Principal) : ?UserProfileModule.Profile {
-  switch (UserProfileModule.getProfile(profileStore, caller)) {
-    case (?(p)) {
-      if (p.role == #Farmer) { ?p } else { null }
-    };
-    case null { null };
-  }
-};
+    Debug.print("getFarmerProfile called for: " # Principal.toText(caller));
+    switch (UserProfileModule.getProfile(profileStore, caller)) {
+      case (?(p)) {
+        Debug.print("Profile found. Role: " # debug_show(p.role));
+        if (p.role == #Farmer) { ?p } else { null }
+      };
+      case null { Debug.print("Profile not found for: " # Principal.toText(caller)); null };
+    }
+  };
 
   // ==============================
   // PROFILES
@@ -76,10 +78,12 @@ persistent actor {
     farmerName: Text,
     experience: Text,
     phone: Text,
-    email: Text
+    email: Text,
+    imageContent: Blob,
+    imageContentType: Text
   ) : async FarmModule.Result<FarmModule.Farm> {
     switch (getFarmerProfile(caller)) {
-      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email, Blob.fromArray([]), "") };
+      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email, imageContent, imageContentType) };
       case null { #err("Only farmers can create farms or profile not found") };
     }
   };
