@@ -14,21 +14,29 @@ const blobToBase64 = (blob, contentType) => {
 };
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
-  const progressPercentage = (farm.currentAmount / farm.targetAmount) * 100;
+  const actualPercentage = (farm.targetAmount && farm.targetAmount > 0)
+    ? (farm.currentAmount / farm.targetAmount) * 100
+    : 0;
+
+  let barWidth = actualPercentage;
+  if (actualPercentage === 0 && farm.targetAmount > 0) {
+    barWidth = 20; // Set to 20% for unfunded farms with a target
+  }
+  barWidth = Math.min(barWidth, 100); // Ensure it doesn't exceed 100%
   
-  const getStatusColor = (currentAmount, targetAmount) => {
-    const percentage = (currentAmount / targetAmount) * 100;
+  const getStatusColor = (percentage) => {
     if (percentage >= 100) return 'text-blue-600 bg-blue-100';
     if (percentage >= 75) return 'text-green-600 bg-green-100';
     if (percentage >= 50) return 'text-orange-600 bg-orange-100';
+    if (percentage === 0) return 'text-gray-600 bg-gray-100'; // Neutral for truly unfunded
     return 'text-red-600 bg-red-100';
   };
 
-  const getStatusText = (currentAmount, targetAmount) => {
-    const percentage = (currentAmount / targetAmount) * 100;
+  const getStatusText = (percentage) => {
     if (percentage >= 100) return 'Fully Funded';
     if (percentage >= 75) return 'Almost Funded';
     if (percentage >= 50) return 'Half Funded';
+    if (percentage === 0) return 'Seeking Investment'; // Explicitly for truly unfunded
     return 'Seeking Investment';
   };
 
@@ -41,8 +49,8 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
           className="w-full h-48 object-cover"
         />
         <div className="absolute top-4 right-4">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(farm.currentAmount || 0, farm.targetAmount || 1)}`}>
-            {getStatusText(farm.currentAmount || 0, farm.targetAmount || 1)}
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(actualPercentage)}`}>
+            {getStatusText(actualPercentage)}
           </span>
         </div>
       </div>
@@ -78,10 +86,10 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
     <div className="w-full bg-gray-200 rounded-full h-2">               
       <div                  
         className="bg-green-600 h-2 rounded-full"                  
-        style={{ width: `${Math.min(progressPercentage, 100)}%` }}               
+        style={{ width: `${barWidth}%` }}               
       ></div>             
     </div>             
-    <div className="text-xs text-gray-500 mt-1">{progressPercentage.toFixed(0)}% funded</div>           
+    {actualPercentage > 0 && <div className="text-xs text-gray-500 mt-1">{actualPercentage.toFixed(0)}% funded</div>}           
   </div>         
 )}          
 
