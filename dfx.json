@@ -23,7 +23,10 @@
           "ic": "osevl-taaaa-aaaac-a4bca-cai",
           "local": "r7inp-6aaaa-aaaaa-aaabq-cai" 
         }
-      }
+      },
+      "dependencies": [
+        "farm1_ledger"
+      ]
     },
     "mshamba_frontend": {
       "type": "assets",
