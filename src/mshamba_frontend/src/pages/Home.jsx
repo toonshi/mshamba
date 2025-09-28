@@ -161,7 +161,7 @@ const HomePage = () => {
                   : 'bg-green-50 text-green-700 border border-green-200'
               }`}>
                 <Leaf className="h-4 w-4 mr-2" />
-                Revolutionizing Agricultural Finance
+                Democratizing Agricultural Finance
               </div>
 
               <h1 className={`text-5xl lg:text-6xl font-bold mb-6 leading-tight ${
@@ -176,8 +176,8 @@ const HomePage = () => {
               <p className={`text-xl mb-8 leading-relaxed ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
               }`}>
-                Connect farmers with investors through blockchain-powered tokenization. 
-                No more predatory loans. Just transparent, profitable partnerships that grow Kenya's agricultural future.
+                Turning Kenyan farms into investable public traded companies through tokenized stocks.
+                No need for predatory loans. Just transparent, profitable partnerships that grow Kenya's agricultural future.
               </p>
 
               {/* CTA Buttons */}
@@ -239,17 +239,7 @@ const HomePage = () => {
                   className="w-full h-96 lg:h-[500px] object-cover rounded-3xl shadow-2xl"
                 />
                 
-                {/* Floating Card */}
-                <div className={`absolute top-1/2 -right-6 p-3 rounded-xl shadow-xl ${
-                  isDarkMode ? 'bg-green-900 border border-green-700' : 'bg-white'
-                }`}>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                      Blockchain Verified
-                    </span>
-                  </div>
-                </div>
+              
               </div>
             </div>
           </div>
@@ -273,7 +263,7 @@ const HomePage = () => {
               {
                 icon: Shield,
                 title: "Blockchain Security",
-                description: "All transactions secured by Internet Computer Protocol with transparent, immutable records.",
+                description: "Ensuring trust through transparent smart contracts for dividends distrtibution. Locked liquidity pools, for verified farms. Insurance options.",
                 color: "blue"
               },
               {
@@ -285,7 +275,7 @@ const HomePage = () => {
               {
                 icon: Globe,
                 title: "Global Access",
-                description: "Connect Kenyan farmers with worldwide investors, democratizing agricultural finance.",
+                description: "Connecting Kenyan farmers with worldwide investors, democratizing agricultural finance.",
                 color: "purple"
               }
             ].map((feature, index) => (
@@ -374,9 +364,9 @@ const HomePage = () => {
               <div className="space-y-6">
                 {[
                   { step: 1, title: "Browse Farms", desc: "Explore verified agricultural opportunities" },
-                  { step: 2, title: "Analyze & Invest", desc: "Review farm data and purchase tokens" },
+                  { step: 2, title: "Analyze & Invest", desc: "Analyze market trends & farm data with our valuation engines. Buy ownership" },
                   { step: 3, title: "Track Performance", desc: "Monitor your investments in real-time" },
-                  { step: 4, title: "Earn Returns", desc: "Receive profits automatically via smart contracts" }
+                  { step: 4, title: "Earn Returns", desc: "Earn from dividends & appreciation automatically via smart contracts" }
                 ].map(({ step, title, desc }) => (
                   <div key={step} className="flex items-start space-x-4">
                     <div className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
@@ -407,33 +397,15 @@ const HomePage = () => {
                 About Mshamba
               </h2>
               <p className={`text-lg mb-6 leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Mshamba is revolutionizing agricultural finance in Kenya by connecting farmers directly with investors 
-                through blockchain-powered tokenization. We're breaking the cycle of predatory lending that has trapped 
+                Turning Kenyan farms into public traded companies through tokenized stocks. We're breaking the cycle of predatory lending that has trapped 
                 farmers for generations.
               </p>
               <p className={`text-lg mb-8 leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Built on the Internet Computer Protocol, our platform enables transparent, secure investment 
+                Our platform enables transparent, secure investment through smart contracts & locked in liquidity pools. We are creating win-win
                 opportunities that benefit both farmers and investors while supporting Kenya's agricultural backbone.
               </p>
               
-              <div className="grid grid-cols-2 gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent mb-2">
-                    Mission
-                  </div>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    End predatory lending in agriculture
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent mb-2">
-                    Vision
-                  </div>
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Democratize agricultural investment
-                  </p>
-                </div>
-              </div>
+              
             </div>
             
             <div className="relative">
@@ -459,7 +431,7 @@ const HomePage = () => {
             Ready to Transform Agriculture?
           </h2>
           <p className={`text-xl mb-10 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            Join thousands of farmers and investors building Kenya's agricultural future through blockchain innovation.
+            Building Kenya's agricultural future through blockchain innovation.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
