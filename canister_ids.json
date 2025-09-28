@@ -1,0 +1,11 @@
+{
+  "mshamba_frontend": {
+    "ic": "pri4n-hyaaa-aaaac-a4beq-cai"
+  },
+  "mshamba_backend": {
+    "ic": "pwj2z-kaaaa-aaaac-a4bea-cai"
+  },
+  "farm1_ledger": {
+    "ic": "osevl-taaaa-aaaac-a4bca-cai"
+  }
+}
