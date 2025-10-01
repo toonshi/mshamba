@@ -31,6 +31,33 @@ It enables:
 
 ---
 
+## 🚀 FastAPI Integration (Mshamba Intelligence API)
+
+In addition to the core Motoko canisters, this project integrates with an external FastAPI application, referred to as the "Mshamba Intelligence API." This API plays a crucial role in providing dynamic data and advanced analytics to the frontend.
+
+### Purpose and Value:
+
+-   **Dynamic Data Provision:** The FastAPI application serves real-time (or near real-time) data from a PostgreSQL database, replacing static or dummy data in the frontend. This is essential for a data-driven platform.
+-   **Data-Driven Decision Making:**
+    -   **For Investors:** The API provides aggregated "Crop Performance Analysis" metrics (e.g., Market Price, Average ROI, Investment Volume, Risk Level) for various crops. This empowers investors to make more informed decisions.
+    -   **For Farmers:** While not yet fully integrated into farmer-specific dashboards, the raw season data available through the API can be leveraged to provide farmers with insights into their operational performance.
+-   **Enhanced Scalability and Maintainability:** By separating the data processing and serving logic into a dedicated FastAPI backend, the project benefits from:
+    -   **Scalability:** The API can be consumed by multiple frontend applications (web, mobile) or other services.
+    -   **Maintainability:** Frontend and backend development can proceed independently, reducing interdependencies and simplifying updates.
+-   **Foundation for Future Features:** The API establishes a robust foundation for implementing advanced functionalities, including:
+    -   Sophisticated analytics and reporting.
+    -   Machine learning models for predictions (e.g., yield forecasting, market trends).
+    -   Integration with external data sources.
+    -   More complex user interactions and data management.
+
+### Key Endpoints:
+
+-   **`GET /crops/`**: Provides a list of basic crop information (ID, Name).
+-   **`GET /seasons/`**: Delivers detailed data about individual farming seasons.
+-   **`GET /crops/performance`**: Offers aggregated crop performance metrics, calculated from season data and grouped by crop name.
+
+---
+
 ## 🧠 Project Architecture
 
 ### 1. `main.mo` — Central Controller

@@ -45,7 +45,7 @@ const CropCard = ({ crop, price, change, roi, volume, risk }) => (
       </div>
       <div>
         <span className="text-gray-500 block text-xs">Price Change</span>
-        <span className={change.startsWith("+") ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+        <span className={change && change.startsWith("+") ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
           {change}
         </span>
       </div>
@@ -70,7 +70,7 @@ const CropRow = ({ crop, price, change, roi, volume, risk }) => (
     </td>
     <td className="px-3 lg:px-4 py-4 text-gray-900 text-sm">{price}</td>
     <td className="px-3 lg:px-4 py-4 text-sm">
-      <span className={change.startsWith("+") ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+      <span className={change && change.startsWith("+") ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
         {change}
       </span>
     </td>
@@ -94,11 +94,12 @@ const CropRow = ({ crop, price, change, roi, volume, risk }) => (
 
 const MarketAnalysis = () => {
   const [stats, setStats] = useState([]);
-  const [crops, setCrops] = useState([]);
+  const [cropPerformance, setCropPerformance] = useState([]);
+  const [loadingCropPerformance, setLoadingCropPerformance] = useState(true);
+  const [errorCropPerformance, setErrorCropPerformance] = useState(null);
 
-  // Simulate backend fetch
   useEffect(() => {
-    // Replace with API calls later
+    // Simulate backend fetch for stats (keep as is for now)
     setStats([
       { title: "Market Size", value: "KSH 24.8B", change: "+12.5% YoY", icon: Banknote, color: "text-green-600" },
       { title: "Active Investments", value: "1,247", change: "+18% this month", icon: BarChart3, color: "text-blue-600" },
@@ -106,12 +107,22 @@ const MarketAnalysis = () => {
       { title: "Success Rate", value: "94.2%", change: "Projects completed", icon: Calendar, color: "text-purple-600" }
     ]);
 
-    setCrops([
-      { crop: { name: "Almonds", desc: "Premium varieties" }, price: "KSH 2.85/lb", change: "+8.2%", roi: "9.8%", volume: "KSH 4.2M", risk: "Low" },
-      { crop: { name: "Wine Grapes", desc: "Premium regions" }, price: "KSH 1,850/ton", change: "+15.4%", roi: "12.1%", volume: "KSH 2.8M", risk: "Medium" },
-      { crop: { name: "Citrus", desc: "Oranges & lemons" }, price: "KSH 0.95/lb", change: "-3.1%", roi: "7.9%", volume: "KSH 1.9M", risk: "Low" },
-      { crop: { name: "Walnuts", desc: "English varieties" }, price: "KSH 1.45/lb", change: "+6.7%", roi: "10.3%", volume: "KSH 3.1M", risk: "Low" }
-    ]);
+    const fetchCropPerformance = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/crops/performance');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setCropPerformance(data);
+      } catch (e) {
+        setErrorCropPerformance(e);
+      } finally {
+        setLoadingCropPerformance(false);
+      }
+    };
+
+    fetchCropPerformance();
   }, []);
 
   return (
@@ -137,43 +148,68 @@ const MarketAnalysis = () => {
           Crop Performance Analysis
         </h3>
         
-        {/* Mobile View - Card Layout */}
-        <div className="block sm:hidden space-y-4">
-          {crops.map((c, i) => (
-            <CropCard key={i} {...c} />
-          ))}
-        </div>
+        {loadingCropPerformance && <p>Loading crop performance data...</p>}
+        {errorCropPerformance && <p>Error fetching crop performance: {errorCropPerformance.message}</p>}
         
-        {/* Tablet/Desktop View - Table Layout */}
-        <div className="hidden sm:block">
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="inline-block min-w-full align-middle">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {[
-                      "Crop Type", 
-                      "Market Price", 
-                      "Price Change", 
-                      "Avg ROI", 
-                      "Investment Volume", 
-                      "Risk Level"
-                    ].map((h) => (
-                      <th key={h} className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {crops.map((c, i) => (
-                    <CropRow key={i} {...c} />
-                  ))}
-                </tbody>
-              </table>
+        {!loadingCropPerformance && !errorCropPerformance && cropPerformance.length > 0 ? (
+          <>
+            {/* Mobile View - Card Layout */}
+            <div className="block sm:hidden space-y-4">
+              {cropPerformance.map((c, i) => (
+                <CropCard 
+                  key={i} 
+                  crop={{ name: c.crop_type, desc: c.crop_variety }} 
+                  price={c.market_price} 
+                  change={c.price_change} 
+                  roi={c.avg_roi} 
+                  volume={c.investment_volume} 
+                  risk={c.risk_level} 
+                />
+              ))}
             </div>
-          </div>
-        </div>
+            
+            {/* Tablet/Desktop View - Table Layout */}
+            <div className="hidden sm:block">
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {[
+                          "Crop Type", 
+                          "Market Price", 
+                          "Price Change", 
+                          "Avg ROI", 
+                          "Investment Volume", 
+                          "Risk Level"
+                        ].map((h) => (
+                          <th key={h} className="px-3 lg:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {cropPerformance.map((c, i) => (
+                        <CropRow 
+                          key={i} 
+                          crop={{ name: c.crop_type, desc: c.crop_variety }} 
+                          price={c.market_price} 
+                          change={c.price_change} 
+                          roi={c.avg_roi} 
+                          volume={c.investment_volume} 
+                          risk={c.risk_level} 
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (!loadingCropPerformance && !errorCropPerformance && cropPerformance.length === 0 ? (
+          <p>No crop performance data available.</p>
+        ) : null)}
       </div>
     </div>
   );
