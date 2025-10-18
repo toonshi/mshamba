@@ -3,7 +3,6 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent, Actor } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { canisterId as mshambaBackendCanisterId, createActor as createMshambaBackendActor } from "declarations/mshamba_backend";
-import { canisterId as icrc1LedgerCanisterId, createActor as createIcrc1LedgerActor } from "declarations/icrc1_ledger";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -91,20 +90,32 @@ export function useAuth() {
   const connectPlugWallet = async () => {
     if (window.ic && window.ic.plug) {
       try {
-        const whitelist = [mshambaBackendCanisterId, icrc1LedgerCanisterId]; // Add other ledger canister IDs as needed
-        await window.ic.plug.requestConnect({
+        const whitelist = [mshambaBackendCanisterId]; // Farm token ledgers will be added dynamically as needed
+        const isMainnet = process.env.DFX_NETWORK === "ic" || window.location.hostname.includes("ic0.app");
+        const host = isMainnet ? "https://ic0.app" : "http://localhost:4943";
+        
+        console.log("Connecting to Plug with host:", host);
+        
+        // Request connection with proper parameters
+        const connected = await window.ic.plug.requestConnect({
           whitelist,
-          host: process.env.DFX_NETWORK === "ic" ? "https://ic0.app" : "http://localhost:4943",
+          host,
+          timeout: 50000,
         });
+        
+        if (!connected) {
+          throw new Error("Plug connection was denied");
+        }
+        
+        // Plug wallet handles agent creation internally, including root key for local
         const principal = await window.ic.plug.agent.getPrincipal();
         setPlugPrincipal(principal);
         setIsPlugConnected(true);
 
-        // Create an actor for the ICRC-1 ledger using Plug's agent
-        const plugIcrc1Actor = createIcrc1LedgerActor(icrc1LedgerCanisterId, { agent: window.ic.plug.agent });
-        setPlugActor(plugIcrc1Actor);
+        // Farm-specific token actors will be created dynamically when needed
+        setPlugActor(null); // No default token actor anymore
 
-        console.log("Plug Wallet connected:", principal.toText());
+        console.log("Plug Wallet connected successfully:", principal.toText());
       } catch (error) {
         console.error("Plug Wallet connection failed:", error);
         setIsPlugConnected(false);
@@ -112,7 +123,7 @@ export function useAuth() {
         setPlugActor(null);
       }
     } else {
-      alert("Plug Wallet not found. Please install it.");
+      alert("Plug Wallet not found. Please install it from https://plugwallet.ooo/");
     }
   };
 
@@ -130,5 +141,7 @@ export function useAuth() {
     }
   };
 
-  return { isAuthenticated, actor, identity, login, logout, isPlugConnected, plugPrincipal, plugActor, connectPlugWallet, disconnectPlugWallet };
+  const principal = identity ? identity.getPrincipal() : null;
+  
+  return { isAuthenticated, actor, identity, principal, login, logout, isPlugConnected, plugPrincipal, plugActor, connectPlugWallet, disconnectPlugWallet };
 }

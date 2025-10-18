@@ -1,26 +1,21 @@
 import FarmModule "lib/farms";
 import UserProfileModule "lib/userProfiles";
+import FarmEscrowModule "lib/farm_escrow";
+import EscrowTypes "lib/escrow_types";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
 import Array "mo:base/Array";
-
-import Types "lib/types";
+import Error "mo:base/Error";
 import HashMap "mo:base/HashMap";
-import Iter "mo:base/Iter"; // Added import for Iter
+import Iter "mo:base/Iter";
 import Debug "mo:base/Debug";
 import Blob "mo:base/Blob";
+import Time "mo:base/Time";
 
-
-import Farm1Ledger "canister:farm1_ledger";
+import TokenFactory "canister:token_factory";
 
 persistent actor {
-  // Environment variable for FARM1_LEDGER_CANISTER_ID
-  // This will be set by dfx.json during deployment
-  func farm1LedgerPrincipal() : Principal {
-    Principal.fromActor(Farm1Ledger)
-  };
-
   type Farm = FarmModule.Farm;
   type Profile = UserProfileModule.Profile;
 
@@ -68,6 +63,10 @@ persistent actor {
     UserProfileModule.getProfile(profileStore, owner)
   };
 
+  public query func listProfiles() : async [UserProfileModule.Profile] {
+    UserProfileModule.listProfiles(profileStore)
+  };
+
   // ==============================
   // FARMS (Farmer-only actions)
   // ==============================
@@ -86,10 +85,28 @@ persistent actor {
     phone: Text,
     email: Text,
     imageContent: Blob,
-    imageContentType: Text
+    imageContentType: Text,
+    tokenName: Text,
+    tokenSymbol: Text,
+    tokenSupply: Nat,
+    tokenDecimals: Nat8,
+    tokenTransferFee: Nat,
+    tokenLogo: ?Text,
+    tokenPrice: Nat,
+    ifoEndDate: ?Int,
+    maxInvestmentPerUser: ?Nat
   ) : async FarmModule.Result<FarmModule.Farm> {
     switch (getFarmerProfile(caller)) {
-      case (?_) { FarmModule.createFarm(caller, farmStore, name, description, location, fundingGoal, size, crop, duration, expectedYield, expectedROI, farmerName, experience, phone, email, imageContent, imageContentType, ?farm1LedgerPrincipal()) };
+      case (?_) { 
+        FarmModule.createFarm(
+          caller, farmStore, name, description, location, fundingGoal, 
+          size, crop, duration, expectedYield, expectedROI, farmerName, 
+          experience, phone, email, imageContent, imageContentType, 
+          null, // ledgerCanister will be set when token is launched
+          tokenName, tokenSymbol, tokenSupply, tokenDecimals, tokenTransferFee, tokenLogo,
+          tokenPrice, ifoEndDate, maxInvestmentPerUser
+        ) 
+      };
       case null { #err("Only farmers can create farms or profile not found") };
     }
   };
@@ -108,6 +125,62 @@ persistent actor {
 
 
   // ==============================
+  // TOKEN LAUNCH
+  // ==============================
+  public shared ({ caller }) func launchFarmToken(farmId : Text) : async FarmModule.Result<Principal> {
+    switch (FarmModule.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        // Verify caller is the farm owner
+        if (farm.owner != caller) {
+          return #err("Only the farm owner can launch the token")
+        };
+        
+        // Check if token already launched
+        switch (farm.ledgerCanister) {
+          case (?_) { return #err("Token already launched for this farm") };
+          case null {};
+        };
+
+        // Call token_factory to create the ICRC-1 ledger
+        let tokenParams = {
+          token_name = farm.tokenName;
+          token_symbol = farm.tokenSymbol;
+          token_logo = farm.tokenLogo;
+          decimals = farm.tokenDecimals;
+          total_supply = farm.tokenSupply;
+          transfer_fee = farm.tokenTransferFee;
+          minting_account_owner = farm.owner;
+        };
+
+        try {
+          let result = await TokenFactory.create_farm_token(tokenParams);
+          
+          // Handle the Result from token_factory
+          switch (result) {
+            case (#Ok(ledgerCanisterId)) {
+              // Update farm with the new ledger canister
+              let updatedFarm : FarmModule.Farm = {
+                farm with
+                ledgerCanister = ?ledgerCanisterId;
+              };
+              farmStore.put(farmId, updatedFarm);
+              
+              Debug.print("Token launched for farm " # farmId # ": " # Principal.toText(ledgerCanisterId));
+              #ok(ledgerCanisterId)
+            };
+            case (#Err(msg)) {
+              #err("Token creation failed: " # msg)
+            };
+          }
+        } catch (e) {
+          #err("Failed to call token factory: " # Error.message(e))
+        }
+      }
+    }
+  };
+
+  // ==============================
   // FARMER ACTIONS
   // ==============================
   public shared ({ caller }) func toggleFarmInvestmentStatus(
@@ -120,6 +193,17 @@ persistent actor {
         if (farm.owner != caller) {
           return #err("Only the farm owner can change investment status");
         };
+        
+        // If opening investment, ensure token is launched
+        if (newStatus == true) {
+          switch (farm.ledgerCanister) {
+            case null { 
+              return #err("Token must be launched before opening investment. Call launchFarmToken first.") 
+            };
+            case (?_) {}; // Token exists, proceed
+          };
+        };
+        
         let updateResult = FarmModule.updateFarmInvestmentStatus(farmId, farmStore, newStatus);
         switch (updateResult) {
           case (#ok(updatedFarm)) { #ok(updatedFarm) };
@@ -127,6 +211,16 @@ persistent actor {
         }
       }
     }
+  };
+
+  // ==============================
+  // INVESTOR ACTIONS
+  // ==============================
+  public shared ({ caller }) func investInFarm(
+    farmId : Text,
+    amount : Nat
+  ) : async FarmModule.Result<FarmModule.Farm> {
+    FarmModule.investInFarm(caller, farmId, amount, farmStore)
   };
 
   // ==============================

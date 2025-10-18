@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/token_factory",
+]
+resolver = "2"

@@ -11,7 +11,8 @@ import {
   TrendingUp,
   MapPin,
   Menu,
-  X
+  X,
+  Wallet
 } from 'lucide-react';
 
 const Layout = ({ children, userType, userName = "User" }) => {
@@ -29,6 +30,7 @@ const Layout = ({ children, userType, userName = "User" }) => {
 
   const investorNavItems = [
     { path: '/investor/dashboard', icon: MapPin, label: 'Browse Farms' },
+    { path: '/investor/dashboard/account', icon: Wallet, label: 'My Account' },
     { path: '/investor/dashboard/profile', icon: User, label: 'My Profile' },
     { path: '/investor/dashboard/analysis', icon: BarChart3, label: 'Market Analysis' },
   ];

@@ -87,14 +87,14 @@ npm install --save-dev vite @types/node
 Deploy canisters:  
 
 ```bash
-chmod +x embed_icrc1_wasm.sh
-./embed_icrc1_wasm.sh
-
 dfx deploy
+
+# Top up token_factory with cycles for creating farm tokens
+dfx canister deposit-cycles 10000000000000 token_factory
 ```
 
 > **Note:**  
-> The `farm1_ledger` canister requires an initialization argument, provided in the `farm1_ledger.args` file at the project root.
+> The `token_factory` canister needs cycles to dynamically create ICRC-1 ledgers for each farm (~2T cycles per token).
 
 Once deployed, access your app at:  
 `http://localhost:4943?canisterId={asset_canister_id}`  
@@ -105,58 +105,81 @@ npm run generate   # regenerate Candid after backend changes
 npm start          # start dev server at http://localhost:8080
 ```
 
-### Recreating Test Data (after clean deploy)
+### Creating a Farm with Dynamic Token (after clean deploy)
 ```bash
-# Use default identity
-dfx identity use default  
-
-# Create farmer profile
+# 1. Create farmer profile
 dfx canister call mshamba_backend createProfile \
-  '("Default Farmer", "Bio", variant { Farmer }, vec { "General Farming" }, "https://example.com/farmer.jpg")'
+  '("John Farmer", "Organic farming expert", variant { Farmer }, vec { "Certification" })'
 
-# Create a farm
-dfx canister call mshamba_backend createFarm \
-  '("Green Acres", "Organic vegetables", "Rural Kenya", 1000000, "https://example.com/green_acres.jpg", "Vegetables", "10 acres", 100, 365)'
+# 2. Create a farm with token parameters
+dfx canister call mshamba_backend createFarm '(
+  "Green Acres Farm",
+  "Organic vegetables",
+  "Rural Kenya",
+  1000000,
+  "10 acres",
+  "Vegetables",
+  12,
+  "5000kg",
+  "25%",
+  "John Doe",
+  "10 years",
+  "+254123456789",
+  "john@farm.com",
+  blob "\00\01\02",
+  "image/jpeg",
+  "Green Acres Token",
+  "GAFT",
+  1000000000,
+  8,
+  10000,
+  null
+)'
 
-# Link farm to ledger
-dfx canister call mshamba_backend updateFarmLedger \
-  '("FARM_ID", principal "uxrrr-q7777-77774-qaaaq-cai")'
+# 3. Launch the farm token (creates ICRC-1 ledger)
+dfx canister call mshamba_backend launchFarmToken '("FARM_ID")'
+
+# 4. Open farm for investment
+dfx canister call mshamba_backend toggleFarmInvestmentStatus '("FARM_ID", true)'
 ```
 
 ---
 
-## 🧪 Testing Canisters
+## 🧪 Testing Token Creation
 
-### ✅ `farm1_ledger` (Token Ledger)
+### ✅ Dynamic ICRC-1 Token Creation
 
-- Tokens initialized via `farm1_ledger.args` → `initial_balances`.  
-- Behavior: `icrc1_transfer` from `minting_account` acts as **mint** (increasing supply).  
+Each farm gets its own ICRC-1 ledger canister when you call `launchFarmToken`:
 
 ```bash
-# Deploy with args
-dfx deploy farm1_ledger --argument-file farm1_ledger.args --mode reinstall --yes  
+# After creating a farm, launch its token
+dfx canister call mshamba_backend launchFarmToken '("farm-1234567890")'
 
-# Check metadata
-dfx canister call farm1_ledger icrc1_metadata  
+# Get the farm details to see the token canister ID
+dfx canister call mshamba_backend listFarms
 
-# Check total supply
-dfx canister call farm1_ledger icrc1_total_supply  
+# Query the token ledger (replace LEDGER_ID with actual ID)
+dfx canister call LEDGER_ID icrc1_name
+dfx canister call LEDGER_ID icrc1_symbol
+dfx canister call LEDGER_ID icrc1_total_supply
 
-# Check balance
-dfx canister call farm1_ledger icrc1_balance_of '(record { owner = principal "YOUR_ADMIN_PRINCIPAL"; subaccount = null })'
+# Check farm owner's token balance
+dfx canister call LEDGER_ID icrc1_balance_of '(record {
+  owner = principal "FARMER_PRINCIPAL";
+  subaccount = null
+})'
 ```
 
-**Transfer Tokens (from admin):**
+**Transfer Tokens (farm owner to investor):**
 ```bash
-dfx canister call farm1_ledger icrc1_transfer \
-  '(record {
-     to = record { owner = principal "INVESTOR_PRINCIPAL"; subaccount = null };
-     amount = 1_000_000_000;
-     fee = null;
-     memo = null;
-     from_subaccount = null;
-     created_at_time = null
-   })'
+dfx canister call LEDGER_ID icrc1_transfer '(record {
+  to = record { owner = principal "INVESTOR_PRINCIPAL"; subaccount = null };
+  amount = 1_000_000_000;
+  fee = null;
+  memo = null;
+  from_subaccount = null;
+  created_at_time = null
+})'
 ```
 
 ---
@@ -204,10 +227,11 @@ Steps:
 
 ## 🌍 Mainnet Canister IDs
 
-- `farm1_ledger`: `osevl-taaaa-aaaac-a4bca-cai`  
-- `farm2_ledger`: `ovft7-6yaaa-aaaac-a4bcq-cai`  
-- `farm3_ledger`: `o4gyd-iqaaa-aaaac-a4bda-cai`  
-- `farm4_ledger`: `o3h6x-fiaaa-aaaac-a4bdq-cai`  
+- `mshamba_backend`: TBD
+- `token_factory`: TBD
+- `mshamba_frontend`: TBD
+
+> **Note:** Farm token ledgers are created dynamically. Each farm gets its own ICRC-1 canister when `launchFarmToken` is called.  
 
 ---
 
@@ -221,10 +245,14 @@ Steps:
 
 
 
-**IMPORTANT NOTE:**  
-This is the stable version of the Mshamba platform. The `custom_token_factory` canister has been temporarily removed from deployment to ensure stability and address ongoing development. As a result:  
-- Investment functionalities that rely on the token factory are not active.  
-- The `openFarmInvestment` function in the backend currently returns an error and is non-functional.  
+**TOKEN FACTORY ACTIVE:**  
+Mshamba now uses a dynamic token factory system. Each farm project can launch its own ICRC-1 token with customizable parameters:
+- **Token name and symbol** - Farmer chooses during farm creation
+- **Total supply and decimals** - Customizable token economics
+- **Transfer fee** - Set by farm owner
+- **Automatic minting** - Entire supply minted to farm owner on launch
+
+See `TOKEN_FACTORY_INTEGRATION.md` for detailed documentation.  
 
 ---
 

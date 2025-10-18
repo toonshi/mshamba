@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, DollarSign, Clock, Mail, Sprout } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth'; // Adjust path as necessary
+import { useAuth } from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 // Helper function to convert Blob (Uint8Array) to a base64 data URL
 const blobToBase64 = (blob, contentType) => {
@@ -14,6 +15,8 @@ const blobToBase64 = (blob, contentType) => {
 };
 
 const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
+  const navigate = useNavigate();
+  
   const actualPercentage = (farm.targetAmount && farm.targetAmount > 0)
     ? (farm.currentAmount / farm.targetAmount) * 100
     : 0;
@@ -36,12 +39,15 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
     if (percentage >= 100) return 'Fully Funded';
     if (percentage >= 75) return 'Almost Funded';
     if (percentage >= 50) return 'Half Funded';
-    if (percentage === 0) return 'Seeking Investment'; // Explicitly for truly unfunded
+    if (percentage === 0) return 'Seeking Investment';
     return 'Seeking Investment';
   };
-
+  
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+    <div 
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={() => navigate(`/investor/farm/${farm.id}`)}
+    >
       <div className="relative">
         <img
           src={farm.image || 'https://images.pexels.com/photos/2132250/pexels-photo-2132250.jpeg?auto=compress&cs=tinysrgb&w=400'}
@@ -72,36 +78,31 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
             <span className="text-gray-600">{farm.size} • {farm.crop}</span>
           </div>
           <div className="flex items-center">             
-               
-  <span className="text-gray-600">Min: KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</span>           
-</div>         
-</div>          
+            <span className="text-gray-600">Min: KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</span>           
+          </div>         
+        </div>
 
-{farm.targetAmount && (           
-  <div className="mb-4">             
-    <div className="flex justify-between text-sm text-gray-600 mb-2">               
-      <span>Funding Progress</span>               
-      <span>KSH {(farm.currentAmount || 0).toLocaleString('en-KE')} of KSH {farm.targetAmount.toLocaleString('en-KE')}</span>             
-    </div>             
-    <div className="w-full bg-gray-200 rounded-full h-2">               
-      <div                  
-        className="bg-green-600 h-2 rounded-full"                  
-        style={{ width: `${barWidth}%` }}               
-      ></div>             
-    </div>             
-    {actualPercentage > 0 && <div className="text-xs text-gray-500 mt-1">{actualPercentage.toFixed(0)}% funded</div>}           
-  </div>         
-)}          
+        {farm.targetAmount && (
+          <div className="mb-4">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Funding Progress</span>
+              <span>KSH {(farm.currentAmount || 0).toLocaleString('en-KE')} of KSH {farm.targetAmount.toLocaleString('en-KE')}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-green-600 h-2 rounded-full"
+                style={{ width: `${barWidth}%` }}
+              ></div>
+            </div>
+            {actualPercentage > 0 && <div className="text-xs text-gray-500 mt-1">{actualPercentage.toFixed(0)}% funded</div>}
+          </div>
+        )}
 
-<div className="grid grid-cols-2 gap-4 mb-4 text-sm">           
-  <div className="text-center">             
-    <div className="flex items-center justify-center mb-1">               
-                 
-    </div>             
-    <p className="font-medium text-gray-900">KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</p>             
-    <p className="text-gray-500">Min. Investment</p>           
-  </div>
-          
+        <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+          <div className="text-center">
+            <p className="font-medium text-gray-900">KSH {farm.minInvestment?.toLocaleString('en-KE') || 'N/A'}</p>
+            <p className="text-gray-500">Min. Investment</p>
+          </div>
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
               <Clock className="h-4 w-4 text-orange-600" />
@@ -113,13 +114,13 @@ const FarmCard = ({ farm, onInvest, onEmailOwner }) => {
 
         <div className="flex space-x-3">
           <button 
-            onClick={() => onInvest(farm)}
+            onClick={(e) => { e.stopPropagation(); onInvest(farm); }}
             className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
             Invest Now
           </button>
           <button 
-            onClick={() => onEmailOwner(farm)}
+            onClick={(e) => { e.stopPropagation(); onEmailOwner(farm); }}
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center"
           >
             <Mail className="h-4 w-4 mr-1" />
@@ -255,7 +256,15 @@ const Farms = () => {
             experience: farm.experience || dummyFarm.experience,
             phone: farm.phone || dummyFarm.phone,
             email: farm.email || dummyFarm.email,
-            // Add other fields as necessary, falling back to dummy data
+            investors: farm.investors || [],
+            // Four-Wallet System IFO fields
+            tokenName: farm.tokenName,
+            tokenSymbol: farm.tokenSymbol,
+            tokenPrice: farm.tokenPrice,
+            ifoEndDate: farm.ifoEndDate ? farm.ifoEndDate[0] : null,
+            maxInvestmentPerUser: farm.maxInvestmentPerUser ? farm.maxInvestmentPerUser[0] : null,
+            hasEscrow: farm.hasEscrow || false,
+            ledgerCanister: farm.ledgerCanister ? farm.ledgerCanister[0] : null,
           };
         });
         

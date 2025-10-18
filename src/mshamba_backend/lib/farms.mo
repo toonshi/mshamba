@@ -43,7 +43,16 @@ module {
     email: Text,
     imageContent: Blob,
     imageContentType: Text,
-    ledgerCanisterPrincipal: ?Principal
+    ledgerCanisterPrincipal: ?Principal,
+    tokenName: Text,
+    tokenSymbol: Text,
+    tokenSupply: Nat,
+    tokenDecimals: Nat8,
+    tokenTransferFee: Nat,
+    tokenLogo: ?Text,
+    tokenPrice: Nat,
+    ifoEndDate: ?Int,
+    maxInvestmentPerUser: ?Nat
   ) : Types.Result<Farm> {
 
     let farmId = "farm-" # Int.toText(Time.now());
@@ -58,25 +67,35 @@ module {
       fundedAmount = 0;
       totalShares = 0;
       sharePrice = 0;
-      isOpenForInvestment = true;
+      isOpenForInvestment = false; // Changed to false - token must be launched first
       createdAt = Time.now();
       status = #Registered;
       investors = [];
       valuationHistory = [];
       sharePriceHistory = [];
-      ledgerCanister = ledgerCanisterPrincipal; // Set ledgerCanister here
+      ledgerCanister = ledgerCanisterPrincipal;
       imageContent = imageContent;
       imageContentType = imageContentType;
       crop = crop;
       size = size;
       duration = duration;
-      minInvestment = 0; // Initialize new field
+      minInvestment = 0;
       expectedYield = expectedYield;
       expectedROI = expectedROI;
       farmerName = farmerName;
       experience = experience;
       phone = phone;
       email = email;
+      tokenName = tokenName;
+      tokenSymbol = tokenSymbol;
+      tokenSupply = tokenSupply;
+      tokenDecimals = tokenDecimals;
+      tokenTransferFee = tokenTransferFee;
+      tokenLogo = tokenLogo;
+      hasEscrow = false;
+      tokenPrice = tokenPrice;
+      ifoEndDate = ifoEndDate;
+      maxInvestmentPerUser = maxInvestmentPerUser;
     };
 
     farms.put(farmId, newFarm);
@@ -145,12 +164,25 @@ module {
           return #err("This farm is not open for investment");
         };
 
+        // Calculate shares based on token price
+        let shares = amount / farm.tokenPrice * 100000000; // Convert to e8s
+
+        // Create investor record
+        let newInvestor: Types.FarmInvestor = {
+          investor = caller;
+          amount = amount;
+          shares = shares;
+          timestamp = Time.now();
+        };
+
         let updatedFunded = farm.fundedAmount + amount;
+        let updatedShares = farm.totalShares + shares;
 
         let updatedFarm: Farm = {
           farm with
           fundedAmount = updatedFunded;
-          investors = Array.append(farm.investors, [caller])
+          totalShares = updatedShares;
+          investors = Array.append(farm.investors, [newInvestor])
         };
 
         let finalFarm: Farm = updatedFarm;

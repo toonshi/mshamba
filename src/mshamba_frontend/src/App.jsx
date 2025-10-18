@@ -21,7 +21,9 @@ import FarmGraphs from "./pages/farmer/FarmGraphs";
 import InvestorDashboard from "./pages/investor/InvestorDashboard";
 import InvestorProfile from "./pages/investor/InvestorProfile";
 import Farms from "./pages/investor/Farms";
+import FarmDetails from "./pages/investor/FarmDetails";
 import MarketAnalysis from "./pages/investor/MarketAnalysis";
+import MyAccount from "./pages/investor/MyAccount";
 
 function App() {
   return (
@@ -50,8 +52,12 @@ function App() {
           <Route path="profile" element={<InvestorProfile />} />
           <Route index element={<Farms />} />
           <Route path="farms" element={<Farms />} />
+          <Route path="account" element={<MyAccount />} />
           <Route path="analysis" element={<MarketAnalysis />} />
         </Route>
+        
+        {/* Farm Details - Full Page */}
+        <Route path="/investor/farm/:farmId" element={<FarmDetails />} />
       </Routes>
     </Router>
   );

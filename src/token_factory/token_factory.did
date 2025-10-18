@@ -1,0 +1,13 @@
+type CreateTokenParams = record {
+  token_name : text;
+  token_symbol : text;
+  token_logo : opt text;
+  decimals : nat8;
+  total_supply : nat;
+  transfer_fee : nat;
+  minting_account_owner : principal;
+};
+
+service : {
+  create_farm_token : (CreateTokenParams) -> (variant { Ok : principal; Err : text });
+}

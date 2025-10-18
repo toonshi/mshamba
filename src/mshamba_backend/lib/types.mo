@@ -30,6 +30,13 @@ module {
     #Closed;
   };
 
+public type FarmInvestor = {
+  investor: Principal;
+  amount: Nat;
+  shares: Nat;
+  timestamp: Int;
+};
+
 public type Farm = {
   farmId: Text;
   name: Text;
@@ -42,7 +49,7 @@ public type Farm = {
   sharePrice: Nat;
   createdAt: Int;
   status: FarmStatus;
-  investors: [Principal];
+  investors: [FarmInvestor];
   valuationHistory: [Nat];
   sharePriceHistory: [Nat];
   ledgerCanister: ?Principal;
@@ -59,6 +66,18 @@ public type Farm = {
   experience: Text;
   phone: Text;
   email: Text;
+  // Token parameters for dynamic ICRC-1 token creation
+  tokenName: Text;
+  tokenSymbol: Text;
+  tokenSupply: Nat;
+  tokenDecimals: Nat8;
+  tokenTransferFee: Nat;
+  tokenLogo: ?Text;
+  // Four-Wallet System: Escrow and IFO
+  hasEscrow: Bool;              // Whether farm has escrow initialized
+  tokenPrice: Nat;              // Price per token in e8s (for IFO)
+  ifoEndDate: ?Int;             // IFO deadline timestamp
+  maxInvestmentPerUser: ?Nat;   // Optional cap per investor
 };
 
 
