@@ -59,12 +59,20 @@ const MyAccount = () => {
           
           const invested = Number(userInvestment?.amount || 0);
           const tokensHeld = Number(userInvestment?.shares || 0);
+          const investmentTimestamp = Number(userInvestment?.timestamp || 0);
           
-          // Simulate token price growth (5-15% gain for demo)
-          const growthRate = 1 + (Math.random() * 0.10 + 0.05);
-          const currentValue = invested * growthRate;
+          // Calculate REAL current value using actual token price
+          // Token price is stored in e8s (1 token = 100,000,000 e8s)
+          const currentTokenPrice = Number(farm.tokenPrice || 0);
+          const currentValue = (tokensHeld * currentTokenPrice) / 100000000;
+          
           const gains = currentValue - invested;
           const roi = invested > 0 ? ((gains / invested) * 100).toFixed(2) : 0;
+          
+          // Calculate days since investment for time-based analysis
+          const daysSinceInvestment = investmentTimestamp > 0 
+            ? Math.floor((Date.now() - (investmentTimestamp / 1000000)) / (1000 * 60 * 60 * 24))
+            : 0;
 
           return {
             farmId: farm.farmId,
@@ -77,10 +85,13 @@ const MyAccount = () => {
             roi: roi,
             tokensHeld: tokensHeld,
             tokenSymbol: farm.tokenSymbol,
+            tokenPrice: currentTokenPrice,
             status: farm.status,
             farmerName: farm.farmerName,
             duration: farm.duration,
             expectedROI: farm.expectedROI,
+            investmentDate: investmentTimestamp,
+            daysSinceInvestment: daysSinceInvestment,
           };
         });
 
@@ -102,7 +113,7 @@ const MyAccount = () => {
       setTotalInvested(invested);
       setTotalBalance(currentValue);
       
-      // Generate transaction history
+      // Generate transaction history from real investment data
       const txHistory = userInvestments.flatMap(inv => ([
         {
           id: `invest-${inv.farmId}`,
@@ -111,7 +122,7 @@ const MyAccount = () => {
           amount: inv.invested,
           tokens: inv.tokensHeld,
           tokenSymbol: inv.tokenSymbol,
-          date: Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+          date: inv.investmentDate / 1000000, // Convert from nanoseconds to milliseconds
           status: 'completed'
         }
       ])).sort((a, b) => b.date - a.date);
@@ -359,16 +370,51 @@ const MyAccount = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={(() => {
+                      if (investments.length === 0) return [];
+                      
                       const data = [];
                       const now = Date.now();
-                      for (let i = 30; i >= 0; i--) {
+                      const daysToShow = 30;
+                      
+                      // Find the earliest investment date
+                      const earliestInvestment = investments.reduce((earliest, inv) => {
+                        const invDate = inv.investmentDate / 1000000; // Convert from nanoseconds
+                        return invDate < earliest ? invDate : earliest;
+                      }, now);
+                      
+                      const startDate = Math.max(earliestInvestment, now - (daysToShow * 24 * 60 * 60 * 1000));
+                      
+                      // Generate daily data points
+                      for (let i = daysToShow; i >= 0; i--) {
                         const date = new Date(now - i * 24 * 60 * 60 * 1000);
-                        const value = totalInvested + (totalGains / 30) * (30 - i);
+                        const dateMs = date.getTime();
+                        
+                        // Calculate portfolio value for this date
+                        let portfolioValue = 0;
+                        
+                        investments.forEach(inv => {
+                          const investmentDate = inv.investmentDate / 1000000;
+                          
+                          // Only count if investment was made before this date
+                          if (investmentDate <= dateMs) {
+                            // For now, use linear growth from invested to current value
+                            // In future, this could use actual historical price data
+                            const daysSinceInvestment = Math.floor((dateMs - investmentDate) / (1000 * 60 * 60 * 24));
+                            const totalDaysSinceInvestment = inv.daysSinceInvestment || 1;
+                            const growthProgress = Math.min(daysSinceInvestment / totalDaysSinceInvestment, 1);
+                            
+                            const valueAtDate = inv.invested + (inv.gains * growthProgress);
+                            portfolioValue += valueAtDate;
+                          }
+                        });
+                        
                         data.push({
                           date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                          value: value
+                          value: portfolioValue,
+                          fullDate: date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
                         });
                       }
+                      
                       return data;
                     })()}
                   >
@@ -377,11 +423,18 @@ const MyAccount = () => {
                     <YAxis stroke="#6b7280" fontSize={12} />
                     <Tooltip
                       contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                      formatter={(value) => `KSH ${value.toLocaleString('en-KE', { minimumFractionDigits: 2 })}`}
+                      formatter={(value) => [`KSH ${value.toLocaleString('en-KE', { minimumFractionDigits: 2 })}`, 'Portfolio Value']}
+                      labelFormatter={(label) => label}
                     />
                     <Line type="monotone" dataKey="value" stroke="#16a34a" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
+              </div>
+              <div className="mt-4 text-sm text-gray-600">
+                <p>📊 Showing {investments.length > 0 ? 'actual investment timeline' : 'no data yet'}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Chart reflects real token prices and investment dates. Growth is calculated based on current token value.
+                </p>
               </div>
             </div>
           )}

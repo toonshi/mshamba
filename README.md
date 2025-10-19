@@ -1,71 +1,302 @@
-# 🌾 Mshamba
-The site is live on main net at: [https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/](url)
+# 🌾 Mshamba: Agricultural Equity Tokenization Platform
 
-## 📌 Overview
+> **Transforming Kenyan farms into publicly traded companies through blockchain technology**
 
-**Mshamba** is a decentralized platform for tokenizing agricultural projects on the **Internet Computer Protocol (ICP)**.  
-It enables:  
-- Urban investors to invest directly in farms.  
-- Landowners to lease unused land.  
-- Farmers to raise capital transparently without predatory loans.  
-- Cooperation across the entire agricultural supply chain.  
+The site is live on mainnet at: [https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/](https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/)
+
+---
+
+## 🎯 Vision
+
+**Mshamba** is the **NASDAQ for Kenyan farms** — a decentralized platform that enables farmers to raise capital by tokenizing farm equity, allowing anyone to invest in real agricultural businesses without traditional loans or banks.
+
+### The Problem We Solve
+
+**For Farmers:**
+- 🏦 Bank loans have predatory 15-25% interest rates
+- 📄 Heavy collateral requirements risk losing land
+- ⏰ Slow approval processes miss market opportunities
+- 💸 Debt obligations regardless of harvest success
+
+**For Investors:**
+- 🚫 No access to agricultural investment opportunities
+- 📊 Lack of transparency in farm operations
+- 🔒 Illiquid investments with no exit strategy
+- 🌍 Limited to local opportunities only
+
+### Our Solution
+
+**Mshamba enables farmers to:**
+- ✅ Raise capital by selling tokenized equity (not taking loans)
+- ✅ Keep majority ownership (75%+) and operational control
+- ✅ Access global investor pool via M-Pesa and crypto
+- ✅ Get funds released via milestone verification (transparency)
+- ✅ Share profits through dividend distributions
+- ✅ Scale with follow-on funding rounds
+
+**Investors get:**
+- ✅ Direct ownership in real agricultural businesses
+- ✅ Fractional investments starting from 1,000 KES (~$10)
+- ✅ Tradable tokens on secondary markets (liquidity)
+- ✅ Dividend income from farm profits
+- ✅ Transparent milestone tracking and reporting
+- ✅ Portfolio diversification across multiple farms
+
+---
+
+## 💡 How It Works
+
+### Example: Joseph's Potato Farm Expansion
+
+**Situation:**
+- Joseph owns 100 acres in Nakuru
+- Currently farming 60 acres (supplies St. Mary's School)
+- Gets new contract opportunity with St. John's School
+- Needs 2,000,000 KES to expand to remaining 40 acres
+- Can't get bank loan (15% interest, heavy collateral)
+
+**Mshamba Solution:**
+
+1. **Farm Valuation**
+   - Python API analyzes farm data + national agricultural benchmarks
+   - Farm valued at 25,000,000 KES (post-expansion)
+   - Recommendation: Raise 2M by selling 8% equity
+
+2. **Token Creation**
+   - Total: 1,000,000 tokens created
+   - Joseph keeps: 870,000 tokens (87% ownership, vesting)
+   - Mshamba gets: 50,000 tokens (5% for platform services)
+   - IFO sale: 80,000 tokens @ 25 KES each = 2,000,000 KES
+
+3. **Investment (IFO - Initial Farm Offering)**
+   - 30-day fundraising period
+   - Investors pay via M-Pesa (KES) or crypto (USDC)
+   - ~200 investors contribute (avg. 10,000 KES each)
+   - Fully funded! 🎉
+
+4. **Milestone-Based Fund Release**
+   - Funds held in escrow, released in stages:
+     - Milestone 1: Equipment purchase (800K) - Month 1
+     - Milestone 2: Land preparation (600K) - Month 2  
+     - Milestone 3: Planting complete (400K) - Month 3
+     - Milestone 4: First delivery (200K) - Month 5
+   - Evidence required: Photos, receipts, GPS coordinates
+   - Platform verifies before releasing funds
+
+5. **Harvest & Returns**
+   - Year 1 profit: 1,700,000 KES
+   - Joseph gets: 87% = 1,479,000 KES (no loan interest!)
+   - Investors get: 8% = 136,000 KES (~6.8% ROI)
+   - Mshamba gets: 5% = 85,000 KES
+   - Token value increases (farm proven successful)
+
+6. **Secondary Trading**
+   - Post-milestone trading windows
+   - P2P marketplace for liquidity
+   - Investors can exit or hold for more dividends
+   - Token price reflects farm performance
+
+---
+
+## 📌 Key Features  
+
+---
+
+### 🏗️ Platform Components
+
+**1. Dynamic ICRC-1 Token Factory**
+- Each farm gets its own ICRC-1 compliant token
+- Customizable name, symbol, supply, and decimals
+- ~2T cycles (~$2.50) per token creation
+- Instant deployment (~7 seconds)
+
+**2. Equity Structure**
+- Farmer: Retains 75%+ ownership with vesting
+- Investors: Purchase 8-20% through IFO
+- Platform: Earns 5% for valuation & services
+
+**3. Payment Integration**
+- M-Pesa STK Push for Kenyan investors (KES)
+- Stablecoin (ckUSDC) for international investors
+- Automatic KES ↔ USDC conversion
+- Milestone-based escrow release
+
+**4. Milestone Verification System**
+- Evidence submission (photos, receipts, GPS)
+- Platform verification before fund release
+- Real-time progress tracking for investors
+- Builds trust and accountability
+
+**5. Secondary Market**
+- Post-milestone trading windows
+- P2P marketplace for token exchange
+- Price discovery based on farm performance
+- Liquidity for investor exits
+
+**6. Dividend Distribution**
+- Automatic profit sharing via ICRC-1 transfers
+- Proportional to token ownership
+- Smart contract enforced fairness
 
 ---
 
 ## 📑 Table of Contents
 
-- [🌾 Mshamba](#-mshamba)
-  - [📌 Overview](#-overview)
-  - [🧠 Project Architecture](#-project-architecture)
-    - [Central Controller (`main.mo`)](#1-mainmo--central-controller)
-    - [User Identity & Roles (`profiles.mo`)](#2-profilesmo--user-identity--roles)
-    - [Farm Project Management (`farms.mo`)](#3-farmsmo--farm-project-management)
-    - [Shared Type Definitions (`types.mo`)](#7-typesmo--shared-type-definitions)
-  - [⚙️ Running Locally](#️-running-locally)
-  - [🧪 Testing Canisters](#-testing-canisters)
-    - [Token Ledger (`farm1_ledger`)](#-farm1_ledger-token-ledger)
-    - [User Profiles (`mshamba_backend`)](#-mshamba_backend-user-profiles)
-  - [🎨 Frontend Customization](#-frontend-customization)
-  - [🌍 Mainnet Canister IDs](#-mainnet-canister-ids)
-  - [🌱 Farm Image References](#-farm-image-references)
+- [🌾 Mshamba](#-mshamba-agricultural-equity-tokenization-platform)
+  - [🎯 Vision](#-vision)
+  - [💡 How It Works](#-how-it-works)
+  - [📌 Key Features](#-key-features)
+  - [🧠 Technical Architecture](#-technical-architecture)
+  - [⚙️ Quick Start](#️-quick-start)
+  - [🧪 Testing & Development](#-testing--development)
+  - [📚 Documentation](#-documentation)
+  - [🌍 Deployment](#-deployment)
+  - [🤝 Contributing](#-contributing)
 
 ---
 
-## 🧠 Project Architecture
+## 🧠 Technical Architecture
 
-### 1. `main.mo` — Central Controller
-- Orchestrates all modules (`profiles`, `farms`, `land`, `investments`).  
-- Routes API calls from the frontend or other actors.  
-- Token-related functionalities are currently **inactive**.  
+### Backend (Internet Computer - Motoko)
+
+**Core Canisters:**
+
+```
+src/mshamba_backend/
+├── main.mo              # Central orchestrator
+├── lib/
+│   ├── farms.mo         # Farm equity management
+│   ├── userProfiles.mo  # KYC & user identity
+│   ├── types.mo         # Shared data structures
+│   └── farm_escrow.mo   # Milestone-based fund management
+```
+
+**Key Modules:**
+
+**1. Farm Management (`farms.mo`)**
+- Farm creation with equity parameters
+- Token price calculation
+- Investor tracking with timestamps
+- Dividend distribution logic
+
+**2. Token Factory (`token_factory/` - Rust)**
+- Dynamic ICRC-1 ledger creation
+- Embeds official ICRC-1 WASM
+- Each farm gets unique token canister
+- Automatic minting to farm owner
+
+**3. Escrow System (`farm_escrow.mo`)**
+- Multi-signature milestone verification
+- Evidence submission and review
+- Staged fund release mechanism
+- Investment tracking and reporting
+
+**4. User Profiles (`userProfiles.mo`)**
+- Internet Identity integration
+- Role management (Farmer/Investor)
+- KYC data storage
+- Principal to user mapping
+
+### Frontend (React + Vite)
+
+```
+src/mshamba_frontend/src/
+├── pages/
+│   ├── farmer/           # Farmer dashboards
+│   │   ├── FarmListing.jsx
+│   │   ├── SetupInvestment.jsx
+│   │   └── Valuation.jsx
+│   └── investor/         # Investor interfaces
+│       ├── FarmDetails.jsx
+│       ├── MyAccount.jsx
+│       └── Marketplace.jsx
+├── components/
+│   └── Layout.jsx        # Navigation & layout
+├── hooks/
+│   └── useAuth.js        # Internet Identity auth
+└── App.jsx               # Routing
+```
+
+### External Integrations
+
+**1. Farm Intelligence API** (Python - Separate Repo)
+- Farm valuation algorithm
+- National agricultural data integration
+- DCF modeling and benchmarking
+- Token economics calculation
+
+**2. Payment Gateway** (To Be Implemented)
+- M-Pesa STK Push integration (IntaSend)
+- KES → USDC conversion
+- USDC escrow management
+- Milestone-based disbursement
+
+**3. Chain-Key USDC** (ICP Native)
+- Stablecoin pricing and settlement
+- 1:1 backed by real USDC
+- Fast, cheap transactions
+- Multi-chain bridge ready
 
 ---
 
-### 2. `profiles.mo` — User Identity & Roles
-Stores and manages user data:  
-- **Fields:** name, email, role, bio, location, joinedAt, wallet address.  
-- **Functions:**  
-  - `upsertProfile` → create or update a profile  
-  - `myProfile` → view your own profile  
-  - `getProfile` → view another user’s profile  
-  - `listUsers` → list all registered users  
+## 🏗️ Data Model
 
----
+### Farm Token Structure
 
-### 3. `farms.mo` — Farm Project Management
-Handles creation and funding of farms:  
-- **Fields:** farm name, description, owner, funding goal, shares, status, investors.  
-- **Functions:**  
-  - `createFarm` → post a new project  
-  - `getFarm` → retrieve a farm  
-  - `listFarms` → list all farms  
-  - `listFarmsByOwner` → farms owned by caller  
+```motoko
+type Farm = {
+  farmId: Text;
+  owner: Principal;          // Farmer's principal
+  name: Text;
+  location: Text;
+  
+  // Financials
+  fundingGoal: Nat;          // Total capital to raise
+  fundedAmount: Nat;         // Current funding
+  tokenPrice: Nat;           // Price per token (in USDC e6s)
+  totalShares: Nat;          // Total tokens issued
+  
+  // Token Info
+  tokenName: Text;           // "Sunrise Coffee Token"
+  tokenSymbol: Text;         // "SCFT"
+  tokenSupply: Nat;          // 1,000,000
+  ledgerCanister: ?Principal; // ICRC-1 ledger canister ID
+  
+  // Equity Structure
+  investors: [FarmInvestor]; // All token holders
+  isOpenForInvestment: Bool;
+  ifoEndDate: ?Int;          // IFO deadline
+  
+  // Operations
+  status: FarmStatus;        // Registered | Funded | Trading
+  milestones: [Milestone];   // Fund release schedule
+};
 
----
+type FarmInvestor = {
+  investor: Principal;
+  amount: Nat;               // USDC invested
+  shares: Nat;               // Tokens received
+  timestamp: Int;            // Investment date (nanoseconds)
+};
+```
 
-### 7. `types.mo` — Shared Type Definitions
-Defines core data structures:  
-- Types: `Farm`, `UserProfile`, `FarmShare`, `Investment`, `LandListing`, `Role`, etc.  
-- `Result<T>`: standard success/error response wrapper.  
+### Equity Distribution Example
+
+```
+Farm Valuation: 25,000,000 KES
+Capital Needed: 2,000,000 KES (8%)
+
+Equity Split:
+├─ Farmer: 87% (21,750,000 KES worth)
+├─ Investors: 8% (2,000,000 KES - IFO)
+└─ Mshamba: 5% (1,250,000 KES - services)
+
+Token Creation:
+├─ Total: 1,000,000 tokens
+├─ Farmer: 870,000 (vested 4 years)
+├─ Investors: 80,000 (liquid after IFO)
+└─ Mshamba: 50,000 (vested 2 years)
+```  
 
 ---
 
