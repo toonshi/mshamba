@@ -175,7 +175,8 @@ module {
         };
 
         // Calculate shares based on token price
-        let shares = amount / farm.tokenPrice * 100000000; // Convert to e8s
+        // Multiply first to avoid integer division truncation
+        let shares = (amount * 100000000) / farm.tokenPrice;
 
         // Create investor record
         let newInvestor: Types.FarmInvestor = {

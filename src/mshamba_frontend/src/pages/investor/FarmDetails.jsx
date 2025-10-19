@@ -374,7 +374,7 @@ const FarmDetails = () => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">You will receive:</p>
                 <p className="text-lg font-bold text-green-600">
-                  {investAmount ? Math.floor(Number(investAmount) / Number(farm.tokenPrice) * 100000000).toLocaleString() : '0'} {farm.tokenSymbol}
+                  {investAmount ? Math.floor((Number(investAmount) * 100000000) / Number(farm.tokenPrice)).toLocaleString() : '0'} {farm.tokenSymbol}
                 </p>
               </div>
             </div>
