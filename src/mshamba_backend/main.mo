@@ -1,7 +1,5 @@
 import FarmModule "lib/farms";
 import UserProfileModule "lib/userProfiles";
-import FarmEscrowModule "lib/farm_escrow";
-import EscrowTypes "lib/escrow_types";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
@@ -69,22 +67,6 @@ persistent actor {
 
   public shared ({ caller }) func addRole(role: UserProfileModule.Role) : async Bool {
     UserProfileModule.addRoleToProfile(profileStore, caller, role)
-  };
-
-  // Helper: Add a role to existing profile
-  public shared ({ caller }) func addRoleToProfile(role : UserProfileModule.Role) : async Bool {
-    switch (UserProfileModule.getProfile(profileStore, caller)) {
-      case (?profile) {
-        // Check if role already exists
-        for (r in profile.roles.vals()) {
-          if (r == role) return true; // Already has role
-        };
-        // Add new role
-        let newRoles = Array.append(profile.roles, [role]);
-        UserProfileModule.createProfile(profileStore, caller, profile.name, profile.bio, newRoles, profile.certifications)
-      };
-      case null { false };
-    }
   };
 
   // ==============================
