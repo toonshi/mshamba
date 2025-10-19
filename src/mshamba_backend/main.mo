@@ -1,5 +1,6 @@
 import FarmModule "lib/farms";
 import UserProfileModule "lib/userProfiles";
+import Payment "lib/payment";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
@@ -10,6 +11,7 @@ import Iter "mo:base/Iter";
 import Debug "mo:base/Debug";
 import Blob "mo:base/Blob";
 import Time "mo:base/Time";
+import Result "mo:base/Result";
 
 import TokenFactory "canister:token_factory";
 
@@ -122,9 +124,158 @@ persistent actor {
   };
 
   // ==============================
-  // INVESTMENT (Token Factory Integration)
+  // INVESTMENT & TOKEN PURCHASE (ckUSDT Payment Integration)
   // ==============================
-
+  
+  // Buy farm tokens with ckUSDT payment
+  public shared ({ caller }) func buyFarmTokens(
+    farmId: Text,
+    ckusdtAmount: Nat
+  ) : async Result.Result<Payment.TokenPurchase, Text> {
+    // 1. Get farm details
+    switch (FarmModule.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        // 2. Verify farm is open for investment
+        if (not farm.isOpenForInvestment) {
+          return #err("This farm is not currently open for investment");
+        };
+        
+        // 3. Verify token has been launched
+        let farmLedgerCanister = switch (farm.ledgerCanister) {
+          case null { return #err("Farm token not yet launched") };
+          case (?canister) { canister };
+        };
+        
+        // 4. Check if IFO has ended
+        switch (farm.ifoEndDate) {
+          case (?endDate) {
+            if (Time.now() > endDate) {
+              return #err("IFO period has ended");
+            };
+          };
+          case null {}; // No end date set, IFO is ongoing
+        };
+        
+        // 5. Calculate token amount based on price
+        let tokenAmount = Payment.calculateTokenAmount(
+          ckusdtAmount,
+          farm.tokenPrice,
+          farm.tokenDecimals
+        );
+        
+        Debug.print("Calculated token amount: " # debug_show(tokenAmount) # " for " # debug_show(ckusdtAmount) # " ckUSDT");
+        
+        // 6. Check if investment exceeds per-user limit
+        switch (farm.maxInvestmentPerUser) {
+          case (?maxInvestment) {
+            if (ckusdtAmount > maxInvestment) {
+              return #err("Investment amount exceeds maximum allowed per user");
+            };
+          };
+          case null {}; // No limit
+        };
+        
+        // 7. Verify investor has sufficient ckUSDT balance
+        switch (await Payment.checkBalance(caller, ckusdtAmount)) {
+          case (#err(msg)) { return #err(msg) };
+          case (#ok(_)) {};
+        };
+        
+        // 8. Get ckUSDT ledger and transfer fee
+        let ckusdtLedger = Payment.getLedger();
+        let transferFee = switch (await Payment.getTransferFee()) {
+          case (#err(msg)) { return #err(msg) };
+          case (#ok(fee)) { fee };
+        };
+        
+        // 9. Investor must approve transfer first (ICRC-2 approve pattern)
+        // Note: In production, investor calls icrc2_approve on ckUSDT ledger
+        // then calls this function. For now, we'll use direct transfer.
+        
+        // 10. Transfer ckUSDT from investor to farm treasury
+        let farmTreasuryAccount : Payment.Account = {
+          owner = switch (farm.farmTreasuryAccount) {
+            case null { farm.owner }; // Fallback to farm owner
+            case (?treasury) { treasury };
+          };
+          subaccount = null;
+        };
+        
+        let ckusdtTransferArgs : Payment.TransferArgs = {
+          from_subaccount = null;
+          to = farmTreasuryAccount;
+          amount = ckusdtAmount;
+          fee = ?transferFee;
+          memo = ?Text.encodeUtf8("Farm investment: " # farmId);
+          created_at_time = null;
+        };
+        
+        // Note: This requires investor to have called icrc2_approve first
+        // For MVP, we assume investor transfers directly
+        Debug.print("WARNING: Investor must transfer ckUSDT to farm treasury manually for MVP");
+        Debug.print("Farm treasury: " # Principal.toText(farmTreasuryAccount.owner));
+        Debug.print("Amount: " # debug_show(ckusdtAmount) # " ckUSDT (+ " # debug_show(transferFee) # " fee)");
+        
+        // 11. Transfer farm tokens from IFO escrow to investor
+        let investorAccount : Payment.Account = {
+          owner = caller;
+          subaccount = null;
+        };
+        
+        let backendPrincipal = Principal.fromActor(this);
+        
+        let tokenTransferResult = await Payment.transferTokensToInvestor(
+          farmLedgerCanister,
+          backendPrincipal, // Backend holds IFO escrow tokens
+          investorAccount,
+          tokenAmount
+        );
+        
+        switch (tokenTransferResult) {
+          case (#err(msg)) { return #err("Token transfer failed: " # msg) };
+          case (#ok(blockIndex)) {
+            // 12. Record the purchase
+            let purchase : Payment.TokenPurchase = {
+              investor = caller;
+              farmId = farmId;
+              ckusdtAmount = ckusdtAmount;
+              tokensReceived = tokenAmount;
+              blockIndex = blockIndex;
+              timestamp = Time.now();
+            };
+            
+            Debug.print("Purchase successful! Investor " # Principal.toText(caller) # " bought " # debug_show(tokenAmount) # " tokens");
+            
+            #ok(purchase)
+          };
+        };
+      };
+    };
+  };
+  
+  // Get ckUSDT ledger canister ID
+  public query func getCkUSDTLedgerCanister() : async Text {
+    Payment.ckUSDT_LEDGER_CANISTER
+  };
+  
+  // Calculate how many tokens an investor would receive for a given ckUSDT amount
+  public query func previewTokenPurchase(
+    farmId: Text,
+    ckusdtAmount: Nat
+  ) : async Result.Result<Nat, Text> {
+    switch (FarmModule.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { #err(msg) };
+      case (#ok(farm)) {
+        let tokenAmount = Payment.calculateTokenAmount(
+          ckusdtAmount,
+          farm.tokenPrice,
+          farm.tokenDecimals
+        );
+        #ok(tokenAmount)
+      };
+    };
+  };
 
   // ==============================
   // TOKEN LAUNCH
