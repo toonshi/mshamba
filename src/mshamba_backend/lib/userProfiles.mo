@@ -11,7 +11,7 @@ module {
     owner: Principal;
     name: Text;
     bio: Text;
-    role: Role;
+    roles: [Role];
     certifications: [Text];
   };
 
@@ -26,14 +26,14 @@ module {
     owner: Principal,
     name: Text,
     bio: Text,
-    role: Role,
+    roles: [Role],
     certifications: [Text]
   ) : Bool {
     switch (store.get(owner)) {
       case (?_) { false }; // already exists
       case null {
         let profile: Profile = {
-          owner; name; bio; role; certifications
+          owner; name; bio; roles; certifications
         };
         store.put(owner, profile);
         true
@@ -46,6 +46,13 @@ module {
   };
 
   public func listProfiles(store: ProfileStore) : [Profile] {
-  Iter.toArray(store.vals())
-};
+    Iter.toArray(store.vals())
+  };
+
+  public func hasRole(profile: Profile, role: Role) : Bool {
+    for (r in profile.roles.vals()) {
+      if (r == role) return true;
+    };
+    false
+  };
 };

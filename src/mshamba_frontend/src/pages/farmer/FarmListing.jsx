@@ -68,10 +68,6 @@ export const FarmListing = ({ onBack }) => {
       setValidationError("Investment needed is required.");
       return false;
     }
-    if (step === 3 && (!formData.farmerName || !formData.email)) {
-      setValidationError("Farmer name and email are required.");
-      return false;
-    }
     setValidationError("");
     return true;
   };
@@ -106,6 +102,16 @@ export const FarmListing = ({ onBack }) => {
     console.log("Actor before createFarm call:", actor);
 
     try {
+      // Auto-generate token parameters with sensible defaults
+      const tokenName = `${formData.farmName} Token`;
+      const tokenSymbol = formData.cropType.substring(0, 4).toUpperCase() || "FARM";
+      const tokenSupply = BigInt(1000000000); // 1 billion tokens
+      const tokenDecimals = 8;
+      const tokenTransferFee = BigInt(10000); // 0.0001 tokens
+      const tokenPrice = BigInt(100000); // Price per token in e8s
+      const ifoEndDate = []; // Will be set in Setup Investment
+      const maxInvestmentPerUser = []; // Will be set in Setup Investment
+
       const result = await actor.createFarm(
         formData.farmName,
         formData.description,
@@ -121,7 +127,16 @@ export const FarmListing = ({ onBack }) => {
         formData.phone,
         formData.email,
         imageContent,
-        imageContentType
+        imageContentType,
+        tokenName,
+        tokenSymbol,
+        tokenSupply,
+        tokenDecimals,
+        tokenTransferFee,
+        [], // tokenLogo
+        tokenPrice,
+        ifoEndDate,
+        maxInvestmentPerUser
       );
 
       console.log("Result from createFarm:", result);

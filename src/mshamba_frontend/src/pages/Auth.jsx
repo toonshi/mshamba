@@ -36,8 +36,45 @@ export const Auth = ({ onBack }) => {
         console.log("Profile result (useEffect):", profileResult);
 
         if (profileResult.length === 0) { // No profile found
-          console.log("No profile found, redirecting to profile creation page (useEffect).");
-          navigate(`/create-profile?type=${userType}`); // Redirect to the new profile creation page
+          console.log("No profile found, creating profile automatically...");
+          
+          // Auto-create profile based on user type
+          const roles = [];
+          if (userType === "farmer") {
+            roles.push({ Farmer: null });
+          } else if (userType === "investor") {
+            roles.push({ Investor: null });
+          } else {
+            // Default to investor if no type specified
+            roles.push({ Investor: null });
+          }
+
+          try {
+            const success = await actor.createProfile(
+              "User", // Default name, can be updated later
+              "Welcome to Mshamba", // Default bio
+              roles,
+              [] // No certifications by default
+            );
+
+            if (success) {
+              console.log("Profile created successfully!");
+              // Redirect to appropriate dashboard
+              if (userType === "farmer") {
+                navigate("/farmer/dashboard");
+              } else if (userType === "investor") {
+                navigate("/investor/dashboard");
+              } else {
+                navigate("/");
+              }
+            } else {
+              console.error("Failed to create profile");
+              alert("Failed to create profile. Please try again.");
+            }
+          } catch (error) {
+            console.error("Error creating profile:", error);
+            alert("Error creating profile: " + error.message);
+          }
         } else { // Profile exists, redirect
           console.log("Profile found, redirecting (useEffect).");
           if (userType === "farmer") {

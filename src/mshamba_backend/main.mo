@@ -36,8 +36,8 @@ persistent actor {
     Debug.print("getFarmerProfile called for: " # Principal.toText(caller));
     switch (UserProfileModule.getProfile(profileStore, caller)) {
       case (?(p)) {
-        Debug.print("Profile found. Role: " # debug_show(p.role));
-        if (p.role == #Farmer) { ?p } else { null }
+        Debug.print("Profile found. Roles: " # debug_show(p.roles));
+        if (UserProfileModule.hasRole(p, #Farmer)) { ?p } else { null }
       };
       case null { Debug.print("Profile not found for: " # Principal.toText(caller)); null };
     }
@@ -49,12 +49,12 @@ persistent actor {
   public shared ({ caller }) func createProfile(
     name : Text,
     bio : Text,
-    role : UserProfileModule.Role,
+    roles : [UserProfileModule.Role],
     certifications : [Text]
   ) : async Bool {
     Debug.print("createProfile called by: " # Principal.toText(caller));
-    Debug.print("Name: " # name # ", Bio: " # bio # ", Role: " # debug_show(role) # ", Certs: " # debug_show(certifications));
-    let result = UserProfileModule.createProfile(profileStore, caller, name, bio, role, certifications);
+    Debug.print("Name: " # name # ", Bio: " # bio # ", Roles: " # debug_show(roles) # ", Certs: " # debug_show(certifications));
+    let result = UserProfileModule.createProfile(profileStore, caller, name, bio, roles, certifications);
     Debug.print("UserProfileModule.createProfile returned: " # debug_show(result));
     result
   };

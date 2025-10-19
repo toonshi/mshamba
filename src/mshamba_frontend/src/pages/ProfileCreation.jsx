@@ -6,11 +6,15 @@ const ProfileCreation = () => {
   const { actor } = useAuth(); // Get the authenticated actor
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
-  const [role, setRole] = useState('Farmer'); // Default role
+  const [roles, setRoles] = useState({ Farmer: false, Investor: false }); // Multiple roles
   const [certifications, setCertifications] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const handleRoleChange = (roleName) => {
+    setRoles({ ...roles, [roleName]: !roles[roleName] });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,15 +23,25 @@ const ProfileCreation = () => {
 
     try {
       const certsArray = certifications.split(',').map(cert => cert.trim()).filter(cert => cert !== '');
-      const roleVariant = role === 'Farmer' ? { Farmer: null } : { Investor: null };
+      
+      // Convert selected roles to array of variant types
+      const rolesArray = [];
+      if (roles.Farmer) rolesArray.push({ Farmer: null });
+      if (roles.Investor) rolesArray.push({ Investor: null });
+
+      if (rolesArray.length === 0) {
+        setError('Please select at least one role.');
+        setLoading(false);
+        return;
+      }
 
       // Use the authenticated actor
-      const success = await actor.createProfile(name, bio, roleVariant, certsArray);
+      const success = await actor.createProfile(name, bio, rolesArray, certsArray);
 
       if (success) {
         alert('Profile created successfully!');
-        // Redirect based on the selected role
-        if (role === 'Farmer') {
+        // Redirect based on primary role (prefer Farmer if both selected)
+        if (roles.Farmer) {
           navigate('/farmer/dashboard');
         } else {
           navigate('/investor/dashboard');
@@ -76,18 +90,29 @@ const ProfileCreation = () => {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="role" className="block text-gray-700 text-sm font-bold mb-2">
-              Role:
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Roles (select all that apply):
             </label>
-            <select
-              id="role"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="Farmer">Farmer</option>
-              <option value="Investor">Investor</option>
-            </select>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={roles.Farmer}
+                  onChange={() => handleRoleChange('Farmer')}
+                  className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <span className="text-gray-700">Farmer (I grow crops and need funding)</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={roles.Investor}
+                  onChange={() => handleRoleChange('Investor')}
+                  className="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <span className="text-gray-700">Investor (I want to invest in farms)</span>
+              </label>
+            </div>
           </div>
 
           <div className="mb-6">
