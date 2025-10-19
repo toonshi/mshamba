@@ -15,7 +15,7 @@ import Result "mo:base/Result";
 
 import TokenFactory "canister:token_factory";
 
-persistent actor {
+persistent actor Self {
   type Farm = FarmModule.Farm;
   type Profile = UserProfileModule.Profile;
 
@@ -223,7 +223,7 @@ persistent actor {
           subaccount = null;
         };
         
-        let backendPrincipal = Principal.fromActor(this);
+        let backendPrincipal = Principal.fromActor(Self);
         
         let tokenTransferResult = await Payment.transferTokensToInvestor(
           farmLedgerCanister,

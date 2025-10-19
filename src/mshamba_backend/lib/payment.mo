@@ -97,10 +97,9 @@ module {
     public func calculateTokenAmount(ckusdtAmount: Nat, tokenPriceInCents: Nat, tokenDecimals: Nat8) : Nat {
         // tokenPriceInCents is in USD cents (e.g., 10 = $0.10)
         // ckUSDT amount is in e6 (1 ckUSDT = 1_000_000)
-        // Formula: tokens = (ckusdtAmount / 10000) / (price / 100) * 10^decimals
+        // Formula: tokens = (ckusdtAmount * 100) / tokenPriceInCents
         
-        // Convert to same base
-        let priceE6 = tokenPriceInCents * 10_000; // Convert cents to e6
+        // Calculate tokens in e6 base
         let tokensE6 = (ckusdtAmount * 100) / tokenPriceInCents;
         
         // Adjust for token decimals
@@ -116,7 +115,7 @@ module {
     // Transfer farm tokens from escrow to investor
     public func transferTokensToInvestor(
         farmLedgerCanister: Principal,
-        escrowPrincipal: Principal,
+        _escrowPrincipal: Principal,
         investorAccount: Account,
         tokenAmount: Nat
     ) : async Result.Result<Nat, Text> {
