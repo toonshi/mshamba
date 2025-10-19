@@ -13,12 +13,14 @@ import {
   Globe,
   BarChart3,
   Leaf,
-  Star
+  Star,
+  ChevronDown
 } from 'lucide-react';
 
 const HomePage = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -26,6 +28,10 @@ const HomePage = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleFaq = (index) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
   const themeClasses = isDarkMode 
@@ -70,6 +76,11 @@ const HomePage = () => {
                 isDarkMode ? 'text-gray-300 hover:text-green-400' : 'text-gray-600'
               }`}>
                 About
+              </a>
+              <a href="#faq" className={`font-medium hover:text-green-600 transition-colors ${
+                isDarkMode ? 'text-gray-300 hover:text-green-400' : 'text-gray-600'
+              }`}>
+                FAQ
               </a>
               
               {/* Dark Mode Toggle */}
@@ -138,6 +149,11 @@ const HomePage = () => {
               }`}>
                 About
               </a>
+              <a href="#faq" className={`block px-3 py-2 text-base font-medium ${
+                isDarkMode ? 'text-gray-300 hover:text-green-400' : 'text-gray-600 hover:text-green-600'
+              }`}>
+                FAQ
+              </a>
               <a 
                href="/ProfileSelection"
                 className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium transition-colors inline-block text-center"
@@ -176,8 +192,7 @@ const HomePage = () => {
               <p className={`text-xl mb-8 leading-relaxed ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-600'
               }`}>
-                Turning Kenyan farms into investable public traded companies through tokenized stocks.
-                No need for predatory loans. Just transparent, profitable partnerships that grow Kenya's agricultural future.
+                Each farm launches its own tradeable token, like a company issuing stock. Investors buy farm shares, farmers get capital without debt, and everyone shares in the harvest through transparent blockchain technology.
               </p>
 
               {/* CTA Buttons */}
@@ -221,10 +236,10 @@ const HomePage = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
-                    Zero
+                    24/7
                   </div>
                   <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Collateral Required
+                    Trading Markets
                   </div>
                 </div>
               </div>
@@ -254,7 +269,7 @@ const HomePage = () => {
               Why Choose Mshamba?
             </h2>
             <p className={`text-xl max-w-3xl mx-auto ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Breaking free from traditional lending through blockchain innovation
+              A simpler way to invest in farms and raise capital, powered by blockchain
             </p>
           </div>
 
@@ -263,19 +278,19 @@ const HomePage = () => {
               {
                 icon: Shield,
                 title: "Blockchain Security",
-                description: "Ensuring trust through transparent smart contracts for dividends distrtibution. Locked liquidity pools, for verified farms. Insurance options.",
+                description: "Each farm's token runs on secure smart contracts. Automatic dividend distribution to shareholders. Locked liquidity pools ensure you can trade anytime.",
                 color: "blue"
               },
               {
                 icon: TrendingUp,
-                title: "Real Returns",
-                description: "Share in actual farm profits with average returns of 15-25% annually through tokenized ownership.",
+                title: "True Ownership",
+                description: "Buy farm tokens like stocks. Earn dividends from farm profits. Sell anytime on our marketplace. Each token represents real equity in the farm.",
                 color: "green"
               },
               {
                 icon: Globe,
-                title: "Global Access",
-                description: "Connecting Kenyan farmers with worldwide investors, democratizing agricultural finance.",
+                title: "One Farm, One Token",
+                description: "Every farm creates its own unique token with custom name, symbol, and supply. Just like individual companies on the stock market.",
                 color: "purple"
               }
             ].map((feature, index) => (
@@ -330,10 +345,10 @@ const HomePage = () => {
               
               <div className="space-y-6">
                 {[
-                  { step: 1, title: "Register Your Farm", desc: "Submit farm details, crops, and funding needs" },
-                  { step: 2, title: "Get Verified", desc: "Professional assessment and blockchain verification" },
-                  { step: 3, title: "Raise Funds", desc: "Investors buy tokens representing farm shares" },
-                  { step: 4, title: "Share Profits", desc: "Distribute returns to token holders transparently" }
+                  { step: 1, title: "Register Your Farm", desc: "Share your farm details, crops, and funding goals" },
+                  { step: 2, title: "Launch Your Token", desc: "Create your farm's unique stock token in seconds" },
+                  { step: 3, title: "Receive Investment", desc: "Investors buy your tokens. You get capital, no debt." },
+                  { step: 4, title: "Share Profits", desc: "Dividends automatically go to token holders each season" }
                 ].map(({ step, title, desc }) => (
                   <div key={step} className="flex items-start space-x-4">
                     <div className="bg-green-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
@@ -363,10 +378,10 @@ const HomePage = () => {
               
               <div className="space-y-6">
                 {[
-                  { step: 1, title: "Browse Farms", desc: "Explore verified agricultural opportunities" },
-                  { step: 2, title: "Analyze & Invest", desc: "Analyze market trends & farm data with our valuation engines. Buy ownership" },
-                  { step: 3, title: "Track Performance", desc: "Monitor your investments in real-time" },
-                  { step: 4, title: "Earn Returns", desc: "Earn from dividends & appreciation automatically via smart contracts" }
+                  { step: 1, title: "Browse Farms", desc: "Explore verified farms and their performance data" },
+                  { step: 2, title: "Buy Farm Tokens", desc: "Purchase shares in farms you believe in. Start with any amount." },
+                  { step: 3, title: "Track Performance", desc: "Watch your portfolio grow with real-time farm updates" },
+                  { step: 4, title: "Earn & Trade", desc: "Receive dividends automatically. Sell tokens anytime on our market" }
                 ].map(({ step, title, desc }) => (
                   <div key={step} className="flex items-start space-x-4">
                     <div className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
@@ -397,12 +412,12 @@ const HomePage = () => {
                 About Mshamba
               </h2>
               <p className={`text-lg mb-6 leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Turning Kenyan farms into public traded companies through tokenized stocks. We're breaking the cycle of predatory lending that has trapped 
-                farmers for generations.
+                We're transforming how farms access capital by turning each farm into its own publicly traded company. 
+                No more high-interest loans or impossible collateral requirements.
               </p>
               <p className={`text-lg mb-8 leading-relaxed ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                Our platform enables transparent, secure investment through smart contracts & locked in liquidity pools. We are creating win-win
-                opportunities that benefit both farmers and investors while supporting Kenya's agricultural backbone.
+                Farmers launch their own tokens and raise funds from investors worldwide. Investors own real farm equity and earn 
+                from actual harvests. Everyone wins through transparent blockchain technology that handles everything automatically.
               </p>
               
               
@@ -424,6 +439,106 @@ const HomePage = () => {
         </div>
       </div>
 
+      {/* FAQ Section */}
+      <div id="faq" className="py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className={`text-4xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Frequently Asked Questions
+            </h2>
+            <p className={`text-xl ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              Everything you need to know about farm tokenization
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                question: "What is a farm token?",
+                answer: "A farm token is like a share in a company, but for a farm. Each farm on Mshamba creates its own unique token (using ICRC-1 standard on the Internet Computer blockchain). When you buy tokens, you own a piece of that specific farm and earn dividends from its profits."
+              },
+              {
+                question: "Is this a loan or investment?",
+                answer: "This is equity investment, not a loan. Farmers don't borrow money. They sell ownership shares in their farm. There's no debt, no interest payments, and no collateral required. Investors share both the risks and rewards of the harvest."
+              },
+              {
+                question: "How do I earn money as an investor?",
+                answer: "You earn in two ways: (1) Dividends: automatic payments from farm profits after each harvest, distributed via smart contracts, and (2) Token appreciation: you can sell your tokens on our marketplace if their value increases. Trade 24/7 with locked liquidity pools."
+              },
+              {
+                question: "Can I sell my farm tokens anytime?",
+                answer: "Yes! Unlike traditional farm investments, your tokens are liquid. Our platform has built-in liquidity pools where you can trade tokens anytime, day or night. You're never locked in."
+              },
+              {
+                question: "How much does it cost for farmers to create a token?",
+                answer: "Token creation is covered by the platform (approximately 2 trillion cycles, or ~$2.50). Farmers only need to provide their farm details and business plan. The entire token launch process takes about 7 seconds."
+              },
+              {
+                question: "Do farmers lose control of their farm?",
+                answer: "No. Selling tokens means sharing profits, not giving up management. Farmers continue to operate their farms independently. Token holders are passive investors who earn from success but don't make farming decisions."
+              },
+              {
+                question: "How are farms verified?",
+                answer: "Every farm undergoes professional assessment before listing. We verify land ownership, crop viability, and business plans. Only verified farms can launch tokens and accept investments."
+              },
+              {
+                question: "What if a farm fails?",
+                answer: "Like any investment, there's risk. That's why we recommend diversifying across multiple farms. Our verification process reduces risk, but agriculture has inherent uncertainties. Only invest what you can afford to lose."
+              },
+              {
+                question: "Do I need to understand blockchain or crypto?",
+                answer: "Not at all. We handle all the blockchain complexity behind the scenes. You'll interact with a simple interface—buy tokens, track your portfolio, and receive dividends automatically. It's designed to feel like using any modern investment app."
+              },
+              {
+                question: "Is this legal in Kenya?",
+                answer: "We're building a compliant platform for agricultural finance. Blockchain-based securities are an emerging area globally. We work within Kenya's regulatory framework and are committed to transparency with authorities as the space evolves."
+              }
+            ].map((faq, index) => (
+              <div 
+                key={index}
+                className={`rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                  isDarkMode 
+                    ? openFaqIndex === index 
+                      ? 'bg-green-900 border-green-600' 
+                      : 'bg-green-900/50 border-green-800 hover:border-green-700'
+                    : openFaqIndex === index
+                      ? 'bg-white border-green-600 shadow-lg'
+                      : 'bg-white border-gray-200 hover:border-green-400 shadow-sm'
+                }`}
+              >
+                <button
+                  onClick={() => toggleFaq(index)}
+                  className="w-full px-6 py-5 flex items-center justify-between text-left transition-colors"
+                >
+                  <span className={`text-lg font-semibold pr-8 ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {faq.question}
+                  </span>
+                  <ChevronDown 
+                    className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
+                      openFaqIndex === index ? 'rotate-180' : ''
+                    } ${isDarkMode ? 'text-green-400' : 'text-green-600'}`}
+                  />
+                </button>
+                
+                <div 
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openFaqIndex === index ? 'max-h-96' : 'max-h-0'
+                  }`}
+                >
+                  <div className={`px-6 pb-5 ${
+                    isDarkMode ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                    {faq.answer}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* CTA Section */}
       <div className={`py-20 ${isDarkMode ? 'bg-green-900/30' : 'bg-green-50'}`}>
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
@@ -431,7 +546,7 @@ const HomePage = () => {
             Ready to Transform Agriculture?
           </h2>
           <p className={`text-xl mb-10 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-            Building Kenya's agricultural future through blockchain innovation.
+            Join thousands turning farms into tradeable assets. Simple, secure, and built for Africa.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -445,7 +560,7 @@ const HomePage = () => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 text-sm">
-            {['Blockchain Secured', 'Zero Collateral', 'Transparent Returns', 'Africa-First'].map((item) => (
+            {['Blockchain Secured', 'No Debt Required', 'Automatic Dividends', 'Built for Kenya'].map((item) => (
               <div key={item} className="flex items-center">
                 <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
                 <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{item}</span>
