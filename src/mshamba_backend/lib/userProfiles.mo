@@ -29,16 +29,12 @@ module {
     roles: [Role],
     certifications: [Text]
   ) : Bool {
-    switch (store.get(owner)) {
-      case (?_) { false }; // already exists
-      case null {
-        let profile: Profile = {
-          owner; name; bio; roles; certifications
-        };
-        store.put(owner, profile);
-        true
-      };
-    }
+    // Create or update profile (upsert behavior)
+    let profile: Profile = {
+      owner; name; bio; roles; certifications
+    };
+    store.put(owner, profile);
+    true
   };
 
   public func getProfile(store: ProfileStore, owner: Principal) : ?Profile {
