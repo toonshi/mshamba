@@ -176,55 +176,70 @@ persistent actor Self {
           case null {}; // No limit
         };
         
-        // 7. Verify investor has sufficient ckUSDT balance
-        switch (await Payment.checkBalance(caller, ckusdtAmount)) {
-          case (#err(msg)) { return #err(msg) };
-          case (#ok(_)) {};
-        };
+        // ICRC-2: Check allowance (investor must have approved spending)
+        let ckusdtLedger = Payment.getCkUSDTLedger();
+        let backendPrincipal = Principal.fromActor(Self);
         
-        // 8. Get ckUSDT ledger and transfer fee
-        let ckusdtLedger = Payment.getLedger();
-        let transferFee = switch (await Payment.getTransferFee()) {
-          case (#err(msg)) { return #err(msg) };
-          case (#ok(fee)) { fee };
-        };
-        
-        // 9. Investor must approve transfer first (ICRC-2 approve pattern)
-        // Note: In production, investor calls icrc2_approve on ckUSDT ledger
-        // then calls this function. For now, we'll use direct transfer.
-        
-        // 10. Transfer ckUSDT from investor to farm treasury
-        let farmTreasuryAccount : Payment.Account = {
-          owner = switch (farm.farmTreasuryAccount) {
-            case null { farm.owner }; // Fallback to farm owner
-            case (?treasury) { treasury };
-          };
-          subaccount = null;
-        };
-        
-        let ckusdtTransferArgs : Payment.TransferArgs = {
-          from_subaccount = null;
-          to = farmTreasuryAccount;
-          amount = ckusdtAmount;
-          fee = ?transferFee;
-          memo = ?Text.encodeUtf8("Farm investment: " # farmId);
-          created_at_time = null;
-        };
-        
-        // Note: This requires investor to have called icrc2_approve first
-        // For MVP, we assume investor transfers directly
-        Debug.print("WARNING: Investor must transfer ckUSDT to farm treasury manually for MVP");
-        Debug.print("Farm treasury: " # Principal.toText(farmTreasuryAccount.owner));
-        Debug.print("Amount: " # debug_show(ckusdtAmount) # " ckUSDT (+ " # debug_show(transferFee) # " fee)");
-        
-        // 11. Transfer farm tokens from IFO escrow to investor
         let investorAccount : Payment.Account = {
           owner = caller;
           subaccount = null;
         };
         
-        let backendPrincipal = Principal.fromActor(Self);
+        let backendAccount : Payment.Account = {
+          owner = backendPrincipal;
+          subaccount = null;
+        };
         
+        // Check if investor approved spending
+        let allowanceResult = await Payment.checkAllowance(
+          ckusdtLedger,
+          investorAccount,
+          backendAccount
+        );
+        
+        let allowance = switch (allowanceResult) {
+          case (#err(msg)) { return #err("Failed to check allowance: " # msg) };
+          case (#ok(allow)) { allow };
+        };
+        
+        if (allowance.allowance < ckusdtAmount) {
+          return #err("Insufficient allowance. Please approve " # debug_show(ckusdtAmount) # " ckUSDT spending first. Currently approved: " # debug_show(allowance.allowance));
+        };
+        
+        Debug.print("Allowance verified: " # debug_show(allowance.allowance) # " ckUSDT approved");
+        
+        // ICRC-2: Pull payment from investor to farmer
+        let farmerAccount : Payment.Account = {
+          owner = farm.owner;
+          subaccount = null;
+        };
+        
+        // Build rich memo with farm details (keep under 256 bytes)
+        let tokenAmountDisplay = tokenAmount / 100_000_000; // Convert to human-readable
+        let ckusdtAmountDisplay = ckusdtAmount / 1_000_000; // ckUSDT has 6 decimals
+        let priceDisplay = farm.tokenPrice;
+        
+        let memo = "Buy " # debug_show(tokenAmountDisplay) # " " # farm.tokenSymbol # 
+                   " @$" # debug_show(priceDisplay) # " w/" # debug_show(ckusdtAmountDisplay) # 
+                   " USDT | " # farm.name;
+        // Example: "Buy 1000 GAFT @$10 w/100 USDT | Green Acres Farm"
+        
+        let paymentResult = await Payment.pullPayment(
+          ckusdtLedger,
+          investorAccount,
+          farmerAccount,
+          ckusdtAmount,
+          memo
+        );
+        
+        let paymentBlockIndex = switch (paymentResult) {
+          case (#err(msg)) { return #err("Payment failed: " # msg) };
+          case (#ok(blockIdx)) { blockIdx };
+        };
+        
+        Debug.print("Payment successful! " # debug_show(ckusdtAmount) # " ckUSDT transferred at block " # debug_show(paymentBlockIndex));
+        
+        // Transfer farm tokens from IFO escrow to investor
         let tokenTransferResult = await Payment.transferTokensToInvestor(
           farmLedgerCanister,
           backendPrincipal, // Backend holds IFO escrow tokens
@@ -396,12 +411,22 @@ persistent actor Self {
           subaccount = null;
         };
         
+        // Build rich memo with farm details (keep under 256 bytes)
+        let tokenAmountDisplay = tokenAmount / 100_000_000; // Convert to human-readable
+        let icpAmountDisplay = icpAmount / 100_000_000;
+        let priceDisplay = farm.tokenPrice;
+        
+        let memo = "Buy " # debug_show(tokenAmountDisplay) # " " # farm.tokenSymbol # 
+                   " @$" # debug_show(priceDisplay) # " w/" # debug_show(icpAmountDisplay) # 
+                   " ICP | " # farm.name;
+        // Example: "Buy 1000 GAFT @$10 w/100 ICP | Green Acres Farm"
+        
         let paymentResult = await Payment.pullPayment(
           icpLedger,
           investorAccount,
           farmerAccount,
           icpAmount,
-          "Farm investment: " # farmId
+          memo
         );
         
         let paymentBlockIndex = switch (paymentResult) {
