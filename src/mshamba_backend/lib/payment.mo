@@ -6,8 +6,9 @@ import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 
 module {
-    // ckUSDT Ledger on ICP Mainnet
-    public let ckUSDT_LEDGER_CANISTER = "cngnf-vqaaa-aaaar-qag4q-cai";
+    // Ledger Canisters on ICP Mainnet
+    public let ckUSDT_LEDGER_CANISTER = "cngnf-vqaaa-aaaar-qag4q-cai";  // ckUSDT (6 decimals)
+    public let ICP_LEDGER_CANISTER = "ryjl3-tyaaa-aaaaa-aaaba-cai";      // ICP (8 decimals)
     
     // ICRC-1 Types for payment verification
     public type Account = {
@@ -58,14 +59,23 @@ module {
     };
     
     // Get ckUSDT ledger actor
-    public func getLedger() : ICRC1Ledger {
+    public func getCkUSDTLedger() : ICRC1Ledger {
         actor(ckUSDT_LEDGER_CANISTER) : ICRC1Ledger
     };
     
-    // Verify investor has sufficient ckUSDT balance
-    public func checkBalance(investor: Principal, requiredAmount: Nat) : async Result.Result<Bool, Text> {
+    // Get ICP ledger actor
+    public func getICPLedger() : ICRC1Ledger {
+        actor(ICP_LEDGER_CANISTER) : ICRC1Ledger
+    };
+    
+    // For backwards compatibility
+    public func getLedger() : ICRC1Ledger {
+        getCkUSDTLedger()
+    };
+    
+    // Verify investor has sufficient balance on a specific ledger
+    public func checkBalanceOnLedger(ledger: ICRC1Ledger, investor: Principal, requiredAmount: Nat, assetName: Text) : async Result.Result<Bool, Text> {
         try {
-            let ledger = getLedger();
             let balance = await ledger.icrc1_balance_of({
                 owner = investor;
                 subaccount = null;
@@ -74,11 +84,21 @@ module {
             if (balance >= requiredAmount) {
                 #ok(true)
             } else {
-                #err("Insufficient ckUSDT balance. Have: " # debug_show(balance) # ", Need: " # debug_show(requiredAmount))
+                #err("Insufficient " # assetName # " balance. Have: " # debug_show(balance) # ", Need: " # debug_show(requiredAmount))
             }
         } catch (e) {
             #err("Failed to check balance: " # Error.message(e))
         }
+    };
+    
+    // Verify investor has sufficient ckUSDT balance
+    public func checkBalance(investor: Principal, requiredAmount: Nat) : async Result.Result<Bool, Text> {
+        await checkBalanceOnLedger(getCkUSDTLedger(), investor, requiredAmount, "ckUSDT")
+    };
+    
+    // Verify investor has sufficient ICP balance
+    public func checkICPBalance(investor: Principal, requiredAmount: Nat) : async Result.Result<Bool, Text> {
+        await checkBalanceOnLedger(getICPLedger(), investor, requiredAmount, "ICP")
     };
     
     // Get ckUSDT transfer fee
@@ -92,7 +112,7 @@ module {
         }
     };
     
-    // Calculate token amount based on price
+    // Calculate token amount from ckUSDT payment
     // ckUSDT has 6 decimals, farm tokens typically have 8
     public func calculateTokenAmount(ckusdtAmount: Nat, tokenPriceInCents: Nat, tokenDecimals: Nat8) : Nat {
         // tokenPriceInCents is in USD cents (e.g., 10 = $0.10)
@@ -109,6 +129,27 @@ module {
             tokensE6 * 100  // Scale up by 2 decimals
         } else {
             tokensE6  // Default fallback
+        }
+    };
+    
+    // Calculate token amount from ICP payment
+    // ICP has 8 decimals, farm tokens typically have 8
+    // icpPriceUSD is in cents (e.g., 1000 = $10.00 per ICP)
+    public func calculateTokenAmountFromICP(icpAmount: Nat, tokenPriceInCents: Nat, icpPriceUSD: Nat, tokenDecimals: Nat8) : Nat {
+        // Convert ICP to USD value: icpAmount (e8) * icpPriceUSD (cents) / 1e8
+        // Then divide by token price to get token amount
+        // Result: tokens = (icpAmount * icpPriceUSD) / (tokenPriceInCents * 1e8) * 10^tokenDecimals
+        
+        let usdValueCents = (icpAmount * icpPriceUSD) / 100_000_000; // ICP e8 to cents
+        let tokensBase = (usdValueCents * 100) / tokenPriceInCents;
+        
+        // Adjust for token decimals (assuming calculation gives us e6 equivalent)
+        if (tokenDecimals == 8) {
+            tokensBase * 100
+        } else if (tokenDecimals == 6) {
+            tokensBase
+        } else {
+            tokensBase
         }
     };
     

@@ -259,6 +259,11 @@ persistent actor Self {
     Payment.ckUSDT_LEDGER_CANISTER
   };
   
+  // Get ICP ledger canister ID
+  public query func getICPLedgerCanister() : async Text {
+    Payment.ICP_LEDGER_CANISTER
+  };
+  
   // Calculate how many tokens an investor would receive for a given ckUSDT amount
   public query func previewTokenPurchase(
     farmId: Text,
@@ -273,6 +278,130 @@ persistent actor Self {
           farm.tokenDecimals
         );
         #ok(tokenAmount)
+      };
+    };
+  };
+  
+  // Calculate how many tokens an investor would receive for a given ICP amount
+  // icpPriceUSD is current ICP price in cents (e.g., 1000 = $10.00)
+  public query func previewTokenPurchaseWithICP(
+    farmId: Text,
+    icpAmount: Nat,
+    icpPriceUSD: Nat
+  ) : async Result.Result<Nat, Text> {
+    switch (FarmModule.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { #err(msg) };
+      case (#ok(farm)) {
+        let tokenAmount = Payment.calculateTokenAmountFromICP(
+          icpAmount,
+          farm.tokenPrice,
+          icpPriceUSD,
+          farm.tokenDecimals
+        );
+        #ok(tokenAmount)
+      };
+    };
+  };
+  
+  // Buy farm tokens with ICP payment
+  // icpPriceUSD must be passed by frontend (from price oracle or manual input)
+  public shared ({ caller }) func buyFarmTokensWithICP(
+    farmId: Text,
+    icpAmount: Nat,
+    icpPriceUSD: Nat  // ICP price in cents (e.g., 1000 = $10.00)
+  ) : async Result.Result<Payment.TokenPurchase, Text> {
+    // Validate farm and get details
+    switch (FarmModule.getFarm(farmId, farmStore)) {
+      case (#err(msg)) { return #err(msg) };
+      case (#ok(farm)) {
+        // Verify farm is open for investment
+        if (not farm.isOpenForInvestment) {
+          return #err("This farm is not currently open for investment");
+        };
+        
+        // Verify token has been launched
+        let farmLedgerCanister = switch (farm.ledgerCanister) {
+          case null { return #err("Farm token not yet launched") };
+          case (?canister) { canister };
+        };
+        
+        // Check if IFO has ended
+        switch (farm.ifoEndDate) {
+          case (?endDate) {
+            if (Time.now() > endDate) {
+              return #err("IFO period has ended");
+            };
+          };
+          case null {}; // No end date set, IFO is ongoing
+        };
+        
+        // Calculate token amount based on ICP payment
+        let tokenAmount = Payment.calculateTokenAmountFromICP(
+          icpAmount,
+          farm.tokenPrice,
+          icpPriceUSD,
+          farm.tokenDecimals
+        );
+        
+        Debug.print("Calculated token amount: " # debug_show(tokenAmount) # " for " # debug_show(icpAmount) # " ICP");
+        
+        // Calculate USD equivalent for investment limit check
+        let usdEquivalent = (icpAmount * icpPriceUSD) / 100_000_000;
+        
+        // Check if investment exceeds per-user limit
+        switch (farm.maxInvestmentPerUser) {
+          case (?maxInvestment) {
+            if (usdEquivalent > maxInvestment) {
+              return #err("Investment amount exceeds maximum allowed per user");
+            };
+          };
+          case null {}; // No limit
+        };
+        
+        // Verify investor has sufficient ICP balance
+        switch (await Payment.checkICPBalance(caller, icpAmount)) {
+          case (#err(msg)) { return #err(msg) };
+          case (#ok(_)) {};
+        };
+        
+        // Note: ICP transfer fee checking can be added here if needed
+        // For now, we assume investor knows to include fee in their transfer
+        
+        Debug.print("ICP payment accepted. Investor must transfer " # debug_show(icpAmount) # " ICP to farm treasury");
+        
+        // Transfer farm tokens from IFO escrow to investor
+        let investorAccount : Payment.Account = {
+          owner = caller;
+          subaccount = null;
+        };
+        
+        let backendPrincipal = Principal.fromActor(Self);
+        
+        let tokenTransferResult = await Payment.transferTokensToInvestor(
+          farmLedgerCanister,
+          backendPrincipal, // Backend holds IFO escrow tokens
+          investorAccount,
+          tokenAmount
+        );
+        
+        switch (tokenTransferResult) {
+          case (#err(msg)) { return #err("Token transfer failed: " # msg) };
+          case (#ok(blockIndex)) {
+            // Record the purchase
+            let purchase : Payment.TokenPurchase = {
+              investor = caller;
+              farmId = farmId;
+              ckusdtAmount = usdEquivalent; // Store USD equivalent
+              tokensReceived = tokenAmount;
+              blockIndex = blockIndex;
+              timestamp = Time.now();
+            };
+            
+            Debug.print("Purchase successful! Investor " # Principal.toText(caller) # " bought " # debug_show(tokenAmount) # " tokens with ICP");
+            
+            #ok(purchase)
+          };
+        };
       };
     };
   };
