@@ -21,8 +21,8 @@ const Layout = ({ children, userType, userName = "User" }) => {
   
   const farmerNavItems = [
     { path: '/farmer/dashboard', icon: LayoutDashboard, label: 'Farm Profile' },
-    { path: '/farmer/dashboard/records', icon: FileText, label: 'Setup Investment' },
-    //{ path: '/farmer/dashboard/setup-investment', icon: DollarSign, label: 'Setup Investment' },
+    { path: '/farmer/dashboard/records', icon: FileText, label: 'Farm Records' },
+    { path: '/farmer/dashboard/setup-investment', icon: DollarSign, label: 'Setup Investment' },
     { path: '/farmer/dashboard/valuation', icon: TrendingUp, label: 'Valuation Report' },
     { path: '/farmer/dashboard/investors', icon: Users, label: 'Investors List' },
     { path: '/farmer/dashboard/graphs', icon: BarChart3, label: 'Analytics' },

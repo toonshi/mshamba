@@ -1,210 +1,249 @@
-import React, { useState } from 'react';
-import { DollarSign, Users, Calendar, Target, Mail } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Rocket, ToggleLeft, ToggleRight, Coins, Calendar, Users, Target, CheckCircle, XCircle } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 const SetupInvestment = () => {
-  const [investmentData, setInvestmentData] = useState({
-    title: '',
-    description: '',
-    targetAmount: '',
-    minimumInvestment: '',
-    duration: '',
-    purpose: ''
-  });
+  const { actor } = useAuth();
+  const [farms, setFarms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState({});
 
-  const [currentInvestments, setCurrentInvestments] = useState([]);
+  useEffect(() => {
+    fetchMyFarms();
+  }, [actor]);
 
-  const handleInputChange = (e) => {
-    setInvestmentData({
-      ...investmentData,
-      [e.target.name]: e.target.value
-    });
+  const fetchMyFarms = async () => {
+    if (!actor) return;
+    try {
+      setLoading(true);
+      const myFarms = await actor.myFarms();
+      setFarms(myFarms);
+    } catch (error) {
+      console.error('Error fetching farms:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setCurrentInvestments([
-      ...currentInvestments,
-      { ...investmentData, status: 'Draft', raised: 0 }
-    ]);
-    setInvestmentData({
-      title: '',
-      description: '',
-      targetAmount: '',
-      minimumInvestment: '',
-      duration: '',
-      purpose: ''
-    });
-    alert('Investment saved!');
+  const handleLaunchToken = async (farmId, farmName) => {
+    if (!confirm(`Launch token for ${farmName}? This will cost ~2T cycles.`)) return;
+
+    setActionLoading({ ...actionLoading, [farmId]: 'launching' });
+    try {
+      const result = await actor.launchFarmToken(farmId);
+      
+      if ('ok' in result) {
+        alert(`✅ Token launched successfully!\n\nLedger Canister: ${result.ok.toText()}`);
+        await fetchMyFarms(); // Refresh
+      } else {
+        alert(`❌ Token launch failed: ${result.err}`);
+      }
+    } catch (error) {
+      console.error('Launch token error:', error);
+      alert(`❌ Error: ${error.message}`);
+    } finally {
+      setActionLoading({ ...actionLoading, [farmId]: null });
+    }
   };
 
-  const openInvestment = (index) => {
-    alert(`Launching investment: ${currentInvestments[index].title}`);
-    const updated = [...currentInvestments];
-    updated[index].status = 'Live';
-    setCurrentInvestments(updated);
+  const handleToggleInvestment = async (farmId, farmName, currentStatus) => {
+    const action = currentStatus ? 'close' : 'open';
+    if (!confirm(`${action.toUpperCase()} investment for ${farmName}?`)) return;
+
+    setActionLoading({ ...actionLoading, [farmId]: 'toggling' });
+    try {
+      const result = await actor.toggleFarmInvestmentStatus(farmId, !currentStatus);
+      
+      if ('ok' in result) {
+        alert(`✅ Investment ${action}ed successfully!`);
+        await fetchMyFarms(); // Refresh
+      } else {
+        alert(`❌ Failed to ${action} investment: ${result.err}`);
+      }
+    } catch (error) {
+      console.error('Toggle investment error:', error);
+      alert(`❌ Error: ${error.message}`);
+    } finally {
+      setActionLoading({ ...actionLoading, [farmId]: null });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your farms...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-6 bg-gray-50 min-h-screen">
-
       {/* Header */}
       <div className="bg-white rounded-xl shadow-sm border p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Setup Investment Opportunity</h2>
-        <p className="text-gray-600">Create a new investment opportunity for your farm project</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Setup Investment Opportunities</h2>
+        <p className="text-gray-600">Launch tokens and open your farms for investment</p>
       </div>
 
-      {/* Investment Form */}
-      <div className="bg-white rounded-xl shadow-sm border p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Farms List */}
+      {farms.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border p-12 text-center">
+          <p className="text-gray-500 text-lg">No farms yet. Create a farm first!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {farms.map((farm) => {
+            const hasToken = farm.ledgerCanister && farm.ledgerCanister.length > 0;
+            const isOpen = farm.isOpenForInvestment;
+            const isLoading = actionLoading[farm.farmId];
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Investment Title</label>
-              <input
-                type="text"
-                name="title"
-                value={investmentData.title}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="e.g., Almond Grove Expansion Project"
-                required
-              />
-            </div>
+            return (
+              <div key={farm.farmId} className="bg-white rounded-xl shadow-sm border p-6">
+                {/* Farm Header */}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">{farm.name}</h3>
+                    <p className="text-gray-600">{farm.location} • {farm.crop}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    {hasToken ? (
+                      <span className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Token Launched
+                      </span>
+                    ) : (
+                      <span className="flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                        <XCircle className="h-4 w-4 mr-1" />
+                        No Token
+                      </span>
+                    )}
+                    {isOpen && (
+                      <span className="flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        Open for Investment
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Investment Purpose</label>
-              <select
-                name="purpose"
-                value={investmentData.purpose}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                required
-              >
-                <option value="">Select Purpose</option>
-                <option value="expansion">Farm Expansion</option>
-                <option value="equipment">New Equipment</option>
-                <option value="irrigation">Irrigation System</option>
-                <option value="organic">Organic Certification</option>
-                <option value="storage">Storage Facilities</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
+                {/* Token Details */}
+                {hasToken && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Token Name</p>
+                      <p className="font-semibold">{farm.tokenName}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Symbol</p>
+                      <p className="font-semibold">{farm.tokenSymbol}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Supply</p>
+                      <p className="font-semibold">{(Number(farm.tokenSupply) / 100000000).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Token Price</p>
+                      <p className="font-semibold">KSH {Number(farm.tokenPrice).toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Project Description</label>
-            <textarea
-              name="description"
-              value={investmentData.description}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Describe your investment project, goals, and how funds will be used..."
-              required
-            />
-          </div>
+                {/* Investment Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="text-xs text-gray-500">Target</p>
+                      <p className="font-semibold">KSH {Number(farm.fundingGoal).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Coins className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="text-xs text-gray-500">Raised</p>
+                      <p className="font-semibold">KSH {Number(farm.fundedAmount).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <p className="text-xs text-gray-500">Investors</p>
+                      <p className="font-semibold">{farm.investors.length}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                    <div>
+                      <p className="text-xs text-gray-500">Duration</p>
+                      <p className="font-semibold">{Number(farm.duration)} months</p>
+                    </div>
+                  </div>
+                </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Target Amount ($)</label>
-              <input
-                type="number"
-                name="targetAmount"
-                value={investmentData.targetAmount}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="50000"
-                required
-              />
-            </div>
+                {/* Actions */}
+                <div className="flex gap-3 pt-4 border-t">
+                  {!hasToken ? (
+                    <button
+                      onClick={() => handleLaunchToken(farm.farmId, farm.name)}
+                      disabled={isLoading === 'launching'}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Rocket className="h-4 w-4" />
+                      {isLoading === 'launching' ? 'Launching Token...' : 'Launch Token'}
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleToggleInvestment(farm.farmId, farm.name, isOpen)}
+                        disabled={isLoading === 'toggling'}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                          isOpen
+                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        {isOpen ? (
+                          <>
+                            <ToggleRight className="h-4 w-4" />
+                            {isLoading === 'toggling' ? 'Closing...' : 'Close Investment'}
+                          </>
+                        ) : (
+                          <>
+                            <ToggleLeft className="h-4 w-4" />
+                            {isLoading === 'toggling' ? 'Opening...' : 'Open for Investment'}
+                          </>
+                        )}
+                      </button>
+                      
+                      {farm.ledgerCanister && farm.ledgerCanister.length > 0 && (
+                        <a
+                          href={`http://127.0.0.1:4943/?canisterId=ulvla-h7777-77774-qaacq-cai&id=${farm.ledgerCanister[0].toText()}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                        >
+                          <Coins className="h-4 w-4" />
+                          View Token Canister
+                        </a>
+                      )}
+                    </>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Investment ($)</label>
-              <input
-                type="number"
-                name="minimumInvestment"
-                value={investmentData.minimumInvestment}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="1000"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Duration (months)</label>
-              <input
-                type="number"
-                name="duration"
-                value={investmentData.duration}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="24"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-4">
-            <button type="button" className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              Save Draft
-            </button>
-            <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
-              Publish Investment
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Current Investments */}
-      <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Current Investment Opportunities</h3>
-
-        {currentInvestments.length === 0 && <p className="text-gray-600">No investments yet.</p>}
-
-        {currentInvestments.map((inv, index) => (
-          <div key={index} className="border p-4 rounded-lg space-y-3">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-              <h4 className="font-medium">{inv.title || 'Untitled'}</h4>
-              <span className={`px-2 py-1 text-xs rounded-full ${inv.status === 'Live' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                {inv.status}
-              </span>
-            </div>
-
-            {/* Token Settings */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-600">
-              <div className="flex items-center"><Target className="h-4 w-4 mr-1"/>Target: ${inv.targetAmount || 0}</div>
-              <div className="flex items-center"><Users className="h-4 w-4 mr-1"/>Min Investment: ${inv.minimumInvestment || 0}</div>
-              <div className="flex items-center"><Calendar className="h-4 w-4 mr-1"/>Duration: {inv.duration || 0} mo</div>
-            </div>
-
-            {/* Tokenomics Report */}
-            <div className="mt-2 p-3 bg-gray-50 border rounded text-gray-700">
-              <h5 className="font-semibold mb-1">Tokenomics Report</h5>
-              <p>Purpose: {inv.purpose || '-'}</p>
-              <p>Additional details: Placeholder for future API integration.</p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex space-x-2 mt-2">
-              <button
-                onClick={() => openInvestment(index)}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                Open Investment
-              </button>
-
-              <a
-                href="mailto:investor@example.com"
-                className="flex items-center bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 text-gray-700"
-              >
-                <Mail className="h-4 w-4 mr-1"/> Review / Ask Questions
-              </a>
-            </div>
-          </div>
-        ))}
-      </div>
+                {/* Help Text */}
+                {!hasToken && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>Next Step:</strong> Launch your farm token to enable investments. This creates an ICRC-1 token that investors will receive.
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
