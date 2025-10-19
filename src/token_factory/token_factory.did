@@ -6,6 +6,9 @@ type CreateTokenParams = record {
   total_supply : nat;
   transfer_fee : nat;
   minting_account_owner : principal;
+  platform_principal : principal;
+  ifo_escrow_principal : principal;
+  farm_treasury_principal : principal;
 };
 
 service : {

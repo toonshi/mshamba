@@ -75,15 +75,46 @@ export const Auth = ({ onBack }) => {
             console.error("Error creating profile:", error);
             alert("Error creating profile: " + error.message);
           }
-        } else { // Profile exists, redirect
-          console.log("Profile found, redirecting (useEffect).");
+        } else { // Profile exists, check if role needs to be added
+          console.log("Profile found, checking roles...");
+          const profile = profileResult[0];
+          const hasFarmerRole = profile.roles.some(r => 'Farmer' in r);
+          const hasInvestorRole = profile.roles.some(r => 'Investor' in r);
+
+          let roleUpdateNeeded = false;
+          let newRole = null;
+
+          if (userType === "farmer" && !hasFarmerRole) {
+            roleUpdateNeeded = true;
+            newRole = { Farmer: null };
+          } else if (userType === "investor" && !hasInvestorRole) {
+            roleUpdateNeeded = true;
+            newRole = { Investor: null };
+          }
+
+          if (roleUpdateNeeded) {
+            console.log(`Adding ${userType} role...`);
+            try {
+              const success = await actor.addRole(newRole);
+              if (success) {
+                console.log("Role added successfully!");
+              } else {
+                console.error("Failed to add role to profile");
+                alert("Failed to update your profile with the new role.");
+              }
+            } catch (error) {
+              console.error("Error adding role:", error);
+              alert("Error updating profile: " + error.message);
+            }
+          }
+
+          // Redirect after checking/updating role
+          console.log("Redirecting after role check...");
           if (userType === "farmer") {
             navigate("/farmer/dashboard");
-          }
-          else if (userType === "investor") {
+          } else if (userType === "investor") {
             navigate("/investor/dashboard");
-          }
-          else {
+          } else {
             navigate("/"); // fallback
           }
         }

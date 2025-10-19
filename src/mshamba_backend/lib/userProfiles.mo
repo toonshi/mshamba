@@ -3,6 +3,7 @@ import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
+import Array "mo:base/Array";
 
 module {
   public type Role = { #Farmer; #Investor };
@@ -50,5 +51,25 @@ module {
       if (r == role) return true;
     };
     false
+  };
+
+  public func addRoleToProfile(
+    store: ProfileStore,
+    owner: Principal,
+    newRole: Role
+  ) : Bool {
+    switch (store.get(owner)) {
+      case (?profile) {
+        if (hasRole(profile, newRole)) {
+          return true; // Role already exists
+        } else {
+          let updatedRoles = Array.append(profile.roles, [newRole]);
+          let updatedProfile = { owner = profile.owner; name = profile.name; bio = profile.bio; roles = updatedRoles; certifications = profile.certifications };
+          store.put(owner, updatedProfile);
+          return true;
+        }
+      };
+      case (null) { return false }; // Profile does not exist
+    }
   };
 };

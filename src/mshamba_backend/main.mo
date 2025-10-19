@@ -67,6 +67,26 @@ persistent actor {
     UserProfileModule.listProfiles(profileStore)
   };
 
+  public shared ({ caller }) func addRole(role: UserProfileModule.Role) : async Bool {
+    UserProfileModule.addRoleToProfile(profileStore, caller, role)
+  };
+
+  // Helper: Add a role to existing profile
+  public shared ({ caller }) func addRoleToProfile(role : UserProfileModule.Role) : async Bool {
+    switch (UserProfileModule.getProfile(profileStore, caller)) {
+      case (?profile) {
+        // Check if role already exists
+        for (r in profile.roles.vals()) {
+          if (r == role) return true; // Already has role
+        };
+        // Add new role
+        let newRoles = Array.append(profile.roles, [role]);
+        UserProfileModule.createProfile(profileStore, caller, profile.name, profile.bio, newRoles, profile.certifications)
+      };
+      case null { false };
+    }
+  };
+
   // ==============================
   // FARMS (Farmer-only actions)
   // ==============================
@@ -142,7 +162,14 @@ persistent actor {
           case null {};
         };
 
-        // Call token_factory to create the ICRC-1 ledger
+        // Call token_factory to create the ICRC-1 ledger with proper equity distribution
+        // NOTE: For now, using backend's own canister principal for platform & escrow
+        // TODO: Replace with dedicated escrow and treasury canisters
+        let backendPrincipal = Principal.fromText("u6s2n-gx777-77774-qaaba-cai"); // Mshamba backend canister ID
+        let platformPrincipal = backendPrincipal;
+        let ifoEscrowPrincipal = backendPrincipal; // TODO: Use dedicated IFO escrow canister
+        let farmTreasuryPrincipal = farm.owner; // TODO: Create dedicated farm treasury account
+        
         let tokenParams = {
           token_name = farm.tokenName;
           token_symbol = farm.tokenSymbol;
@@ -150,7 +177,10 @@ persistent actor {
           decimals = farm.tokenDecimals;
           total_supply = farm.tokenSupply;
           transfer_fee = farm.tokenTransferFee;
-          minting_account_owner = farm.owner;
+          minting_account_owner = farm.owner;  // Farmer receives 75% (vested)
+          platform_principal = platformPrincipal;  // Platform receives 5% (vested)
+          ifo_escrow_principal = ifoEscrowPrincipal;  // Escrow holds 20% (for investors)
+          farm_treasury_principal = farmTreasuryPrincipal;  // Farm business account
         };
 
         try {
@@ -159,14 +189,17 @@ persistent actor {
           // Handle the Result from token_factory
           switch (result) {
             case (#Ok(ledgerCanisterId)) {
-              // Update farm with the new ledger canister
+              // Update farm with the new ledger canister and vesting start time
               let updatedFarm : FarmModule.Farm = {
                 farm with
                 ledgerCanister = ?ledgerCanisterId;
+                farmTreasuryAccount = ?farmTreasuryPrincipal;
+                vestingStartTime = ?Time.now();
               };
               farmStore.put(farmId, updatedFarm);
               
               Debug.print("Token launched for farm " # farmId # ": " # Principal.toText(ledgerCanisterId));
+              Debug.print("Equity distribution: Farmer 75%, Platform 5%, IFO 20%");
               #ok(ledgerCanisterId)
             };
             case (#Err(msg)) {

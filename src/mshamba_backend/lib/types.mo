@@ -78,6 +78,16 @@ public type Farm = {
   tokenPrice: Nat;              // Price per token in e8s (for IFO)
   ifoEndDate: ?Int;             // IFO deadline timestamp
   maxInvestmentPerUser: ?Nat;   // Optional cap per investor
+  // Equity Structure & Token Allocation
+  farmTreasuryAccount: ?Principal;  // Farm business entity account (holds operating capital)
+  farmerEquityPercent: Nat;         // Farmer's equity % (default: 75%)
+  platformEquityPercent: Nat;       // Platform's equity % (default: 5%)
+  ifoEquityPercent: Nat;            // IFO/Investor equity % (default: 20%)
+  farmerTokensAllocated: Nat;       // Tokens allocated to farmer (vested)
+  platformTokensAllocated: Nat;     // Tokens allocated to platform (vested)
+  ifoTokensAllocated: Nat;          // Tokens allocated for IFO (in escrow)
+  vestingStartTime: ?Int;           // When vesting started
+  farmerMonthlySalary: Nat;         // Farmer's monthly management fee (in KES e8s)
 };
 
 

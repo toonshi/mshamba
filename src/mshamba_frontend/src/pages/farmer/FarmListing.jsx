@@ -9,6 +9,7 @@ import {
   Clock,
   TrendingUp,
   FileText,
+  X,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 

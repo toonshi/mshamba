@@ -62,22 +62,30 @@ pub struct CreateTokenParams {
     pub decimals: u8,
     pub total_supply: Nat,
     pub transfer_fee: Nat,
-    pub minting_account_owner: Principal,  // Usually the farm owner or DAO
+    pub minting_account_owner: Principal,  // Farm owner (receives 75% vested)
+    pub platform_principal: Principal,      // Mshamba backend (receives 5% vested)
+    pub ifo_escrow_principal: Principal,    // IFO escrow (holds 20% for investors)
+    pub farm_treasury_principal: Principal, // Farm business account (for operations)
 }
 
 #[ic_cdk::update]
 async fn create_farm_token(params: CreateTokenParams) -> Result<Principal, String> {
     ic_cdk::println!("Creating farm token: {} ({})", params.token_name, params.token_symbol);
 
-    // Set up the minting account (farm owner)
+    // Calculate token allocations based on equity structure
+    let farmer_allocation = (params.total_supply.clone() * 75u64) / 100u64;  // 75%
+    let platform_allocation = (params.total_supply.clone() * 5u64) / 100u64;  // 5%
+    let ifo_allocation = (params.total_supply.clone() * 20u64) / 100u64;      // 20%
+    
+    // Set up the minting account (platform manages minting)
     let minting_account = Account {
-        owner: params.minting_account_owner,
+        owner: params.platform_principal,
         subaccount: None,
     };
 
-    // Fee collector account (same as minting account for now)
+    // Fee collector account (platform collects fees)
     let fee_collector_account = Some(Account {
-        owner: params.minting_account_owner,
+        owner: params.platform_principal,
         subaccount: None,
     });
 
@@ -87,14 +95,33 @@ async fn create_farm_token(params: CreateTokenParams) -> Result<Principal, Strin
         metadata.push(("icrc1:logo".to_string(), Value::Text(logo)));
     }
 
-    // Initial balance: mint entire supply to the minting account
-    let initial_balances = vec![(
-        Account {
+    // Initial balances: Distribute to 4 accounts per equity structure
+    let initial_balances = vec![
+        // Farmer receives 75% (will be managed by vesting contract)
+        (Account {
             owner: params.minting_account_owner,
             subaccount: None,
-        },
-        params.total_supply.clone(),
-    )];
+        }, farmer_allocation.clone()),
+        
+        // Platform receives 5% (will be managed by vesting contract)
+        (Account {
+            owner: params.platform_principal,
+            subaccount: None,
+        }, platform_allocation.clone()),
+        
+        // IFO Escrow receives 20% (distributed to investors during IFO)
+        (Account {
+            owner: params.ifo_escrow_principal,
+            subaccount: None,
+        }, ifo_allocation.clone()),
+        
+        // Farm Treasury receives 0 initially (will receive IFO proceeds)
+        // Uncomment if you want to give farm treasury some tokens
+        // (Account {
+        //     owner: params.farm_treasury_principal,
+        //     subaccount: None,
+        // }, Nat::from(0u64)),
+    ];
 
     // Archive options with reasonable defaults
     let archive_options = ArchiveOptions {
@@ -131,8 +158,13 @@ async fn create_farm_token(params: CreateTokenParams) -> Result<Principal, Strin
         .map_err(|e| format!("Failed to serialize ledger args: {:?}", e))?;
 
     // Create canister settings
+    // Include token_factory as controller so it can manage the canister during creation
     let canister_settings = CanisterSettings {
-        controllers: Some(vec![ic_cdk::id(), params.minting_account_owner]),
+        controllers: Some(vec![
+            ic_cdk::id(),                   // Token factory (needed for creation)
+            params.platform_principal,      // Platform is primary controller
+            params.minting_account_owner,   // Farmer has secondary control
+        ]),
         compute_allocation: None,
         memory_allocation: None,
         freezing_threshold: None,

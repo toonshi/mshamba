@@ -96,6 +96,16 @@ module {
       tokenPrice = tokenPrice;
       ifoEndDate = ifoEndDate;
       maxInvestmentPerUser = maxInvestmentPerUser;
+      // Equity structure defaults (75% farmer, 5% platform, 20% IFO)
+      farmTreasuryAccount = null;  // Set when token launched
+      farmerEquityPercent = 75;
+      platformEquityPercent = 5;
+      ifoEquityPercent = 20;
+      farmerTokensAllocated = (tokenSupply * 75) / 100;
+      platformTokensAllocated = (tokenSupply * 5) / 100;
+      ifoTokensAllocated = (tokenSupply * 20) / 100;
+      vestingStartTime = null;  // Set when token launched
+      farmerMonthlySalary = 5_000_000_000;  // 50K KES default (in e8s)
     };
 
     farms.put(farmId, newFarm);

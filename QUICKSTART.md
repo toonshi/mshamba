@@ -28,7 +28,7 @@ Follow the prompts to create a farm and launch its token!
 dfx canister call mshamba_backend createProfile '(
   "John Farmer",
   "Organic farming expert", 
-  variant { Farmer },
+  vec { variant { Farmer } },
   vec { "Organic Certification" }
 )'
 ```

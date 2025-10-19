@@ -11,7 +11,7 @@ import {
   TrendingUp,
   MapPin,
   Menu,
-  X,
+  X as CloseIcon,
   Wallet
 } from 'lucide-react';
 
@@ -70,7 +70,7 @@ const Layout = ({ children, userType, userName = "User" }) => {
               onClick={closeSidebar}
               className="lg:hidden p-1 rounded-md hover:bg-green-200 transition-colors"
             >
-              <X className="h-6 w-6 text-green-600" />
+              <CloseIcon className="h-6 w-6 text-green-600" />
             </button>
           </div>
         </div>
