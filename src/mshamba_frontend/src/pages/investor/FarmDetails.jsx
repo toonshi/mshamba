@@ -399,12 +399,20 @@ const FarmDetails = () => {
                   
                   setInvesting(true);
                   try {
-                    console.log('Starting investment:', farmId, Number(investAmount));
+                    console.log('=== INVESTMENT ATTEMPT ===');
+                    console.log('Farm ID:', farmId);
+                    console.log('Amount:', Number(investAmount));
+                    console.log('Farm is open for investment:', farm);
+                    
                     const result = await actor.investInFarm(farmId, Number(investAmount));
                     console.log('Investment result:', result);
                     
                     if ('ok' in result) {
-                      alert('✅ Investment successful! 🎉\n\nAmount: KSH ' + Number(investAmount).toLocaleString('en-KE') + '\nGo to "My Account" to see your portfolio!');
+                      console.log('✅ Investment SUCCESS!');
+                      console.log('Updated farm:', result.ok);
+                      console.log('Total investors now:', result.ok.investors.length);
+                      
+                      alert('✅ Investment successful! 🎉\n\nAmount: KSH ' + Number(investAmount).toLocaleString('en-KE') + '\n\nCheck browser console for details.\nGo to "My Account" to see your portfolio!');
                       setShowInvestModal(false);
                       setInvestAmount('');
                       await fetchFarmDetails(); // Refresh data
@@ -412,10 +420,12 @@ const FarmDetails = () => {
                         window.location.reload(); // Force refresh to show updated data
                       }, 1000);
                     } else {
+                      console.error('❌ Investment FAILED:', result.err);
                       alert('❌ Investment failed: ' + result.err);
                     }
                   } catch (error) {
-                    console.error('Investment error:', error);
+                    console.error('❌ Investment ERROR:', error);
+                    console.error('Error details:', error.message, error.stack);
                     alert('❌ Investment failed: ' + (error.message || 'Unknown error. Please check console.'));
                   } finally {
                     setInvesting(false);

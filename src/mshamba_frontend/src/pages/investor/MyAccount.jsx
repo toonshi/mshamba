@@ -5,7 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const MyAccount = () => {
-  const { actor, principal } = useAuth();
+  const { actor, principal, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [hideBalances, setHideBalances] = useState(false);
@@ -16,8 +16,11 @@ const MyAccount = () => {
   const [transactions, setTransactions] = useState([]);
 
   const fetchAccountData = useCallback(async () => {
+    console.log('fetchAccountData called. Actor:', !!actor, 'Principal:', !!principal, 'Authenticated:', isAuthenticated);
+    
     if (!actor || !principal) {
-      setLoading(false);
+      console.warn('Waiting for authentication... Actor:', !!actor, 'Principal:', !!principal);
+      // Don't set loading to false yet, we're waiting for auth
       return;
     }
 
@@ -25,6 +28,22 @@ const MyAccount = () => {
     try {
       // Get all farms
       const farms = await actor.listFarms();
+      
+      console.log('=== INVESTMENT DEBUG ===');
+      console.log('My Principal:', principal.toText());
+      console.log('Total Farms:', farms.length);
+      console.log('Farms with investors:', farms.filter(f => f.investors && f.investors.length > 0).length);
+      
+      // Debug: Show all investors in all farms
+      farms.forEach(farm => {
+        if (farm.investors && farm.investors.length > 0) {
+          console.log(`Farm "${farm.name}" has ${farm.investors.length} investors:`);
+          farm.investors.forEach(inv => {
+            console.log(`  - Investor: ${inv.investor.toText()}, Amount: ${inv.amount}, Shares: ${inv.shares}`);
+            console.log(`  - Match: ${inv.investor.toText() === principal.toText()}`);
+          });
+        }
+      });
       
       // Filter farms where user has invested
       const userInvestments = farms
@@ -64,6 +83,15 @@ const MyAccount = () => {
             expectedROI: farm.expectedROI,
           };
         });
+
+      console.log('Found', userInvestments.length, 'investments for this user');
+      if (userInvestments.length === 0) {
+        console.warn('⚠️ No investments found! Possible issues:');
+        console.warn('1. Farm is not open for investment');
+        console.warn('2. Investment transaction failed');
+        console.warn('3. Principal mismatch');
+        console.warn('4. Canister was recently reinstalled (data lost)');
+      }
 
       setInvestments(userInvestments);
       
