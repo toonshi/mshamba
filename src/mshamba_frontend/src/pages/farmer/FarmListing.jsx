@@ -35,6 +35,7 @@ export const FarmListing = ({ onBack }) => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const fetchFarms = async () => {
     if (actor) {
@@ -160,6 +161,7 @@ export const FarmListing = ({ onBack }) => {
         });
         setImages([]);
         setStep(1);
+        setShowForm(false); // Hide form after successful submission
         fetchFarms(); // Refresh the list of farms
       } else {
         console.error("Backend error creating farm:", result.err);
@@ -176,22 +178,151 @@ export const FarmListing = ({ onBack }) => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 w-full">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-          {/* Stepper */}
-          <div className="flex items-center justify-center mb-6">
-            {[1, 2, 3, 4].map((s) => (
-              <div key={s} className={`flex items-center ${s < 4 ? 'w-32' : ''}`}>
-                <div className={`rounded-full h-8 w-8 flex items-center justify-center font-bold ${step === s ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{s}</div>
-                {s < 4 && <div className={`h-1 flex-1 ${step > s ? 'bg-green-600' : 'bg-gray-200'}`}></div>}
-              </div>
-            ))}
+        
+        {/* Header with Add Farm Button */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Farms</h1>
+            <p className="text-gray-600 mt-1">Manage your agricultural projects</p>
           </div>
-
-          {/* Validation Error */}
-          {validationError && (
-            <div className="mb-4 text-red-600 bg-red-100 px-4 py-2 rounded">
-              {validationError}
-            </div>
+          {!showForm && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              <Sprout className="h-5 w-5" />
+              {farms.length === 0 ? 'Add Your First Farm' : 'Add Another Farm'}
+            </button>
           )}
+        </div>
+
+        {/* Farm List - Now shown first */}
+        {!showForm && farms.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6 lg:p-8 mb-6">
+            <div className="space-y-4">
+              {farms.map((farm, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-sm border"
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="lg:col-span-2">
+                      <h3 className="font-semibold text-lg sm:text-xl text-gray-800 mb-2">
+                        {farm.name}
+                      </h3>
+                      <div className="space-y-1 text-sm sm:text-base text-gray-600">
+                        <p className="flex items-center">
+                          <MapPin className="w-4 h-4 mr-2 text-green-600" />
+                          {farm.location}
+                        </p>
+                        {farm.farmerName && (
+                          <p className="flex items-center">
+                            <User className="w-4 h-4 mr-2 text-green-600" />
+                            {farm.farmerName}
+                            {farm.experience && ` (${farm.experience} years exp.)`}
+                          </p>
+                        )}
+                        {farm.description && (
+                          <p className="text-gray-500 mt-2">{farm.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 text-sm">
+                      {farm.crop && (
+                        <div className="bg-green-50 p-2 rounded border-l-4 border-green-400">
+                          <p className="text-green-700 font-medium">Crop</p>
+                          <p className="text-green-600">{farm.crop}</p>
+                        </div>
+                      )}
+                      {farm.size && (
+                        <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
+                          <p className="text-blue-700 font-medium">Size</p>
+                          <p className="text-blue-600">{farm.size}</p>
+                        </div>
+                      )}
+                      {farm.fundingGoal && (
+                        <div className="bg-yellow-50 p-2 rounded border-l-4 border-yellow-400">
+                          <p className="text-yellow-700 font-medium">Investment</p>
+                          <p className="text-yellow-600">KSH {Number(farm.fundingGoal).toLocaleString()}</p>
+                        </div>
+                      )}
+                      {farm.expectedROI && (
+                        <div className="bg-purple-50 p-2 rounded border-l-4 border-purple-400">
+                          <p className="text-purple-700 font-medium">Expected ROI</p>
+                          <p className="text-purple-600">{farm.expectedROI}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {(farm.phone || farm.email) && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <p className="text-sm text-gray-500 mb-2">Contact Information:</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        {farm.phone && (
+                          <span className="text-gray-600">📞 {farm.phone}</span>
+                        )}
+                        {farm.email && (
+                          <span className="text-gray-600">✉️ {farm.email}</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!showForm && farms.length === 0 && (
+          <div className="bg-white rounded-xl shadow-sm border p-12 text-center mb-6">
+            <Sprout className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No farms yet</h3>
+            <p className="text-gray-600 mb-4">Get started by adding your first farm</p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              Add Your First Farm
+            </button>
+          </div>
+        )}
+
+        {/* Add Farm Form - Now shown conditionally */}
+        {showForm && (
+          <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Add New Farm</h2>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setStep(1);
+                  setValidationError("");
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Stepper */}
+            <div className="flex items-center justify-center mb-6">
+              {[1, 2, 3, 4].map((s) => (
+                <div key={s} className={`flex items-center ${s < 4 ? 'w-32' : ''}`}>
+                  <div className={`rounded-full h-8 w-8 flex items-center justify-center font-bold ${step === s ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700'}`}>{s}</div>
+                  {s < 4 && <div className={`h-1 flex-1 ${step > s ? 'bg-green-600' : 'bg-gray-200'}`}></div>}
+                </div>
+              ))}
+            </div>
+
+            {/* Validation Error */}
+            {validationError && (
+              <div className="mb-4 text-red-600 bg-red-100 px-4 py-2 rounded">
+                {validationError}
+              </div>
+            )}
 
           {/* Step 1: Farm Info */}
           {step === 1 && (
@@ -404,88 +535,8 @@ export const FarmListing = ({ onBack }) => {
             </div>
           )}
 
-
-        {/* Farm List */}
-        <div className="bg-white rounded-xl shadow-sm border p-4 sm:p-6 lg:p-8">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">Your Farms</h2>
-          {farms.length === 0 ? (
-            <p className="text-gray-500 text-sm sm:text-base">No farms added yet. Fill out the form above to get started!</p>
-          ) : (
-            <div className="space-y-4">
-              {farms.map((farm, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-sm border"
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div className="lg:col-span-2">
-                      <h3 className="font-semibold text-lg sm:text-xl text-gray-800 mb-2">
-                        {farm.farmName}
-                      </h3>
-                      <div className="space-y-1 text-sm sm:text-base text-gray-600">
-                        <p className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2 text-green-600" />
-                          {farm.location}
-                        </p>
-                        {farm.farmerName && (
-                          <p className="flex items-center">
-                            <User className="w-4 h-4 mr-2 text-green-600" />
-                            {farm.farmerName}
-                            {farm.experience && ` (${farm.experience} years exp.)`}
-                          </p>
-                        )}
-                        {farm.description && (
-                          <p className="text-gray-500 mt-2">{farm.description}</p>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 text-sm">
-                      {farm.cropType && (
-                        <div className="bg-green-50 p-2 rounded border-l-4 border-green-400">
-                          <p className="text-green-700 font-medium">Crop</p>
-                          <p className="text-green-600">{farm.cropType}</p>
-                        </div>
-                      )}
-                      {farm.size && (
-                        <div className="bg-blue-50 p-2 rounded border-l-4 border-blue-400">
-                          <p className="text-blue-700 font-medium">Size</p>
-                          <p className="text-blue-600">{farm.size}</p>
-                        </div>
-                      )}
-                      {farm.investmentNeeded && (
-                        <div className="bg-yellow-50 p-2 rounded border-l-4 border-yellow-400">
-                          <p className="text-yellow-700 font-medium">Investment</p>
-                          <p className="text-yellow-600">${farm.investmentNeeded}</p>
-                        </div>
-                      )}
-                      {farm.expectedROI && (
-                        <div className="bg-purple-50 p-2 rounded border-l-4 border-purple-400">
-                          <p className="text-purple-700 font-medium">Expected ROI</p>
-                          <p className="text-purple-600">{farm.expectedROI}%</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {(farm.phone || farm.email) && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-sm text-gray-500 mb-2">Contact Information:</p>
-                      <div className="flex flex-wrap gap-4 text-sm">
-                        {farm.phone && (
-                          <span className="text-gray-600">📞 {farm.phone}</span>
-                        )}
-                        {farm.email && (
-                          <span className="text-gray-600">✉️ {farm.email}</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
