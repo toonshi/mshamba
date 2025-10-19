@@ -4,6 +4,7 @@ import Nat "mo:base/Nat";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
+import Text "mo:base/Text";
 
 module {
     // Ledger Canisters on ICP Mainnet
@@ -41,11 +42,82 @@ module {
         #GenericError: { error_code: Nat; message: Text };
     };
     
-    // ICRC-1 Ledger Interface
+    // ICRC-2 Types for approve/transfer_from
+    public type ApproveArgs = {
+        from_subaccount: ?Blob;
+        spender: Account;
+        amount: Nat;
+        expected_allowance: ?Nat;
+        expires_at: ?Nat64;
+        fee: ?Nat;
+        memo: ?Blob;
+        created_at_time: ?Nat64;
+    };
+    
+    public type ApproveResult = {
+        #Ok: Nat;  // Block index
+        #Err: ApproveError;
+    };
+    
+    public type ApproveError = {
+        #BadFee: { expected_fee: Nat };
+        #InsufficientFunds: { balance: Nat };
+        #AllowanceChanged: { current_allowance: Nat };
+        #Expired: { ledger_time: Nat64 };
+        #TooOld;
+        #CreatedInFuture: { ledger_time: Nat64 };
+        #Duplicate: { duplicate_of: Nat };
+        #TemporarilyUnavailable;
+        #GenericError: { error_code: Nat; message: Text };
+    };
+    
+    public type TransferFromArgs = {
+        spender_subaccount: ?Blob;
+        from: Account;
+        to: Account;
+        amount: Nat;
+        fee: ?Nat;
+        memo: ?Blob;
+        created_at_time: ?Nat64;
+    };
+    
+    public type TransferFromResult = {
+        #Ok: Nat;  // Block index
+        #Err: TransferFromError;
+    };
+    
+    public type TransferFromError = {
+        #BadFee: { expected_fee: Nat };
+        #BadBurn: { min_burn_amount: Nat };
+        #InsufficientFunds: { balance: Nat };
+        #InsufficientAllowance: { allowance: Nat };
+        #TooOld;
+        #CreatedInFuture: { ledger_time: Nat64 };
+        #Duplicate: { duplicate_of: Nat };
+        #TemporarilyUnavailable;
+        #GenericError: { error_code: Nat; message: Text };
+    };
+    
+    public type AllowanceArgs = {
+        account: Account;
+        spender: Account;
+    };
+    
+    public type Allowance = {
+        allowance: Nat;
+        expires_at: ?Nat64;
+    };
+    
+    // ICRC-1 + ICRC-2 Ledger Interface
     public type ICRC1Ledger = actor {
         icrc1_transfer: shared (TransferArgs) -> async TransferResult;
         icrc1_balance_of: shared query (Account) -> async Nat;
         icrc1_fee: shared query () -> async Nat;
+        
+        // ICRC-2 functions
+        icrc2_approve: shared (ApproveArgs) -> async ApproveResult;
+        icrc2_transfer_from: shared (TransferFromArgs) -> async TransferFromResult;
+        icrc2_allowance: shared query (AllowanceArgs) -> async Allowance;
     };
     
     // Purchase record
@@ -150,6 +222,64 @@ module {
             tokensBase
         } else {
             tokensBase
+        }
+    };
+    
+    // Check ICRC-2 allowance
+    public func checkAllowance(
+        ledger: ICRC1Ledger,
+        owner: Account,
+        spender: Account
+    ) : async Result.Result<Allowance, Text> {
+        try {
+            let allowance = await ledger.icrc2_allowance({
+                account = owner;
+                spender = spender;
+            });
+            #ok(allowance)
+        } catch (e) {
+            #err("Failed to check allowance: " # Error.message(e))
+        }
+    };
+    
+    // Pull payment using ICRC-2 transfer_from
+    public func pullPayment(
+        ledger: ICRC1Ledger,
+        from: Account,
+        to: Account,
+        amount: Nat,
+        memo: Text
+    ) : async Result.Result<Nat, Text> {
+        try {
+            let transferFromArgs : TransferFromArgs = {
+                spender_subaccount = null;
+                from = from;
+                to = to;
+                amount = amount;
+                fee = null;  // Use default
+                memo = ?Text.encodeUtf8(memo);
+                created_at_time = null;
+            };
+            
+            let result = await ledger.icrc2_transfer_from(transferFromArgs);
+            
+            switch (result) {
+                case (#Ok(blockIndex)) {
+                    Debug.print("Payment pulled: " # debug_show(amount) # " at block " # debug_show(blockIndex));
+                    #ok(blockIndex)
+                };
+                case (#Err(#InsufficientAllowance(details))) {
+                    #err("Insufficient allowance. Approved: " # debug_show(details.allowance) # ", Needed: " # debug_show(amount))
+                };
+                case (#Err(#InsufficientFunds(details))) {
+                    #err("Insufficient funds. Balance: " # debug_show(details.balance))
+                };
+                case (#Err(error)) {
+                    #err("Payment transfer failed: " # debug_show(error))
+                };
+            }
+        } catch (e) {
+            #err("Failed to pull payment: " # Error.message(e))
         }
     };
     

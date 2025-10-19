@@ -358,25 +358,60 @@ persistent actor Self {
           case null {}; // No limit
         };
         
-        // Verify investor has sufficient ICP balance
-        switch (await Payment.checkICPBalance(caller, icpAmount)) {
-          case (#err(msg)) { return #err(msg) };
-          case (#ok(_)) {};
-        };
+        // ICRC-2: Check allowance (investor must have approved spending)
+        let icpLedger = Payment.getICPLedger();
+        let backendPrincipal = Principal.fromActor(Self);
         
-        // Note: ICP transfer fee checking can be added here if needed
-        // For now, we assume investor knows to include fee in their transfer
-        
-        Debug.print("ICP payment accepted. Investor must transfer " # debug_show(icpAmount) # " ICP to farm treasury");
-        
-        // Transfer farm tokens from IFO escrow to investor
         let investorAccount : Payment.Account = {
           owner = caller;
           subaccount = null;
         };
         
-        let backendPrincipal = Principal.fromActor(Self);
+        let backendAccount : Payment.Account = {
+          owner = backendPrincipal;
+          subaccount = null;
+        };
         
+        // Check if investor approved spending
+        let allowanceResult = await Payment.checkAllowance(
+          icpLedger,
+          investorAccount,
+          backendAccount
+        );
+        
+        let allowance = switch (allowanceResult) {
+          case (#err(msg)) { return #err("Failed to check allowance: " # msg) };
+          case (#ok(allow)) { allow };
+        };
+        
+        if (allowance.allowance < icpAmount) {
+          return #err("Insufficient allowance. Please approve " # debug_show(icpAmount) # " ICP spending first. Currently approved: " # debug_show(allowance.allowance));
+        };
+        
+        Debug.print("Allowance verified: " # debug_show(allowance.allowance) # " ICP approved");
+        
+        // ICRC-2: Pull payment from investor to farmer
+        let farmerAccount : Payment.Account = {
+          owner = farm.owner;
+          subaccount = null;
+        };
+        
+        let paymentResult = await Payment.pullPayment(
+          icpLedger,
+          investorAccount,
+          farmerAccount,
+          icpAmount,
+          "Farm investment: " # farmId
+        );
+        
+        let paymentBlockIndex = switch (paymentResult) {
+          case (#err(msg)) { return #err("Payment failed: " # msg) };
+          case (#ok(blockIdx)) { blockIdx };
+        };
+        
+        Debug.print("Payment successful! " # debug_show(icpAmount) # " ICP transferred at block " # debug_show(paymentBlockIndex));
+        
+        // Transfer farm tokens from IFO escrow to investor
         let tokenTransferResult = await Payment.transferTokensToInvestor(
           farmLedgerCanister,
           backendPrincipal, // Backend holds IFO escrow tokens
