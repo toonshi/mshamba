@@ -1,0 +1,21 @@
+{
+  "name": "mshamba-hedera-service",
+  "version": "1.0.0",
+  "description": "Hedera HCS integration for Mshamba supply chain transparency",
+  "main": "src/api.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/api.js",
+    "dev": "nodemon src/api.js",
+    "test": "node src/test.js"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.49.2",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

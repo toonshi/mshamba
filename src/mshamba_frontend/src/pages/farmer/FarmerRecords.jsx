@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Upload, FileText, DollarSign, TrendingUp, Calendar, BookOpen, Sprout, Moon, Sun } from 'lucide-react';
+import { logToHedera, HederaEvents } from '../../utils/hederaService';
+import { HederaVerificationBadge, HederaVerificationLoading, HederaVerificationError } from '../../components/HederaVerification';
 
 const categories = {
   inputs: { name: 'Inputs', icon: Sprout, items: ['Seeds', 'Fertilizers', 'Pesticides', 'Tools'] },
@@ -20,6 +22,11 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
   const [darkMode, setDarkMode] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [validationError, setValidationError] = useState('');
+  
+  // Hedera verification states
+  const [hederaStatus, setHederaStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  const [hederaData, setHederaData] = useState(null);
+  const [hederaError, setHederaError] = useState(null);
 
   const handleInputChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleFileUpload = e => setUploadedFiles([...uploadedFiles, ...Array.from(e.target.files)]);
@@ -35,15 +42,106 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
     }
     setValidationError('');
     const payload = { category: selectedCategory, subcategory: selectedSubcategory, ...formData, files: uploadedFiles };
+    
     try {
-      await onSaveRecord(payload);
+      // 1. Save to ICP backend (existing functionality)
+      if (onSaveRecord) {
+        await onSaveRecord(payload);
+      } else {
+        // TODO: Implement actual ICP backend save
+        console.log('📝 Record saved (ICP backend integration pending):', payload);
+      }
+
+      // 2. Also log to Hedera HCS (new functionality)
+      setHederaStatus('loading');
+      try {
+        // For now, use placeholder farm data - will be replaced with actual farm context
+        const farmId = 'FARM_' + Date.now();
+        const farmName = 'Demo Farm'; // TODO: Get from farm context
+        
+        // Create appropriate Hedera event based on category
+        let hederaEvent;
+        if (selectedCategory === 'inputs') {
+          hederaEvent = HederaEvents.inputPurchase(
+            farmId,
+            farmName,
+            selectedCategory,
+            selectedSubcategory,
+            formData.name,
+            formData.cost,
+            formData.date,
+            formData.supplier
+          );
+        } else if (selectedCategory === 'labor') {
+          hederaEvent = HederaEvents.laborActivity(
+            farmId,
+            farmName,
+            selectedSubcategory,
+            formData.date,
+            formData.cost,
+            null,
+            formData.description
+          );
+        } else if (selectedCategory === 'yields') {
+          hederaEvent = HederaEvents.harvest(
+            farmId,
+            farmName,
+            formData.name,
+            formData.cost, // Using cost as quantity for now
+            'Standard', // Default quality
+            formData.date
+          );
+        } else if (selectedCategory === 'sales') {
+          hederaEvent = HederaEvents.sale(
+            farmId,
+            farmName,
+            formData.name,
+            formData.cost, // Quantity
+            formData.cost, // Price (will be refined)
+            formData.supplier, // Using supplier as buyer
+            selectedSubcategory
+          );
+        } else {
+          // Generic event for other categories
+          hederaEvent = {
+            eventType: 'INPUT_PURCHASED',
+            farmId,
+            farmName,
+            category: selectedCategory,
+            subcategory: selectedSubcategory,
+            ...formData,
+          };
+        }
+
+        const result = await logToHedera(hederaEvent);
+        setHederaData(result);
+        setHederaStatus('success');
+        console.log('✅ Verified on Hedera:', result.explorerUrl);
+      } catch (hederaErr) {
+        console.warn('⚠️  Hedera logging failed (non-blocking):', hederaErr.message);
+        setHederaError(hederaErr.message);
+        setHederaStatus('error');
+        // Don't throw - Hedera failure should not block the main save
+      }
+
+      // 3. Show success and reset form
       setFormData({ name: '', cost: '', date: '', supplier: '', description: '' });
       setUploadedFiles([]);
       setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-      setView('categories');
+      setTimeout(() => {
+        setShowToast(false);
+        setHederaStatus(null);
+        setHederaData(null);
+        setHederaError(null);
+      }, 5000);
+      
+      // Don't navigate away immediately if Hedera verified - let user see the badge
+      if (hederaStatus !== 'success') {
+        setView('categories');
+      }
     } catch (err) {
       console.error('Error saving record:', err);
+      setValidationError('Failed to save record. Please try again.');
     }
   };
 
@@ -214,10 +312,35 @@ export const FarmerRecords = ({ onBack, onSaveRecord }) => {
 
           <div className="flex space-x-4">
             <button onClick={() => setView('subcategories')} className={`flex-1 py-2 rounded transition-colors ${themeClasses.buttonSecondary}`}>Cancel</button>
-            <button onClick={handleSubmit} className="flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-2 rounded hover:from-green-700 hover:to-green-600 transition-all duration-200">Save</button>
+            <button 
+              onClick={handleSubmit} 
+              disabled={hederaStatus === 'loading'}
+              className="flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-2 rounded hover:from-green-700 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {hederaStatus === 'loading' ? 'Saving...' : 'Save'}
+            </button>
           </div>
-          {validationError && <p className="text-red-500">{validationError}</p>}
-          {showToast && <p className="text-green-500">Record saved successfully!</p>}
+          
+          {/* Status Messages */}
+          {validationError && <p className="text-red-500 text-sm mt-2">{validationError}</p>}
+          {showToast && <p className="text-green-500 text-sm mt-2 font-semibold">✅ Record saved successfully!</p>}
+          
+          {/* Hedera Verification Status */}
+          {hederaStatus === 'loading' && (
+            <div className="mt-4">
+              <HederaVerificationLoading />
+            </div>
+          )}
+          {hederaStatus === 'success' && hederaData && (
+            <div className="mt-4">
+              <HederaVerificationBadge hederaData={hederaData} />
+            </div>
+          )}
+          {hederaStatus === 'error' && (
+            <div className="mt-4">
+              <HederaVerificationError error={hederaError} />
+            </div>
+          )}
         </div>
       </div>
     );

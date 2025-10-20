@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Package, Truck, MapPin, Clock, CheckCircle, AlertCircle, Eye, QrCode } from 'lucide-react';
+import { ArrowLeft, Package, Truck, MapPin, Clock, CheckCircle, AlertCircle, Eye, QrCode, Shield } from 'lucide-react';
+import { logToHedera, HederaEvents } from '../utils/hederaService';
+import { HederaVerificationBadge } from '../components/HederaVerification';
 
 export const SupplyChain = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('tracking');
   const [selectedShipment, setSelectedShipment] = useState(null);
+  const [verifyingStage, setVerifyingStage] = useState(null); // Format: "shipmentId-stageIndex"
 
-  const shipments = [
+  const [shipments, setShipments] = useState([
     {
       id: 'SH001',
       farmName: 'Green Valley Farm',
@@ -63,7 +66,7 @@ export const SupplyChain = ({ onBack }) => {
         { name: 'Delivered', completed: false, date: '2024-12-22', location: 'Supermarket Chain' }
       ]
     }
-  ];
+  ]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -82,6 +85,105 @@ export const SupplyChain = ({ onBack }) => {
       case 'Processing': return <Package className="w-5 h-5" />;
       case 'Delayed': return <AlertCircle className="w-5 h-5" />;
       default: return <Package className="w-5 h-5" />;
+    }
+  };
+
+  // Function to verify a stage on Hedera
+  const verifyStageOnHedera = async (shipmentId, stageIndex) => {
+    const verifyKey = `${shipmentId}-${stageIndex}`;
+    setVerifyingStage(verifyKey);
+
+    try {
+      // Find the shipment and stage
+      const shipment = shipments.find(s => s.id === shipmentId);
+      const stage = shipment.stages[stageIndex];
+
+      // Create appropriate Hedera event based on stage name
+      let hederaEvent;
+      const farmId = `FARM_${shipment.farmName.replace(/\s+/g, '_').toUpperCase()}`;
+      
+      if (stage.name === 'Harvested') {
+        hederaEvent = HederaEvents.harvest(
+          farmId,
+          shipment.farmName,
+          shipment.product,
+          shipment.quantity,
+          'Standard',
+          stage.date
+        );
+      } else if (stage.name.includes('Quality')) {
+        hederaEvent = HederaEvents.qualityCheck(
+          farmId,
+          shipment.farmName,
+          shipmentId,
+          'PASSED',
+          'Quality Inspector',
+          `${shipment.product} quality inspection completed`
+        );
+      } else if (stage.name === 'Packaging') {
+        hederaEvent = HederaEvents.packaging(
+          farmId,
+          shipment.farmName,
+          shipmentId,
+          shipment.quantity,
+          'Standard',
+          stage.location
+        );
+      } else if (stage.name === 'In Transit' || stage.name.includes('Transit')) {
+        hederaEvent = HederaEvents.shipmentStarted(
+          farmId,
+          shipment.farmName,
+          shipmentId,
+          shipment.origin,
+          shipment.destination,
+          'Transport Company',
+          shipment.estimatedDelivery
+        );
+      } else if (stage.name === 'Delivered') {
+        hederaEvent = HederaEvents.shipmentDelivered(
+          farmId,
+          shipment.farmName,
+          shipmentId,
+          'Warehouse Manager',
+          'Good condition'
+        );
+      } else {
+        // Generic event for other stages
+        hederaEvent = {
+          eventType: 'SHIPMENT_UPDATE',
+          farmId,
+          farmName: shipment.farmName,
+          shipmentId,
+          stage: stage.name,
+          location: stage.location,
+          date: stage.date,
+          product: shipment.product,
+          quantity: shipment.quantity,
+        };
+      }
+
+      // Log to Hedera
+      const result = await logToHedera(hederaEvent);
+      console.log('✅ Stage verified on Hedera:', result.explorerUrl);
+
+      // Update the stage with Hedera data
+      setShipments(prev => prev.map(s => {
+        if (s.id === shipmentId) {
+          const updatedStages = [...s.stages];
+          updatedStages[stageIndex] = {
+            ...updatedStages[stageIndex],
+            hederaData: result
+          };
+          return { ...s, stages: updatedStages };
+        }
+        return s;
+      }));
+
+    } catch (error) {
+      console.error('❌ Failed to verify stage on Hedera:', error);
+      alert(`Failed to verify on Hedera: ${error.message}`);
+    } finally {
+      setVerifyingStage(null);
     }
   };
 
@@ -241,27 +343,86 @@ export const SupplyChain = ({ onBack }) => {
                   <div className="mt-6 pt-6 border-t border-gray-700">
                     <h4 className="text-lg font-semibold mb-4">Tracking Timeline</h4>
                     <div className="space-y-4">
-                      {shipment.stages.map((stage, index) => (
-                        <div key={index} className="flex items-center space-x-4">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            stage.completed ? 'bg-green-600' : 'bg-gray-600'
-                          }`}>
-                            {stage.completed ? (
-                              <CheckCircle className="w-4 h-4 text-white" />
-                            ) : (
-                              <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      {shipment.stages.map((stage, index) => {
+                        const verifyKey = `${shipment.id}-${index}`;
+                        const isVerifying = verifyingStage === verifyKey;
+                        
+                        return (
+                          <div key={index} className="space-y-2">
+                            <div className="flex items-center space-x-4">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                stage.completed ? 'bg-green-600' : 'bg-gray-600'
+                              }`}>
+                                {stage.completed ? (
+                                  <CheckCircle className="w-4 h-4 text-white" />
+                                ) : (
+                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className={`font-medium ${stage.completed ? 'text-white' : 'text-gray-400'}`}>
+                                  {stage.name}
+                                </div>
+                                <div className="text-sm text-gray-400">
+                                  {stage.location} • {stage.date}
+                                </div>
+                              </div>
+                              
+                              {/* Hedera Verification Button/Badge */}
+                              <div className="flex items-center space-x-2">
+                                {stage.hederaData ? (
+                                  <a
+                                    href={stage.hederaData.explorerUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center space-x-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded-full text-xs transition-colors"
+                                    title="View on HashScan"
+                                  >
+                                    <Shield className="w-3 h-3" />
+                                    <span>Verified</span>
+                                  </a>
+                                ) : stage.completed ? (
+                                  <button
+                                    onClick={() => verifyStageOnHedera(shipment.id, index)}
+                                    disabled={isVerifying}
+                                    className="flex items-center space-x-1 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-full text-xs transition-colors disabled:opacity-50"
+                                  >
+                                    <Shield className="w-3 h-3" />
+                                    <span>{isVerifying ? 'Verifying...' : 'Verify on Hedera'}</span>
+                                  </button>
+                                ) : null}
+                              </div>
+                            </div>
+                            
+                            {/* Show full Hedera badge for verified stages */}
+                            {stage.hederaData && (
+                              <div className="ml-12 mt-2">
+                                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                                  <div className="flex items-start space-x-2">
+                                    <Shield className="w-4 h-4 text-blue-400 mt-0.5" />
+                                    <div className="flex-1 text-xs">
+                                      <div className="text-blue-300 font-semibold mb-1">Verified on Hedera</div>
+                                      <div className="text-gray-400 space-y-0.5">
+                                        <div>Timestamp: {stage.hederaData.consensusTimestamp}</div>
+                                        <div className="truncate">TX: {stage.hederaData.transactionId}</div>
+                                      </div>
+                                      <a
+                                        href={stage.hederaData.explorerUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-400 hover:text-blue-300 inline-flex items-center space-x-1 mt-1"
+                                      >
+                                        <span>View on Explorer</span>
+                                        <span>→</span>
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             )}
                           </div>
-                          <div className="flex-1">
-                            <div className={`font-medium ${stage.completed ? 'text-white' : 'text-gray-400'}`}>
-                              {stage.name}
-                            </div>
-                            <div className="text-sm text-gray-400">
-                              {stage.location} • {stage.date}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

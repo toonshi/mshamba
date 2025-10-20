@@ -29,6 +29,7 @@ export default defineConfig({
     react(),
     environment("all", { prefix: "CANISTER_ID_" }),
     environment("all", { prefix: "DFX_" }),
+    environment("all", { prefix: "VITE_" }),
   ],
   resolve: {
     alias: [
