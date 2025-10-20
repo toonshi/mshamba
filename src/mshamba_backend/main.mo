@@ -22,9 +22,9 @@ persistent actor Self {
   // ==============================
   // FEATURE FLAGS
   // ==============================
-  // Set to false to disable token launch on mainnet (saves cycles)
-  // Farmers can still create farms, but cannot launch tokens
-  let ENABLE_TOKEN_LAUNCH : Bool = false;  // TODO: Set to true when ready to enable
+  // Set to true to enable token launch on mainnet
+  // Farmers can create farms and launch tokens
+  let ENABLE_TOKEN_LAUNCH : Bool = true;
 
   // Stable variables for persistence (manual serialization)
   var stableFarmKeys : [Text] = [];
@@ -567,8 +567,8 @@ persistent actor Self {
           return #err("Only the farm owner can change investment status");
         };
         
-        // If opening investment, ensure token is launched (only if feature enabled)
-        if (newStatus == true and ENABLE_TOKEN_LAUNCH) {
+        // If opening investment, ensure token is launched
+        if (newStatus == true) {
           switch (farm.ledgerCanister) {
             case null { 
               return #err("Token must be launched before opening investment. Call launchFarmToken first.") 
@@ -594,6 +594,36 @@ persistent actor Self {
     amount : Nat
   ) : async FarmModule.Result<FarmModule.Farm> {
     FarmModule.investInFarm(caller, farmId, amount, farmStore)
+  };
+
+  public query func listFarmIds() : async [Text] {
+    Iter.toArray(farmStore.keys())
+  };
+
+  public query func listFarmLedgers() : async [(Text, Text)] {
+    var out : [(Text, Text)] = [];
+    for ((fid, farm) in farmStore.entries()) {
+      switch (farm.ledgerCanister) {
+        case (?lc) {
+          out := Array.append(out, [(fid, Principal.toText(lc))]);
+        };
+        case null {};
+      };
+    };
+    out
+  };
+
+  public shared ({ caller }) func adminClearAllFarms(secret : Text) : async Nat {
+    if (secret != "CONFIRM_NUKE_FARMS") {
+      return 0;
+    };
+    let ids = Iter.toArray(farmStore.keys());
+    var removed : Nat = 0;
+    for (fid in ids.vals()) {
+      ignore farmStore.remove(fid);
+      removed += 1;
+    };
+    removed
   };
 
   // ==============================
