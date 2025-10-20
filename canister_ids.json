@@ -1,8 +1,11 @@
 {
+  "mshamba_backend": {
+    "ic": "pwj2z-kaaaa-aaaac-a4bea-cai"
+  },
   "mshamba_frontend": {
     "ic": "pri4n-hyaaa-aaaac-a4beq-cai"
   },
-  "mshamba_backend": {
-    "ic": "pwj2z-kaaaa-aaaac-a4bea-cai"
+  "token_factory": {
+    "ic": "ewndo-jyaaa-aaaac-a4tqa-cai"
   }
 }
