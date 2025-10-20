@@ -19,6 +19,13 @@ persistent actor Self {
   type Farm = FarmModule.Farm;
   type Profile = UserProfileModule.Profile;
 
+  // ==============================
+  // FEATURE FLAGS
+  // ==============================
+  // Set to false to disable token launch on mainnet (saves cycles)
+  // Farmers can still create farms, but cannot launch tokens
+  let ENABLE_TOKEN_LAUNCH : Bool = false;  // TODO: Set to true when ready to enable
+
   // Stable variables for persistence (manual serialization)
   var stableFarmKeys : [Text] = [];
   var stableFarmValues : [FarmModule.Farm] = [];
@@ -469,7 +476,18 @@ persistent actor Self {
   // ==============================
   // TOKEN LAUNCH
   // ==============================
+  
+  // Query function to check if token launch is enabled
+  public query func isTokenLaunchEnabled() : async Bool {
+    ENABLE_TOKEN_LAUNCH
+  };
+  
   public shared ({ caller }) func launchFarmToken(farmId : Text) : async FarmModule.Result<Principal> {
+    // Check if token launch is enabled
+    if (not ENABLE_TOKEN_LAUNCH) {
+      return #err("Token launch is currently disabled. Please contact platform support.");
+    };
+
     switch (FarmModule.getFarm(farmId, farmStore)) {
       case (#err(msg)) { return #err(msg) };
       case (#ok(farm)) {
@@ -549,8 +567,8 @@ persistent actor Self {
           return #err("Only the farm owner can change investment status");
         };
         
-        // If opening investment, ensure token is launched
-        if (newStatus == true) {
+        // If opening investment, ensure token is launched (only if feature enabled)
+        if (newStatus == true and ENABLE_TOKEN_LAUNCH) {
           switch (farm.ledgerCanister) {
             case null { 
               return #err("Token must be launched before opening investment. Call launchFarmToken first.") 
