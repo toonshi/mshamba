@@ -14,6 +14,16 @@ export function useAuth() {
   const [isPlugConnected, setIsPlugConnected] = useState(false);
   const [plugPrincipal, setPlugPrincipal] = useState(null);
   const [plugActor, setPlugActor] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      setIsMobile(mobile);
+    };
+    checkMobile();
+  }, []);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -48,12 +58,36 @@ export function useAuth() {
     initAuth();
   }, []);
 
-  const login = async () => {
+  const login = async (provider = "ii") => {
     if (!authClient) return;
-    await authClient.login({
-      identityProvider: process.env.DFX_NETWORK === "local"
+    
+    let identityProvider;
+    const isLocal = process.env.DFX_NETWORK === "local";
+    
+    // Choose identity provider
+    if (provider === "nfid") {
+      identityProvider = "https://nfid.one/authenticate";
+    } else {
+      // Internet Identity (default)
+      identityProvider = isLocal
         ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/`
-        : "https://identity.ic0.app",
+        : "https://identity.ic0.app";
+    }
+    
+    // For production, set derivationOrigin to support alternative origins
+    const derivationOrigin = !isLocal ? window.location.origin : undefined;
+    
+    // NFID-specific configuration
+    const loginOptions = {
+      identityProvider,
+      // II 2.0 / NFID: Enable alternative frontend origins support
+      derivationOrigin,
+      // Set max time to live for delegation (8 days in nanoseconds)
+      maxTimeToLive: BigInt(8 * 24 * 60 * 60 * 1000 * 1000 * 1000),
+      // NFID: Window options for popup
+      ...(provider === "nfid" && {
+        windowOpenerFeatures: "width=500,height=600,left=100,top=100"
+      }),
       onSuccess: async () => {
         const authenticatedIdentity = authClient.getIdentity();
         setIdentity(authenticatedIdentity);
@@ -68,7 +102,9 @@ export function useAuth() {
         setActor(authenticatedActor); // Update actor to authenticated
         setIsAuthenticated(true);
       },
-    });
+    };
+    
+    await authClient.login(loginOptions);
   };
 
   const logout = async () => {
@@ -88,6 +124,37 @@ export function useAuth() {
   };
 
   const connectPlugWallet = async () => {
+    // Mobile: Use deep link to open Plug app
+    if (isMobile) {
+      try {
+        // Store return URL for when Plug redirects back
+        sessionStorage.setItem('plugConnectReturn', window.location.href);
+        
+        // Create deep link to Plug mobile app
+        const returnUrl = encodeURIComponent(window.location.href);
+        const canisterId = mshambaBackendCanisterId;
+        const deepLink = `plug://connect?canisterId=${canisterId}&returnUrl=${returnUrl}`;
+        
+        // Try to open Plug app
+        window.location.href = deepLink;
+        
+        // Fallback: redirect to Plug website after 2 seconds if app doesn't open
+        setTimeout(() => {
+          if (document.hasFocus()) {
+            // App didn't open, show instructions
+            alert('Please install the Plug Wallet app from your app store to connect on mobile.');
+          }
+        }, 2000);
+        
+        return;
+      } catch (error) {
+        console.error("Plug mobile connection failed:", error);
+        alert('Unable to connect to Plug mobile. Please ensure the app is installed.');
+        return;
+      }
+    }
+    
+    // Desktop: Use browser extension
     if (window.ic && window.ic.plug) {
       try {
         const whitelist = [mshambaBackendCanisterId]; // Farm token ledgers will be added dynamically as needed
@@ -123,7 +190,11 @@ export function useAuth() {
         setPlugActor(null);
       }
     } else {
-      alert("Plug Wallet not found. Please install it from https://plugwallet.ooo/");
+      if (isMobile) {
+        alert("Plug Wallet app not detected. Please install it from your app store.");
+      } else {
+        alert("Plug Wallet extension not found. Please install it from https://plugwallet.ooo/");
+      }
     }
   };
 
@@ -143,5 +214,18 @@ export function useAuth() {
 
   const principal = identity ? identity.getPrincipal() : null;
   
-  return { isAuthenticated, actor, identity, principal, login, logout, isPlugConnected, plugPrincipal, plugActor, connectPlugWallet, disconnectPlugWallet };
+  return { 
+    isAuthenticated, 
+    actor, 
+    identity, 
+    principal, 
+    login, 
+    logout, 
+    isPlugConnected, 
+    plugPrincipal, 
+    plugActor, 
+    connectPlugWallet, 
+    disconnectPlugWallet,
+    isMobile 
+  };
 }
