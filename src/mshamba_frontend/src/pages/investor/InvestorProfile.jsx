@@ -5,11 +5,11 @@ import {
   Phone,
   MapPin,
   DollarSign,
-  TrendingUp,
   Calendar,
   Edit,
   Plus,
 } from "lucide-react";
+import { ReturnsIcon, GrowthIcon } from '../../components/FinancialIcons';
 
 const InvestorProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -131,13 +131,13 @@ const InvestorProfile = () => {
   <StatCard
     label="Current Value"
     value={`KSH ${totalCurrentValue.toLocaleString('en-KE')}`}
-    icon={<TrendingUp className="h-6 w-6 text-blue-600" />}
+    icon={<GrowthIcon className="h-6 w-6 text-blue-600" />}
     bg="bg-blue-100"
   />
   <StatCard
     label="Total Returns"
     value={`KSH ${totalReturns.toLocaleString('en-KE')}`}
-    icon={<TrendingUp className="h-6 w-6 text-green-600" />}
+    icon={<ReturnsIcon className="h-6 w-6 text-green-600" />}
     bg="bg-green-100"
   />
   <StatCard

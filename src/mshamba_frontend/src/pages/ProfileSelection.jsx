@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Sprout, 
-  TrendingUp, 
   ArrowRight, 
   CheckCircle,
   Sun,
@@ -10,9 +9,9 @@ import {
   ArrowLeft,
   Users,
   BarChart3,
-  Shield,
   Leaf
 } from 'lucide-react';
+import { TokenIcon, InvestmentIcon, SecurityIcon, PerformanceIcon } from '../components/FinancialIcons';
 
 const ProfileSelection = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -141,9 +140,9 @@ const ProfileSelection = () => {
 
                 <div className="space-y-2 mb-4">
                   {[
-                    { icon: Shield, text: "Tokenize your farm assets" },
+                    { icon: TokenIcon, text: "Tokenize your farm assets" },
                     { icon: BarChart3, text: "Track farm analytics & records" },
-                    { icon: TrendingUp, text: "Access transparent funding" },
+                    { icon: InvestmentIcon, text: "Access transparent funding" },
                     { icon: Users, text: "Connect with global investors" }
                   ].map(({ icon: Icon, text }, index) => (
                     <div key={index} className="flex items-center text-left">
@@ -187,7 +186,7 @@ const ProfileSelection = () => {
               <div className="text-center">
                 <div className="relative mb-4">
                   <div className="relative bg-gradient-to-r from-blue-600 to-blue-500 w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center mx-auto group-hover:scale-105 transition-transform duration-300">
-                    <TrendingUp className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
+                    <InvestmentIcon className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                   </div>
                 </div>
 
@@ -204,9 +203,9 @@ const ProfileSelection = () => {
 
                 <div className="space-y-2 mb-4">
                   {[
-                    { icon: Shield, text: "Browse verified farm tokens" },
+                    { icon: SecurityIcon, text: "Browse verified farm tokens" },
                     { icon: BarChart3, text: "Access detailed market analysis" },
-                    { icon: TrendingUp, text: "Track investment performance" },
+                    { icon: PerformanceIcon, text: "Track investment performance" },
                     { icon: Users, text: "Connect with farmers directly" }
                   ].map(({ icon: Icon, text }, index) => (
                     <div key={index} className="flex items-center text-left">

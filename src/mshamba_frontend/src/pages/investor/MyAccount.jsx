@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Wallet, TrendingUp, TrendingDown, Eye, EyeOff, RefreshCw, PieChart, Clock, ArrowUpRight, ArrowDownLeft, Download } from 'lucide-react';
+import { Wallet, TrendingDown, Eye, EyeOff, RefreshCw, PieChart, Clock, ArrowUpRight, ArrowDownLeft, Download } from 'lucide-react';
+import { GrowthIcon, ReturnsIcon, PerformanceIcon } from '../../components/FinancialIcons';
 import { LineChart, Line, PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -206,7 +207,7 @@ const MyAccount = () => {
             </div>
             <div className="flex items-center gap-2">
               {totalGains >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-600" />
+                <GrowthIcon className="w-4 h-4 text-green-600" />
               ) : (
                 <TrendingDown className="w-4 h-4 text-red-600" />
               )}
@@ -310,7 +311,7 @@ const MyAccount = () => {
                 {/* Estimated Earnings */}
                 <div className="border border-gray-200 rounded-lg p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    <GrowthIcon className="h-5 w-5 text-green-600" />
                     <h3 className="font-semibold text-gray-900">Estimated Earnings</h3>
                   </div>
                   <div className="space-y-3">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Sprout, Clock, DollarSign, TrendingUp, Users, Shield, Coins, Calendar, Mail, Award } from 'lucide-react';
+import { ArrowLeft, MapPin, Sprout, Clock, DollarSign, Users, Coins, Calendar, Mail, Award } from 'lucide-react';
+import { EscrowIcon, GrowthIcon, YieldIcon } from '../../components/FinancialIcons';
 import { useAuth } from '../../hooks/useAuth';
 
 const FarmDetails = () => {
@@ -191,7 +192,7 @@ const FarmDetails = () => {
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <TrendingUp className="w-5 h-5 text-purple-600 mr-3 mt-1" />
+                  <YieldIcon className="w-5 h-5 text-purple-600 mr-3 mt-1" />
                   <div>
                     <p className="text-sm text-gray-600">Expected Yield</p>
                     <p className="font-semibold text-gray-900">{farm.expectedYield}</p>
@@ -256,9 +257,9 @@ const FarmDetails = () => {
                 {/* Escrow Status */}
                 <div className="border border-gray-200 rounded-lg p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Shield className="w-6 h-6 text-gray-700" />
+                    <EscrowIcon className="w-6 h-6 text-gray-700" />
                     <div>
-                      <p className="font-semibold text-gray-900">Escrow Protection</p>
+                      <p className="font-semibold text-gray-900">Secure Escrow</p>
                       <p className="text-sm text-gray-600">Milestone-based fund release</p>
                     </div>
                   </div>
