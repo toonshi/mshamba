@@ -14,8 +14,20 @@
       "type": "motoko",
       "build": ["--enhanced-orthogonal-persistence"],
       "dependencies": [
-        "token_factory"
+        "token_factory",
+        "marketplace",
+        "hedera_integration"
       ]
+    },
+    "marketplace": {
+      "main": "src/mshamba_backend/marketplace.mo",
+      "type": "motoko",
+      "build": ["--enhanced-orthogonal-persistence"]
+    },
+    "hedera_integration": {
+      "main": "src/mshamba_backend/hedera_integration.mo",
+      "type": "motoko",
+      "build": ["--enhanced-orthogonal-persistence"]
     },
     "mshamba_frontend": {
       "type": "assets",

@@ -24,6 +24,11 @@ import FarmDetails from "./pages/investor/FarmDetails";
 import MarketAnalysis from "./pages/investor/MarketAnalysis";
 import MyAccount from "./pages/investor/MyAccount";
 
+// Marketplace pages
+import Marketplace from "./pages/Marketplace";
+import CreateListing from "./pages/CreateListing";
+import UserRegistration from "./pages/UserRegistration";
+
 function App() {
   return (
     <Router>
@@ -33,6 +38,11 @@ function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<FarmListing />} /> 
         <Route path="/profile-selection" element={<ProfileSelection />} />
+
+        {/* Marketplace Routes */}
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/marketplace/create-listing" element={<CreateListing />} />
+        <Route path="/register" element={<UserRegistration />} />
 
         {/* Farmer Routes */}
         <Route path="/farmer/dashboard" element={<FarmerDashboard />}>
