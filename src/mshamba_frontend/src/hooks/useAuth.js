@@ -124,34 +124,12 @@ export function useAuth() {
   };
 
   const connectPlugWallet = async () => {
-    // Mobile: Use deep link to open Plug app
+    // Mobile: Plug doesn't support external browser connections on mobile
     if (isMobile) {
-      try {
-        // Store return URL for when Plug redirects back
-        sessionStorage.setItem('plugConnectReturn', window.location.href);
-        
-        // Create deep link to Plug mobile app
-        const returnUrl = encodeURIComponent(window.location.href);
-        const canisterId = mshambaBackendCanisterId;
-        const deepLink = `plug://connect?canisterId=${canisterId}&returnUrl=${returnUrl}`;
-        
-        // Try to open Plug app
-        window.location.href = deepLink;
-        
-        // Fallback: redirect to Plug website after 2 seconds if app doesn't open
-        setTimeout(() => {
-          if (document.hasFocus()) {
-            // App didn't open, show instructions
-            alert('Please install the Plug Wallet app from your app store to connect on mobile.');
-          }
-        }, 2000);
-        
-        return;
-      } catch (error) {
-        console.error("Plug mobile connection failed:", error);
-        alert('Unable to connect to Plug mobile. Please ensure the app is installed.');
-        return;
-      }
+      const message = `Plug Wallet on mobile requires using their in-app browser.\n\nFor mobile, we recommend:\n\n1. Use "Internet Identity" (works perfectly on mobile with Face ID/fingerprint)\n\nOR\n\n2. Open this website inside the Plug app:\n   • Open Plug app\n   • Go to Browser tab\n   • Navigate to: ${window.location.hostname}\n\nOR\n\n3. Use desktop with Plug browser extension`;
+      
+      alert(message);
+      return;
     }
     
     // Desktop: Use browser extension

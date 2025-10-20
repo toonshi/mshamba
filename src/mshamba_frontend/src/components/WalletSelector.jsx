@@ -38,14 +38,18 @@ const WalletSelector = () => {
 
         {/* Plug Wallet */}
         <button 
-          className="wallet-option plug-option"
+          className={`wallet-option plug-option ${isMobile ? 'mobile-limited' : ''}`}
           onClick={connectPlugWallet}
         >
           <div className="wallet-icon">⚡</div>
           <div className="wallet-info">
             <h3>Plug Wallet</h3>
-            <p>{isMobile ? 'Mobile app required' : 'Browser extension'}</p>
-            <span className="badge crypto">For Crypto Users</span>
+            <p>{isMobile ? 'Use Plug in-app browser' : 'Browser extension'}</p>
+            {isMobile ? (
+              <span className="badge warning">Desktop Recommended</span>
+            ) : (
+              <span className="badge crypto">For Crypto Users</span>
+            )}
           </div>
         </button>
       </div>
@@ -53,18 +57,33 @@ const WalletSelector = () => {
       <div className="wallet-help">
         <h4>Need help choosing?</h4>
         <div className="help-grid">
-          <div className="help-item">
-            <strong>First time?</strong>
-            <p>Use <strong>NFID</strong> - sign in with email like any other website</p>
-          </div>
-          <div className="help-item">
-            <strong>Have crypto?</strong>
-            <p>Use <strong>Plug Wallet</strong> - manage ICP and tokens easily</p>
-          </div>
-          <div className="help-item">
-            <strong>Privacy focused?</strong>
-            <p>Use <strong>Internet Identity</strong> - anonymous and secure</p>
-          </div>
+          {isMobile ? (
+            <>
+              <div className="help-item">
+                <strong>📱 On Mobile? Use Internet Identity</strong>
+                <p>Works perfectly with Face ID or fingerprint. Fast, secure, and reliable on any phone.</p>
+              </div>
+              <div className="help-item">
+                <strong>⚡ Want to use Plug?</strong>
+                <p>Open this website in the Plug app's browser, or use a desktop computer.</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="help-item">
+                <strong>First time?</strong>
+                <p>Use <strong>Internet Identity</strong> - works everywhere and needs no setup</p>
+              </div>
+              <div className="help-item">
+                <strong>Have crypto?</strong>
+                <p>Use <strong>Plug Wallet</strong> - manage ICP and tokens easily</p>
+              </div>
+              <div className="help-item">
+                <strong>Privacy focused?</strong>
+                <p>Use <strong>Internet Identity</strong> - anonymous and secure</p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -158,6 +177,16 @@ const WalletSelector = () => {
         .badge.crypto {
           background: #9b59b6;
           color: white;
+        }
+
+        .badge.warning {
+          background: #f39c12;
+          color: white;
+        }
+
+        .wallet-option.mobile-limited {
+          opacity: 0.7;
+          border-color: #f39c12;
         }
 
         .wallet-help {
