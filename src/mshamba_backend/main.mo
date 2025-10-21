@@ -12,6 +12,7 @@ import Debug "mo:base/Debug";
 import Blob "mo:base/Blob";
 import Time "mo:base/Time";
 import Result "mo:base/Result";
+import Float "mo:base/Float";
 
 import TokenFactory "canister:token_factory";
 
@@ -31,10 +32,23 @@ persistent actor Self {
   var stableFarmValues : [FarmModule.Farm] = [];
   var stableProfileKeys : [Principal] = [];
   var stableProfileValues : [UserProfileModule.Profile] = [];
+  
+  // Marketplace stable storage
+  var stableListingsEntries : [(Text, FarmModule.MarketplaceListing)] = [];
+  var stableTransactionsEntries : [(Text, FarmModule.MarketplaceTransaction)] = [];
+  var stableFarmRecordsEntries : [(Text, FarmModule.FarmRecord)] = [];
+  var nextListingId : Nat = 1;
+  var nextTransactionId : Nat = 1;
+  var nextRecordId : Nat = 1;
 
   // Non-stable variables, initialized from stable memory in post_upgrade
   transient var farmStore : HashMap.HashMap<Text, FarmModule.Farm> = FarmModule.newFarmStore();
   transient var profileStore : HashMap.HashMap<Principal, UserProfileModule.Profile> = UserProfileModule.newProfileStore();
+  
+  // Marketplace transient storage
+  transient var marketplaceListings = HashMap.HashMap<Text, FarmModule.MarketplaceListing>(10, Text.equal, Text.hash);
+  transient var marketplaceTransactions = HashMap.HashMap<Text, FarmModule.MarketplaceTransaction>(10, Text.equal, Text.hash);
+  transient var farmRecords = HashMap.HashMap<Text, FarmModule.FarmRecord>(10, Text.equal, Text.hash);
 
   // ==============================
   // HELPERS
@@ -627,6 +641,345 @@ persistent actor Self {
   };
 
   // ==============================
+  // UNIFIED MARKETPLACE (SEAMLESS WITH FARMS)
+  // ==============================
+  
+  // Helper: Get user's first farm (auto-link for marketplace purchases)
+  func getUserFirstFarm(userId: Principal) : ?Text {
+    for ((farmId, farm) in farmStore.entries()) {
+      if (farm.owner == userId) {
+        return ?farmId;
+      };
+    };
+    null
+  };
+  
+  // Helper: Calculate distance between two locations (Haversine formula)
+  func calculateDistance(loc1: FarmModule.Location, loc2: FarmModule.Location) : Float {
+    let earthRadiusKm = 6371.0;
+    let dLat = (loc2.latitude - loc1.latitude) * 3.14159 / 180.0;
+    let dLon = (loc2.longitude - loc1.longitude) * 3.14159 / 180.0;
+    
+    let lat1Rad = loc1.latitude * 3.14159 / 180.0;
+    let lat2Rad = loc2.latitude * 3.14159 / 180.0;
+    
+    let a = Float.sin(dLat / 2.0) * Float.sin(dLat / 2.0) +
+            Float.sin(dLon / 2.0) * Float.sin(dLon / 2.0) * 
+            Float.cos(lat1Rad) * Float.cos(lat2Rad);
+    let c = 2.0 * Float.arctan2(Float.sqrt(a), Float.sqrt(1.0 - a));
+    
+    earthRadiusKm * c
+  };
+  
+  // Create marketplace listing (Suppliers/ServiceProviders only)
+  public shared ({ caller }) func createMarketplaceListing(
+    category: FarmModule.ListingCategory,
+    title: Text,
+    description: Text,
+    priceInCkUSDC: Nat,
+    unit: Text,
+    quantity: Nat,
+    location: FarmModule.Location,
+    images: [Text]
+  ) : async Result.Result<FarmModule.MarketplaceListing, Text> {
+    
+    // Get user profile
+    let profile = switch (UserProfileModule.getProfile(profileStore, caller)) {
+      case (?p) { p };
+      case null { return #err("User not registered") };
+    };
+    
+    // Check role permission
+    let isSupplier = UserProfileModule.hasRole(profile, #Supplier);
+    let isServiceProvider = UserProfileModule.hasRole(profile, #ServiceProvider);
+    if (not isSupplier and not isServiceProvider) {
+      return #err("Only Suppliers and Service Providers can create listings");
+    };
+    
+    let listingId = "LST-" # Nat.toText(nextListingId);
+    nextListingId += 1;
+    
+    let listing : FarmModule.MarketplaceListing = {
+      id = listingId;
+      sellerId = caller;
+      sellerName = profile.name;
+      category = category;
+      title = title;
+      description = description;
+      priceInCkUSDC = priceInCkUSDC;
+      unit = unit;
+      quantity = quantity;
+      location = location;
+      images = images;
+      available = true;
+      createdAt = Time.now();
+      updatedAt = Time.now();
+    };
+    
+    marketplaceListings.put(listingId, listing);
+    #ok(listing)
+  };
+  
+  // Purchase from marketplace (AUTOMATIC FARM RECORD CREATION!)
+  public shared ({ caller }) func purchaseFromMarketplace(
+    listingId: Text,
+    quantity: Nat,
+    farmId: ?Text
+  ) : async Result.Result<FarmModule.MarketplaceTransaction, Text> {
+    
+    // Get buyer profile
+    let buyerProfile = switch (UserProfileModule.getProfile(profileStore, caller)) {
+      case (?p) { p };
+      case null { return #err("Buyer not registered") };
+    };
+    
+    // Get listing
+    let listing = switch (marketplaceListings.get(listingId)) {
+      case (?l) { l };
+      case null { return #err("Listing not found") };
+    };
+    
+    // Verify availability
+    if (not listing.available or quantity > listing.quantity) {
+      return #err("Insufficient quantity available");
+    };
+    
+    // Auto-link to farm if buyer is a farmer
+    let linkedFarmId = switch (farmId) {
+      case (?fid) { ?fid };
+      case null {
+        if (UserProfileModule.hasRole(buyerProfile, #Farmer)) {
+          getUserFirstFarm(caller)
+        } else {
+          null
+        }
+      };
+    };
+    
+    // Create transaction
+    let transactionId = "TXN-" # Nat.toText(nextTransactionId);
+    nextTransactionId += 1;
+    
+    let totalAmount = listing.priceInCkUSDC * quantity;
+    
+    let transaction : FarmModule.MarketplaceTransaction = {
+      id = transactionId;
+      buyerId = caller;
+      buyerName = buyerProfile.name;
+      sellerId = listing.sellerId;
+      sellerName = listing.sellerName;
+      listingId = listingId;
+      listingTitle = listing.title;
+      category = listing.category;
+      quantity = quantity;
+      totalAmount = totalAmount;
+      status = #Confirmed;
+      farmId = linkedFarmId;
+      hederaTransactionId = null; // Will be updated by frontend
+      hederaTopicId = null;
+      createdAt = Time.now();
+      completedAt = ?Time.now();
+      notes = null;
+    };
+    
+    marketplaceTransactions.put(transactionId, transaction);
+    
+    // Update listing quantity
+    let updatedListing = {
+      listing with
+      quantity = listing.quantity - quantity;
+      available = (listing.quantity - quantity) > 0;
+      updatedAt = Time.now();
+    };
+    marketplaceListings.put(listingId, updatedListing);
+    
+    // **SEAMLESS INTEGRATION**: Auto-create farm record if linked to farm
+    switch (linkedFarmId) {
+      case (?fid) {
+        let recordId = "REC-" # Nat.toText(nextRecordId);
+        nextRecordId += 1;
+        
+        // Determine event type based on category
+        let eventType = switch (listing.category) {
+          case (#Seeds) { "INPUT_PURCHASED" };
+          case (#Fertilizers) { "INPUT_PURCHASED" };
+          case (#Pesticides) { "INPUT_PURCHASED" };
+          case (#Tools) { "INPUT_PURCHASED" };
+          case (#Equipment) { "INPUT_PURCHASED" };
+          case (#Transport) { "SERVICE_PURCHASED" };
+          case (#Labor) { "LABOR_ACTIVITY" };
+          case (#Storage) { "SERVICE_PURCHASED" };
+          case (#Processing) { "SERVICE_PURCHASED" };
+          case (#Other(_)) { "MARKETPLACE_PURCHASE" };
+        };
+        
+        let categoryText = switch (listing.category) {
+          case (#Seeds) { "Seeds" };
+          case (#Fertilizers) { "Fertilizers" };
+          case (#Pesticides) { "Pesticides" };
+          case (#Tools) { "Tools" };
+          case (#Equipment) { "Equipment" };
+          case (#Transport) { "Transport" };
+          case (#Labor) { "Labor" };
+          case (#Storage) { "Storage" };
+          case (#Processing) { "Processing" };
+          case (#Other(name)) { name };
+        };
+        
+        let farmRecord : FarmModule.FarmRecord = {
+          id = recordId;
+          farmId = fid;
+          eventType = eventType;
+          category = categoryText;
+          description = listing.title # " - " # listing.description;
+          amount = totalAmount;
+          quantity = ?quantity;
+          unit = ?listing.unit;
+          supplier = ?listing.sellerName;
+          source = #Marketplace;
+          marketplaceTransactionId = ?transactionId;
+          hederaTransactionId = null; // Will be updated by frontend/Hedera
+          hederaTopicId = null;
+          createdAt = Time.now();
+          notes = ?"Auto-created from marketplace purchase";
+        };
+        
+        farmRecords.put(recordId, farmRecord);
+        Debug.print("✅ Auto-created farm record " # recordId # " for farm " # fid);
+      };
+      case null {
+        Debug.print("ℹ️  No farm linked for this purchase");
+      };
+    };
+    
+    #ok(transaction)
+  };
+  
+  // Get all marketplace listings
+  public query func getAllMarketplaceListings() : async [FarmModule.MarketplaceListing] {
+    Iter.toArray(marketplaceListings.vals())
+  };
+  
+  // Get listings by category
+  public query func getMarketplaceListingsByCategory(category: FarmModule.ListingCategory) : async [FarmModule.MarketplaceListing] {
+    let filtered = Array.filter<FarmModule.MarketplaceListing>(
+      Iter.toArray(marketplaceListings.vals()),
+      func(listing) {
+        listing.category == category and listing.available
+      }
+    );
+    filtered
+  };
+  
+  // Get nearby listings (location-based)
+  public query func getNearbyMarketplaceListings(
+    location: FarmModule.Location,
+    radiusKm: Nat,
+    category: ?FarmModule.ListingCategory
+  ) : async [FarmModule.MarketplaceListing] {
+    let radiusFloat = Float.fromInt(radiusKm);
+    
+    let filtered = Array.filter<FarmModule.MarketplaceListing>(
+      Iter.toArray(marketplaceListings.vals()),
+      func(listing) {
+        let distance = calculateDistance(location, listing.location);
+        let withinRadius = distance <= radiusFloat;
+        let categoryMatch = switch (category) {
+          case (?cat) { listing.category == cat };
+          case null { true };
+        };
+        listing.available and withinRadius and categoryMatch
+      }
+    );
+    filtered
+  };
+  
+  // Get user's marketplace transactions
+  public shared query ({ caller }) func getMyMarketplaceTransactions() : async [FarmModule.MarketplaceTransaction] {
+    let filtered = Array.filter<FarmModule.MarketplaceTransaction>(
+      Iter.toArray(marketplaceTransactions.vals()),
+      func(txn) {
+        txn.buyerId == caller or txn.sellerId == caller
+      }
+    );
+    filtered
+  };
+  
+  // Get farm records (including marketplace purchases)
+  public query func getFarmRecords(farmId: Text) : async [FarmModule.FarmRecord] {
+    let filtered = Array.filter<FarmModule.FarmRecord>(
+      Iter.toArray(farmRecords.vals()),
+      func(record) {
+        record.farmId == farmId
+      }
+    );
+    filtered
+  };
+  
+  // Update transaction with Hedera data
+  public shared ({ caller }) func updateMarketplaceTransactionHedera(
+    transactionId: Text,
+    hederaTransactionId: Text,
+    hederaTopicId: Text
+  ) : async Result.Result<FarmModule.MarketplaceTransaction, Text> {
+    let transaction = switch (marketplaceTransactions.get(transactionId)) {
+      case (?txn) { txn };
+      case null { return #err("Transaction not found") };
+    };
+    
+    // Only buyer or seller can update
+    if (transaction.buyerId != caller and transaction.sellerId != caller) {
+      return #err("Not authorized");
+    };
+    
+    let updatedTransaction = {
+      transaction with
+      hederaTransactionId = ?hederaTransactionId;
+      hederaTopicId = ?hederaTopicId;
+      status = #Completed;
+    };
+    
+    marketplaceTransactions.put(transactionId, updatedTransaction);
+    
+    // Also update farm record if exists
+    switch (transaction.farmId) {
+      case (?fid) {
+        for ((recordId, record) in farmRecords.entries()) {
+          if (record.marketplaceTransactionId == ?transactionId) {
+            let updatedRecord = {
+              record with
+              hederaTransactionId = ?hederaTransactionId;
+              hederaTopicId = ?hederaTopicId;
+            };
+            farmRecords.put(recordId, updatedRecord);
+          };
+        };
+      };
+      case null {};
+    };
+    
+    #ok(updatedTransaction)
+  };
+  
+  // Get marketplace stats
+  public query func getMarketplaceStats() : async {
+    totalListings: Nat;
+    activeListings: Nat;
+    totalTransactions: Nat;
+  } {
+    let activeListings = Array.filter<FarmModule.MarketplaceListing>(
+      Iter.toArray(marketplaceListings.vals()),
+      func(listing) { listing.available }
+    );
+
+    {
+      totalListings = marketplaceListings.size();
+      activeListings = activeListings.size();
+      totalTransactions = marketplaceTransactions.size();
+    }
+  };
+
+  // ==============================
   // UPGRADE HOOKS
   // ==============================
   public shared func pre_upgrade() : async () {
@@ -634,6 +987,11 @@ persistent actor Self {
     stableFarmValues := Iter.toArray(farmStore.vals());
     stableProfileKeys := Iter.toArray(profileStore.keys());
     stableProfileValues := Iter.toArray(profileStore.vals());
+    
+    // Marketplace data
+    stableListingsEntries := Iter.toArray(marketplaceListings.entries());
+    stableTransactionsEntries := Iter.toArray(marketplaceTransactions.entries());
+    stableFarmRecordsEntries := Iter.toArray(farmRecords.entries());
   };
 
   public shared func post_upgrade() : async () {
@@ -650,5 +1008,15 @@ persistent actor Self {
       profileStore.put(stableProfileKeys[j], stableProfileValues[j]);
       j += 1;
     };
+    
+    // Restore marketplace data
+    marketplaceListings := HashMap.fromIter<Text, FarmModule.MarketplaceListing>(stableListingsEntries.vals(), 10, Text.equal, Text.hash);
+    marketplaceTransactions := HashMap.fromIter<Text, FarmModule.MarketplaceTransaction>(stableTransactionsEntries.vals(), 10, Text.equal, Text.hash);
+    farmRecords := HashMap.fromIter<Text, FarmModule.FarmRecord>(stableFarmRecordsEntries.vals(), 10, Text.equal, Text.hash);
+    
+    // Clear stable storage
+    stableListingsEntries := [];
+    stableTransactionsEntries := [];
+    stableFarmRecordsEntries := [];
   };
 };

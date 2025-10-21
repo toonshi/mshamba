@@ -1,22 +1,41 @@
 //types
 module {
-  // User & Roles
+  // User & Roles (Unified for Farm Management + Marketplace)
   public type Role = {
     #Investor;
     #Farmer;
+    #Supplier;        // Marketplace: Sells seeds, fertilizers, tools
+    #ServiceProvider; // Marketplace: Transport, labor, storage
+    #Buyer;           // Marketplace: General buyer
     // #LandOwner;
     // #SupplyPartner;
     // #Admin;
   };
 
+  // Location data for proximity-based marketplace features
+  public type Location = {
+    latitude: Float;
+    longitude: Float;
+    address: Text;
+    region: Text;
+    country: Text;
+  };
+
+  // Unified User Profile (Farm + Marketplace)
   public type UserProfile = {
     id : Text;
+    userId: Principal;
     name : Text;
     email : Text;
     role : Role;
     wallet : Principal;
     bio : Text;
-    location : Text;
+    location : Text;          // Simple location string (legacy)
+    gpsLocation: ?Location;   // GPS coordinates for marketplace
+    phoneNumber: ?Text;       // For marketplace contact
+    verified: Bool;           // Marketplace verification status
+    rating: Float;            // Marketplace seller/buyer rating
+    totalTransactions: Nat;   // Marketplace transaction count
     joinedAt : Int;
     
   };
@@ -245,5 +264,95 @@ public type Farm = {
   };
 
   public type Result<T> = { #ok : T; #err : Text };
+
+  // ============================================
+  // MARKETPLACE TYPES
+  // ============================================
+
+  // Marketplace listing categories
+  public type ListingCategory = {
+    #Seeds;
+    #Fertilizers;
+    #Pesticides;
+    #Tools;
+    #Equipment;
+    #Transport;
+    #Labor;
+    #Storage;
+    #Processing;
+    #Other: Text;
+  };
+
+  // A marketplace listing (product or service)
+  public type MarketplaceListing = {
+    id: Text;
+    sellerId: Principal;
+    sellerName: Text;
+    category: ListingCategory;
+    title: Text;
+    description: Text;
+    priceInCkUSDC: Nat; // Price in smallest units (6 decimals)
+    unit: Text; // "kg", "bag", "hour", "trip", etc.
+    quantity: Nat; // Available quantity
+    location: Location;
+    images: [Text]; // URLs or IPFS hashes
+    available: Bool;
+    createdAt: Int;
+    updatedAt: Int;
+  };
+
+  // Marketplace transaction status
+  public type MarketplaceStatus = {
+    #Pending;
+    #Confirmed;
+    #Completed;
+    #Cancelled;
+    #Disputed;
+  };
+
+  // Marketplace transaction (links to farms automatically)
+  public type MarketplaceTransaction = {
+    id: Text;
+    buyerId: Principal;
+    buyerName: Text;
+    sellerId: Principal;
+    sellerName: Text;
+    listingId: Text;
+    listingTitle: Text;
+    category: ListingCategory;
+    quantity: Nat;
+    totalAmount: Nat; // Total in ckUSDC smallest units
+    status: MarketplaceStatus;
+    farmId: ?Text; // AUTO-LINKED to buyer's farm
+    hederaTransactionId: ?Text; // Hedera HCS verification
+    hederaTopicId: ?Text;
+    createdAt: Int;
+    completedAt: ?Int;
+    notes: ?Text;
+  };
+
+  // Farm Record (extended to include marketplace purchases)
+  public type FarmRecordSource = {
+    #Manual;           // Manually entered by farmer
+    #Marketplace;      // Auto-created from marketplace purchase
+  };
+
+  public type FarmRecord = {
+    id: Text;
+    farmId: Text;
+    eventType: Text; // "INPUT_PURCHASED", "LABOR_ACTIVITY", etc.
+    category: Text;
+    description: Text;
+    amount: Nat;
+    quantity: ?Nat;
+    unit: ?Text;
+    supplier: ?Text;
+    source: FarmRecordSource;
+    marketplaceTransactionId: ?Text; // Link to marketplace transaction
+    hederaTransactionId: ?Text;
+    hederaTopicId: ?Text;
+    createdAt: Int;
+    notes: ?Text;
+  };
 }
  
