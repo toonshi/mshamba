@@ -19,12 +19,13 @@ persistent actor Self {
   type Farm = FarmModule.Farm;
   type Profile = UserProfileModule.Profile;
 
-  // ==============================
-  // FEATURE FLAGS
-  // ==============================
-  // Set to true to enable token launch on mainnet
-  // Farmers can create farms and launch tokens
-  let ENABLE_TOKEN_LAUNCH : Bool = true;
+  // Feature flag - permanently enabled for mainnet
+  stable var ENABLE_TOKEN_LAUNCH : Bool = true;
+
+  // Force enable token launch on upgrade
+  system func postupgrade() {
+    ENABLE_TOKEN_LAUNCH := true;
+  };
 
   // Stable variables for persistence (manual serialization)
   var stableFarmKeys : [Text] = [];
@@ -477,16 +478,11 @@ persistent actor Self {
   // TOKEN LAUNCH
   // ==============================
   
-  // Query function to check if token launch is enabled
   public query func isTokenLaunchEnabled() : async Bool {
     ENABLE_TOKEN_LAUNCH
   };
   
   public shared ({ caller }) func launchFarmToken(farmId : Text) : async FarmModule.Result<Principal> {
-    // Check if token launch is enabled
-    if (not ENABLE_TOKEN_LAUNCH) {
-      return #err("Token launch is currently disabled. Please contact platform support.");
-    };
 
     switch (FarmModule.getFarm(farmId, farmStore)) {
       case (#err(msg)) { return #err(msg) };
@@ -505,7 +501,7 @@ persistent actor Self {
         // Call token_factory to create the ICRC-1 ledger with proper equity distribution
         // NOTE: For now, using backend's own canister principal for platform & escrow
         // TODO: Replace with dedicated escrow and treasury canisters
-        let backendPrincipal = Principal.fromText("u6s2n-gx777-77774-qaaba-cai"); // Mshamba backend canister ID
+        let backendPrincipal = Principal.fromActor(Self); // Use current canister's principal (works on both local & mainnet)
         let platformPrincipal = backendPrincipal;
         let ifoEscrowPrincipal = backendPrincipal; // TODO: Use dedicated IFO escrow canister
         let farmTreasuryPrincipal = farm.owner; // TODO: Create dedicated farm treasury account

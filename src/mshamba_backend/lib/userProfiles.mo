@@ -6,7 +6,13 @@ import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 
 module {
-  public type Role = { #Farmer; #Investor };
+  public type Role = { 
+    #Farmer; 
+    #Investor; 
+    #Supplier;         // Marketplace: Sells seeds, fertilizers, tools
+    #ServiceProvider;  // Marketplace: Transport, labor, storage
+    #Buyer;            // Marketplace: General buyer
+  };
 
   public type Profile = {
     owner: Principal;

@@ -1,5 +1,4 @@
 # Mshamba Whitepaper
-## Transforming Kenyan Farms into Publicly Traded Companies
 
 **Version 1.0** | **October 2025**
 
@@ -107,126 +106,81 @@
 
 ---
 
-## Real-World Example: Joseph's Potato Farm
-
-**Background:**
-- Joseph Kamau, Nakuru County
-- Owns 100 acres (60 farmed, 40 unused)
-- Current: Supplies school for 200K KES/month
-- Opportunity: New school contract for 150K KES/month
-- Problem: Needs 2M KES to expand
-
-**Mshamba Solution:**
-
-**Valuation:** 25M KES post-expansion, need 2M KES (8% equity)
-
-**Token Structure:** 1M tokens total
-- Joseph: 870,000 (87%)
-- Platform: 50,000 (5%)
-- IFO: 80,000 @ 25 KES = 2M KES
-
-**Results:**
-- 180 investors, fully funded in 30 days
-- Year 1 profit: 1.7M KES
-- Joseph gets: 1.48M KES (vs 300K loan interest saved!)
-- Investor return: 26.8% average
-
----
-
-## Technology: Built on Internet Computer
-
-**Why ICP?**
-- Web-speed (1-2 second finality)
-- Low cost (sub-cent transactions)
-- Native ckUSDC stablecoin support
-- Internet Identity for easy authentication
-
-**Core Components:**
-1. Smart contracts (Motoko) - Farm management & escrow
-2. Token factory (Rust) - Dynamic ICRC-1 creation
-3. Payment integration - M-Pesa STK Push + ckUSDC
-4. Valuation API (Python) - DCF modeling with national benchmarks
-
----
-
 ## Economic Model
 
-**Equity Structure:**
-- Farmer: 75-92% (vesting protects commitment)
-- Platform: 5% (for services)
-- Investors: 3-20% (IFO sale)
+### Equity Tokenization Model
 
-**Platform Revenue:**
-- IFO fee: 2.5% of capital raised
-- Equity stake: 5% dividend income
-- Trading fees: 1% on secondary market
+Unlike revenue-sharing or debt-based models, Mshamba tokens represent **actual equity ownership** in farms. For a typical farm raising 2M KES valued at 25M KES, the equity is allocated as follows:
 
-**Projections:**
-- Year 1 (10 farms): 1.5M KES
-- Year 5 (200 farms): 60M+ KES
+*   **Farmer:** 87% (21,750,000 KES)
+*   **Platform:** 5% (1,250,000 KES)
+*   **Investors:** 8% (2,000,000 KES)
+
+This split allows farmers to retain majority ownership while sharing the upside with investors and the platform.
+
+### Token Pricing Mechanics
+
+The initial token price is determined by the farm's valuation and the amount of capital being raised. Post-IFO, the price is driven by farm performance, milestone completion, and market dynamics.
+
+### Dividend Distribution
+
+Profits are distributed to token holders in proportion to their ownership. For example, if a farm makes a profit of 1.7M KES, the distribution would be:
+
+*   **Farmer (87%):** 1,479,000 KES
+*   **Investors (8%):** 136,000 KES
+*   **Platform (5%):** 85,000 KES
+
+### Secondary Market Economics
+
+We will implement a P2P marketplace for secondary trading, with the option to move to an order book or AMM model in the future. Trading will be enabled in windows after each milestone is verified to reduce speculation and align with farm progress.
+
+### Platform Revenue Model
+
+*   **IFO Success Fee:** 2.5% of capital raised
+*   **Equity Stake:** 5% of every farm
+*   **Secondary Market Fees:** 1% per trade
+*   **Premium Services (Future):** Advanced analytics, institutional dashboard, API access
+
+---
+
+## Technology
+
+*   **Blockchain:** Internet Computer (ICP)
+*   **Smart Contracts:** Motoko
+*   **Token Factory:** Rust
+*   **Payment Integration:** M-Pesa (IntaSend) and ckUSDC
+*   **Valuation API:** Python
 
 ---
 
 ## Roadmap
 
-**Phase 1: MVP** (Months 1-4) ✅
-- Core contracts deployed
-- Token factory operational
-- Basic frontend live
-
-**Phase 2: Launch** (Months 5-8)
-- M-Pesa + ckUSDC integration
-- Milestone verification system
-- First 3 pilot farms
-- Security audit
-
-**Phase 3: Scale** (Months 9-12)
-- Secondary market trading
-- Mobile app
-- 20+ farms onboarded
-
-**Phase 4+: Expansion** (Year 2+)
-- Multi-chain support
-- Governance features
-- Regional expansion
-- Agricultural ecosystem
-
----
-
-## Market Differentiation
-
-| Feature | Traditional Banks | Other Platforms | **Mshamba** |
-|---------|------------------|-----------------|-------------|
-| Interest Rate | 15-25% | Varies | **0% (equity)** |
-| Collateral | Required | Sometimes | **None** |
-| Min Investment | N/A | $1,000+ | **$10** |
-| Liquidity | N/A | None | **Secondary market** |
-| Transparency | Low | Medium | **Full (blockchain)** |
-| Ownership | No | No | **Yes (real equity)** |
+*   **Phase 1: MVP (Months 1-4):** Core contracts deployed, token factory operational, basic frontend live.
+*   **Phase 2: Launch (Months 5-8):** M-Pesa + ckUSDC integration, milestone verification system, first 3 pilot farms, security audit.
+*   **Phase 3: Scale (Months 9-12):** Secondary market trading, mobile app, 20+ farms onboarded.
+*   **Phase 4+: Expansion (Year 2+):** Multi-chain support, governance features, regional expansion, agricultural ecosystem.
 
 ---
 
 ## Legal & Compliance
 
-- Securities compliant (Kenya CMA)
-- KYC/AML procedures
-- Smart contract audits
-- GDPR-compliant data handling
+*   Securities compliant (Kenya CMA)
+*   KYC/AML procedures
+*   Smart contract audits
+*   GDPR-compliant data handling
 
-**Investment Risks:**
-- Agricultural investments carry inherent risks
-- Weather, market prices can vary
-- Diversification recommended
+**Investment Risks:** Agricultural investments carry inherent risks. Weather, market prices can vary. Diversification is recommended.
 
 ---
 
 ## Vision
 
-**By 2030:**
-- 1,000+ farms tokenized
-- $50M+ capital facilitated
-- 100K+ global investors
-- 10,000+ rural jobs created
+By 2030, we aim to have:
+
+*   1,000+ farms tokenized
+*   $50M+ capital facilitated
+*   100K+ global investors
+*   10,000+ rural jobs created
 
 **Mission:** Democratize agricultural investment while empowering farmers to scale without debt.
 
@@ -234,25 +188,7 @@
 
 ## Get Involved
 
-**Farmers:** farmers@mshamba.io  
-**Investors:** [mshamba.io/marketplace](https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/)  
-**Developers:** [github.com/toonshi/mshamba](https://github.com/toonshi/mshamba)  
-**Partners:** partners@mshamba.io
-
----
-
-## Additional Documentation
-
-- `TECHNICAL_ARCHITECTURE.md` - Technical specifications
-- `ECONOMIC_MODEL.md` - Detailed economics & token math
-- `VALUATION_SUGGESTIONS.md` - Valuation API integration guide
-- `TOKEN_FACTORY_INTEGRATION.md` - Token creation docs
-
----
-
-**Contact:** hello@mshamba.io | https://mshamba.io  
-**Legal:** Mshamba Technologies Ltd. | Kenya CMA Compliant
-
-*This whitepaper is for informational purposes only. Not financial advice. Investments carry risks.*
-
-**© 2025 Mshamba Technologies Ltd.**
+*   **Farmers:** farmers@mshamba.io
+*   **Investors:** [mshamba.io/marketplace](https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/)
+*   **Developers:** [github.com/toonshi/mshamba](https://github.com/toonshi/mshamba)
+*   **Partners:** partners@mshamba.io
