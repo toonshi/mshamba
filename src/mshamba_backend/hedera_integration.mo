@@ -4,10 +4,15 @@ import Cycles "mo:base/ExperimentalCycles";
 import Debug "mo:base/Debug";
 import Result "mo:base/Result";
 import Nat "mo:base/Nat";
+import Principal "mo:base/Principal";
+import Int "mo:base/Int";
+import Time "mo:base/Time";
+import Float "mo:base/Float";
+import Error "mo:base/Error";
 
 import MT "./lib/marketplace_types";
 
-actor HederaIntegration {
+persistent actor HederaIntegration {
   
   // Hedera service URL (will be deployed separately)
   // For local development: http://localhost:3001

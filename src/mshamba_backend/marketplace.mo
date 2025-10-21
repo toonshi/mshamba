@@ -13,7 +13,7 @@ import Int "mo:base/Int";
 
 import MT "./lib/marketplace_types";
 
-actor Marketplace {
+persistent actor Marketplace {
   // Stable storage
   private stable var usersEntries : [(Principal, MT.UserProfile)] = [];
   private stable var listingsEntries : [(Text, MT.MarketplaceListing)] = [];
@@ -22,9 +22,9 @@ actor Marketplace {
   private stable var nextTransactionId : Nat = 1;
 
   // Runtime state
-  private var users = HashMap.HashMap<Principal, MT.UserProfile>(10, Principal.equal, Principal.hash);
-  private var listings = HashMap.HashMap<Text, MT.MarketplaceListing>(10, Text.equal, Text.hash);
-  private var transactions = HashMap.HashMap<Text, MT.MarketplaceTransaction>(10, Text.equal, Text.hash);
+  private transient var users = HashMap.HashMap<Principal, MT.UserProfile>(10, Principal.equal, Principal.hash);
+  private transient var listings = HashMap.HashMap<Text, MT.MarketplaceListing>(10, Text.equal, Text.hash);
+  private transient var transactions = HashMap.HashMap<Text, MT.MarketplaceTransaction>(10, Text.equal, Text.hash);
 
   // Upgrade hooks
   system func preupgrade() {
