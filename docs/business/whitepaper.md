@@ -169,7 +169,7 @@
 
 ## Roadmap
 
-**Phase 1: MVP** (Months 1-4) ✅
+**Phase 1: MVP** (Months 1-4) 
 - Core contracts deployed
 - Token factory operational
 - Basic frontend live

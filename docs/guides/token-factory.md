@@ -179,7 +179,7 @@ dfx canister deposit-cycles 10000000000000 token_factory
 ## Migration from farm1_ledger
 
 Once dynamic tokens are working:
-1. ✅ Dynamic tokens working → Can remove `farm1_ledger` from dfx.json
+1.  Dynamic tokens working → Can remove `farm1_ledger` from dfx.json
 2. Remove `import Farm1Ledger` from main.mo
 3. Remove `farm1LedgerPrincipal()` function
 4. Update any hardcoded references to farm1_ledger

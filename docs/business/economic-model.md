@@ -72,24 +72,24 @@ Token Distribution:
 ### Why This Split Works
 
 **For Farmers:**
-- ✅ Retains majority ownership (no loss of control)
-- ✅ No debt or interest payments (saves 15-25% annually)
-- ✅ Shares upside with supporters
-- ✅ Can raise follow-on rounds later
-- ✅ Vesting ensures long-term commitment
+-  Retains majority ownership (no loss of control)
+-  No debt or interest payments (saves 15-25% annually)
+-  Shares upside with supporters
+-  Can raise follow-on rounds later
+-  Vesting ensures long-term commitment
 
 **For Investors:**
-- ✅ Real equity ownership (not just revenue share)
-- ✅ Proportional profit sharing (dividends)
-- ✅ Capital appreciation potential
-- ✅ Liquidity via secondary market
-- ✅ Transparent operations
+-  Real equity ownership (not just revenue share)
+-  Proportional profit sharing (dividends)
+-  Capital appreciation potential
+-  Liquidity via secondary market
+-  Transparent operations
 
 **For Platform:**
-- ✅ Aligned incentives (profit from farm success)
-- ✅ Covers intensive valuation work
-- ✅ Not extractive (5% vs 10%+ others charge)
-- ✅ Long-term recurring revenue
+-  Aligned incentives (profit from farm success)
+-  Covers intensive valuation work
+-  Not extractive (5% vs 10%+ others charge)
+-  Long-term recurring revenue
 
 ### Vesting Schedules
 
@@ -513,10 +513,10 @@ Month 9: Milestone 4 verified → 7-day trading window
 Month 12: Harvest → Continuous trading begins
 
 Benefits:
-✅ Reduces speculation
-✅ Aligns with farm progress
-✅ Prevents panic selling
-✅ Simpler to implement
+ Reduces speculation
+ Aligns with farm progress
+ Prevents panic selling
+ Simpler to implement
 ```
 
 ### Price Stability Mechanisms

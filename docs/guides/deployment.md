@@ -1,4 +1,4 @@
-# 🚀 Mainnet Deployment Checklist
+#  Mainnet Deployment Checklist
 
 ## Pre-Deployment
 
@@ -277,6 +277,6 @@ dfx canister call mshamba_backend launchFarmToken '("farm-XXX")' --network ic
 
 ---
 
-**Ready for Launch! 🚀**
+**Ready for Launch! **
 
 Remember: Test thoroughly on local network before deploying to mainnet.
