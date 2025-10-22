@@ -15,7 +15,7 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${GREEN}🌾 Mshamba Farm Creation Wizard${NC}\n"
+echo -e "${GREEN} Mshamba Farm Creation Wizard${NC}\n"
 
 # Check if user is authenticated
 echo -e "${YELLOW}Step 1: Checking identity...${NC}"
@@ -25,7 +25,7 @@ echo -e "${BLUE}Using identity: $IDENTITY ($PRINCIPAL)${NC}\n"
 
 # Interactive mode if no arguments provided
 if [ $# -eq 0 ]; then
-    echo -e "${YELLOW}📝 Enter farm details:${NC}"
+    echo -e "${YELLOW} Enter farm details:${NC}"
     
     read -p "Farm Name: " FARM_NAME
     read -p "Description: " DESCRIPTION
@@ -41,7 +41,7 @@ if [ $# -eq 0 ]; then
     read -p "Phone: " PHONE
     read -p "Email: " EMAIL
     
-    echo -e "\n${YELLOW}🪙 Enter token details:${NC}"
+    echo -e "\n${YELLOW} Enter token details:${NC}"
     read -p "Token Name (e.g., Green Acres Token): " TOKEN_NAME
     read -p "Token Symbol (e.g., GAFT): " TOKEN_SYMBOL
     read -p "Token Supply (e.g., 1000000000): " TOKEN_SUPPLY
@@ -110,12 +110,12 @@ RESULT=$(dfx canister call $BACKEND createFarm "(
 FARM_ID=$(echo "$RESULT" | grep -o 'farmId = "[^"]*"' | cut -d'"' -f2)
 
 if [ -z "$FARM_ID" ]; then
-    echo -e "${RED}❌ Failed to create farm${NC}"
+    echo -e "${RED} Failed to create farm${NC}"
     echo "$RESULT"
     exit 1
 fi
 
-echo -e "${GREEN}✅ Farm created successfully!${NC}"
+echo -e "${GREEN} Farm created successfully!${NC}"
 echo -e "${BLUE}Farm ID: $FARM_ID${NC}\n"
 
 # Ask to launch token
@@ -130,12 +130,12 @@ if [[ $LAUNCH =~ ^[Yy]$ ]]; then
     TOKEN_CANISTER=$(echo "$TOKEN_RESULT" | grep -o 'principal "[^"]*"' | head -1 | cut -d'"' -f2)
     
     if [ -z "$TOKEN_CANISTER" ]; then
-        echo -e "${RED}❌ Failed to launch token${NC}"
+        echo -e "${RED} Failed to launch token${NC}"
         echo "$TOKEN_RESULT"
         exit 1
     fi
     
-    echo -e "${GREEN}✅ Token launched successfully!${NC}"
+    echo -e "${GREEN} Token launched successfully!${NC}"
     echo -e "${BLUE}Token Canister: $TOKEN_CANISTER${NC}\n"
     
     # Verify token
@@ -154,13 +154,13 @@ if [[ $LAUNCH =~ ^[Yy]$ ]]; then
     if [[ $OPEN =~ ^[Yy]$ ]]; then
         echo -e "\n${YELLOW}Step 5: Opening farm for investment...${NC}"
         OPEN_RESULT=$(dfx canister call $BACKEND toggleFarmInvestmentStatus "(\"$FARM_ID\", true)" --network $NETWORK)
-        echo -e "${GREEN}✅ Farm is now open for investment!${NC}\n"
+        echo -e "${GREEN} Farm is now open for investment!${NC}\n"
     fi
 fi
 
 # Summary
 echo -e "\n${GREEN}════════════════════════════════════════${NC}"
-echo -e "${GREEN}📊 Summary${NC}"
+echo -e "${GREEN} Summary${NC}"
 echo -e "${GREEN}════════════════════════════════════════${NC}"
 echo -e "Farm: $FARM_NAME"
 echo -e "Farm ID: ${BLUE}$FARM_ID${NC}"
@@ -171,7 +171,7 @@ fi
 echo -e "${GREEN}════════════════════════════════════════${NC}\n"
 
 # Next steps
-echo -e "${YELLOW}📝 Next Steps:${NC}"
+echo -e "${YELLOW} Next Steps:${NC}"
 echo -e "  • View farm: dfx canister call $BACKEND listFarms"
 echo -e "  • Check your farms: dfx canister call $BACKEND myFarms"
 if [ ! -z "$TOKEN_CANISTER" ]; then

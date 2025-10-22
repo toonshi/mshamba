@@ -14,7 +14,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🏭 Mshamba Token Factory Manager${NC}\n"
+echo -e "${GREEN} Mshamba Token Factory Manager${NC}\n"
 
 # Function to check status
 check_status() {
@@ -45,7 +45,7 @@ estimate_tokens() {
     echo -e "${GREEN}Approximate tokens remaining: $TOKENS${NC}"
     
     if [ $TOKENS -lt 5 ]; then
-        echo -e "${RED}⚠️  Warning: Low cycles! Consider topping up.${NC}"
+        echo -e "${RED}  Warning: Low cycles! Consider topping up.${NC}"
     fi
 }
 
