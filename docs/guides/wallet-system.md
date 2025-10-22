@@ -1,4 +1,4 @@
-# 🏦 Four-Wallet System Implementation Guide
+#  Four-Wallet System Implementation Guide
 
 ## Overview
 
@@ -6,7 +6,7 @@ The Four-Wallet System is Mshamba's core innovation for de-risking agricultural 
 
 ---
 
-## 🎯 The Four Wallets
+##  The Four Wallets
 
 ### 1. **Farm Wallet (Escrow Smart Contract)**
 - **Purpose:** Holds IFO proceeds, releases funds milestone-by-milestone
@@ -117,7 +117,7 @@ The Four-Wallet System is Mshamba's core innovation for de-risking agricultural 
 
 ---
 
-## 📊 Data Structures
+##  Data Structures
 
 ### IFO Details
 ```motoko
@@ -195,7 +195,7 @@ type Investment = {
 
 ---
 
-## 💡 Key Features & Benefits
+##  Key Features & Benefits
 
 ### Risk Mitigation
 | Risk | Traditional | Mshamba Solution |
@@ -220,9 +220,9 @@ type Investment = {
 
 ---
 
-## 🚀 Implementation Status
+##  Implementation Status
 
-### ✅ Completed (Phase 1)
+###  Completed (Phase 1)
 - [x] Token factory system
 - [x] Dynamic ICRC-1 token creation
 - [x] Farm creation with token parameters
@@ -321,4 +321,4 @@ dfx canister call mshamba_backend verifyMilestone '(
 
 ---
 
-**The Four-Wallet System makes agriculture investable by eliminating the primary risk: misuse of capital.** 🌾✨
+**The Four-Wallet System makes agriculture investable by eliminating the primary risk: misuse of capital.** 

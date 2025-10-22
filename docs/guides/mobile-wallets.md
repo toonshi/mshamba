@@ -8,12 +8,12 @@ Mshamba now supports multiple authentication methods optimized for both desktop 
 
 ## Supported Wallets
 
-### 1. Internet Identity (Universal) ✅
+### 1. Internet Identity (Universal) 
 - **Works on**: Desktop & Mobile (all browsers)
 - **Login**: Biometrics (Face ID, Touch ID, PIN)
 - **Best for**: Privacy-focused users
 - **Setup**: None required - works instantly
-- **Mobile**: ✅ Perfect support
+- **Mobile**:  Perfect support
 
 **How it works on mobile:**
 1. User clicks "Login with Internet Identity"
@@ -25,14 +25,14 @@ Mshamba now supports multiple authentication methods optimized for both desktop 
 
 ### 2. Plug Wallet
 
-#### Desktop (Browser Extension) ✅
+#### Desktop (Browser Extension) 
 - **Works on**: Chrome, Firefox, Brave (desktop only)
 - **Login**: Browser extension
 - **Best for**: Crypto users who manage tokens
 - **Setup**: Install extension from https://plugwallet.ooo/
-- **Mobile**: ❌ Extension not available
+- **Mobile**:  Extension not available
 
-#### Mobile (App) ⚠️ Partial Support
+#### Mobile (App)  Partial Support
 - **Works on**: iOS & Android (with Plug app installed)
 - **Login**: Deep link to Plug mobile app
 - **Best for**: Crypto users on mobile
@@ -59,7 +59,7 @@ Mshamba now supports multiple authentication methods optimized for both desktop 
 - **Login**: Email or Google sign-in
 - **Best for**: Non-crypto users (farmers, investors)
 - **Setup**: Sign in with email - that's it!
-- **Mobile**: ✅ Perfect support
+- **Mobile**:  Perfect support
 
 **Why NFID is great:**
 - Easiest onboarding (like "Sign in with Google")
@@ -155,13 +155,13 @@ const login = async (provider = "ii") => {
 
 ### On Desktop
 1. Visit https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/
-2. Click "Login with Internet Identity" ✅
-3. Or click "Connect Plug Wallet" (if extension installed) ✅
+2. Click "Login with Internet Identity" 
+3. Or click "Connect Plug Wallet" (if extension installed) 
 
 ### On Mobile
 1. Visit https://pri4n-hyaaa-aaaac-a4beq-cai.icp0.io/ on phone
-2. Click "Login with Internet Identity" ✅
-3. Or click "Connect Plug Wallet" (if app installed) ⚠️
+2. Click "Login with Internet Identity" 
+3. Or click "Connect Plug Wallet" (if app installed) 
 
 ---
 
@@ -186,8 +186,8 @@ const login = async (provider = "ii") => {
 ## Next Steps
 
 ### High Priority
-1. ✅ Add mobile detection
-2. ✅ Add Plug mobile deep links
+1.  Add mobile detection
+2.  Add Plug mobile deep links
 3. 🚧 Fix NFID dependency conflicts
 4. 📋 Test Plug mobile flow end-to-end
 
@@ -238,4 +238,4 @@ const login = async (provider = "ii") => {
 ---
 
 **Last Updated**: Oct 20, 2025  
-**Status**: Mobile detection ✅ | Plug mobile ⚠️ | NFID 🚧
+**Status**: Mobile detection  | Plug mobile  | NFID 🚧
