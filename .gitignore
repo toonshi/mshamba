@@ -23,6 +23,3 @@ dist/
 
 # environment variables
 .env
-
-.mops
-Reorg/
