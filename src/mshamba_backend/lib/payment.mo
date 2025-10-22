@@ -265,7 +265,6 @@ module {
             
             switch (result) {
                 case (#Ok(blockIndex)) {
-                    Debug.print("Payment pulled: " # debug_show(amount) # " at block " # debug_show(blockIndex));
                     #ok(blockIndex)
                 };
                 case (#Err(#InsufficientAllowance(details))) {
@@ -307,7 +306,6 @@ module {
             
             switch (result) {
                 case (#Ok(blockIndex)) {
-                    Debug.print("Transferred " # debug_show(tokenAmount) # " tokens to investor at block " # debug_show(blockIndex));
                     #ok(blockIndex)
                 };
                 case (#Err(error)) {

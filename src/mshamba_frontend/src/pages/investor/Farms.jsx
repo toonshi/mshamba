@@ -392,8 +392,6 @@ const Farms = () => {
 
   const handleEmailOwner = async (farm) => {
     try {
-      // TODO: Implement email functionality with backend
-      // await backendActor.sendEmailToFarmOwner(farm.id, message);
       console.log('Emailing farm owner:', farm);
       alert(`Email to ${farm.name} owner initiated. This will be connected to the backend.`);
     } catch (error) {

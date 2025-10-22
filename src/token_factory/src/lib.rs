@@ -6,10 +6,10 @@ use icrc_ledger_types::icrc::generic_value::Value;
 use icrc_ledger_types::icrc1::account::Account;
 use serde::{Deserialize, Serialize};
 
-// Embed the ICRC-1 ledger WASM at compile time
+// Embedded ICRC-1 ledger WASM
 const ICRC1_LEDGER_WASM: &[u8] = include_bytes!("assets/icrc1_ledger.wasm.gz");
 
-// Type definitions for ICRC-1 ledger initialization
+// ICRC-1 ledger initialization types
 #[derive(Debug, Serialize, Deserialize, CandidType, Clone)]
 pub struct FeatureFlags {
     pub icrc2: bool,
@@ -53,7 +53,7 @@ pub enum LedgerArg {
 #[derive(Debug, Serialize, Deserialize, CandidType)]
 pub struct UpgradeArgs {}
 
-// Input parameters for creating a new farm token
+// Farm token creation parameters
 #[derive(CandidType, Deserialize)]
 pub struct CreateTokenParams {
     pub token_name: String,
@@ -62,9 +62,9 @@ pub struct CreateTokenParams {
     pub decimals: u8,
     pub total_supply: Nat,
     pub transfer_fee: Nat,
-    pub minting_account_owner: Principal,  // Farm owner (receives 75% vested)
-    pub platform_principal: Principal,      // Mshamba backend (receives 5% vested)
-    pub ifo_escrow_principal: Principal,    // IFO escrow (holds 20% for investors)
+    pub minting_account_owner: Principal,
+    pub platform_principal: Principal,    
+    pub ifo_escrow_principal: Principal,  
     pub farm_treasury_principal: Principal, // Farm business account (for operations)
 }
 
@@ -73,9 +73,9 @@ async fn create_farm_token(params: CreateTokenParams) -> Result<Principal, Strin
     ic_cdk::println!("Creating farm token: {} ({})", params.token_name, params.token_symbol);
 
     // Calculate token allocations based on equity structure
-    let farmer_allocation = (params.total_supply.clone() * 75u64) / 100u64;  // 75%
-    let platform_allocation = (params.total_supply.clone() * 5u64) / 100u64;  // 5%
-    let ifo_allocation = (params.total_supply.clone() * 20u64) / 100u64;      // 20%
+    let farmer_allocation = (params.total_supply.clone() * 75u64) / 100u64;
+    let platform_allocation = (params.total_supply.clone() * 5u64) / 100u64;
+    let ifo_allocation = (params.total_supply.clone() * 20u64) / 100u64;    
     
     // Set up the minting account (platform manages minting)
     let minting_account = Account {

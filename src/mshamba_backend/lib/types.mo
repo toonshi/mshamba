@@ -1,12 +1,7 @@
-//types
 module {
-  // User & Roles
   public type Role = {
     #Investor;
     #Farmer;
-    // #LandOwner;
-    // #SupplyPartner;
-    // #Admin;
   };
 
   public type UserProfile = {
@@ -21,7 +16,6 @@ module {
     
   };
 
-  //  Farm Project
 
   public type FarmStatus = {
     #Registered;
@@ -54,8 +48,8 @@ public type Farm = {
   sharePriceHistory: [Nat];
   ledgerCanister: ?Principal;
   isOpenForInvestment: Bool;
-  imageContent: Blob; // Image content as Blob
-  imageContentType: Text; // e.g., "image/jpeg", "image/png"
+  imageContent: Blob;
+  imageContentType: Text;
   crop: Text;
   size: Text;
   duration: Nat; // in months

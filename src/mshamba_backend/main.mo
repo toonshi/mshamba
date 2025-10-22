@@ -19,10 +19,8 @@ persistent actor Self {
   type Farm = FarmModule.Farm;
   type Profile = UserProfileModule.Profile;
 
-  // Feature flag - permanently enabled for mainnet
   stable var ENABLE_TOKEN_LAUNCH : Bool = true;
 
-  // Force enable token launch on upgrade
   system func postupgrade() {
     ENABLE_TOKEN_LAUNCH := true;
   };
@@ -37,33 +35,27 @@ persistent actor Self {
   transient var farmStore : HashMap.HashMap<Text, FarmModule.Farm> = FarmModule.newFarmStore();
   transient var profileStore : HashMap.HashMap<Principal, UserProfileModule.Profile> = UserProfileModule.newProfileStore();
 
-  // ==============================
+  // ---
   // HELPERS
-  // ==============================
+  // ---
   func getFarmerProfile(caller: Principal) : ?UserProfileModule.Profile {
-    Debug.print("getFarmerProfile called for: " # Principal.toText(caller));
     switch (UserProfileModule.getProfile(profileStore, caller)) {
       case (?(p)) {
-        Debug.print("Profile found. Roles: " # debug_show(p.roles));
         if (UserProfileModule.hasRole(p, #Farmer)) { ?p } else { null }
       };
-      case null { Debug.print("Profile not found for: " # Principal.toText(caller)); null };
     }
   };
 
-  // ==============================
+  // ---
   // PROFILES
-  // ==============================
+  // ---
   public shared ({ caller }) func createProfile(
     name : Text,
     bio : Text,
     roles : [UserProfileModule.Role],
     certifications : [Text]
   ) : async Bool {
-    Debug.print("createProfile called by: " # Principal.toText(caller));
-    Debug.print("Name: " # name # ", Bio: " # bio # ", Roles: " # debug_show(roles) # ", Certs: " # debug_show(certifications));
     let result = UserProfileModule.createProfile(profileStore, caller, name, bio, roles, certifications);
-    Debug.print("UserProfileModule.createProfile returned: " # debug_show(result));
     result
   };
 
@@ -79,9 +71,9 @@ persistent actor Self {
     UserProfileModule.addRoleToProfile(profileStore, caller, role)
   };
 
-  // ==============================
+  // ---
   // FARMS (Farmer-only actions)
-  // ==============================
+  // ---
   public shared ({ caller }) func createFarm(
     name : Text,
     description : Text,
@@ -131,9 +123,9 @@ persistent actor Self {
     FarmModule.listFarms(farmStore)
   };
 
-  // ==============================
+  // ---
   // INVESTMENT & TOKEN PURCHASE (ckUSDT Payment Integration)
-  // ==============================
+  // ---
   
   // Buy farm tokens with ckUSDT payment
   public shared ({ caller }) func buyFarmTokens(
@@ -172,7 +164,6 @@ persistent actor Self {
           farm.tokenDecimals
         );
         
-        Debug.print("Calculated token amount: " # debug_show(tokenAmount) # " for " # debug_show(ckusdtAmount) # " ckUSDT");
         
         // 6. Check if investment exceeds per-user limit
         switch (farm.maxInvestmentPerUser) {
@@ -214,7 +205,6 @@ persistent actor Self {
           return #err("Insufficient allowance. Please approve " # debug_show(ckusdtAmount) # " ckUSDT spending first. Currently approved: " # debug_show(allowance.allowance));
         };
         
-        Debug.print("Allowance verified: " # debug_show(allowance.allowance) # " ckUSDT approved");
         
         // ICRC-2: Pull payment from investor to farmer
         let farmerAccount : Payment.Account = {
@@ -245,7 +235,6 @@ persistent actor Self {
           case (#ok(blockIdx)) { blockIdx };
         };
         
-        Debug.print("Payment successful! " # debug_show(ckusdtAmount) # " ckUSDT transferred at block " # debug_show(paymentBlockIndex));
         
         // Transfer farm tokens from IFO escrow to investor
         let tokenTransferResult = await Payment.transferTokensToInvestor(
@@ -268,7 +257,6 @@ persistent actor Self {
               timestamp = Time.now();
             };
             
-            Debug.print("Purchase successful! Investor " # Principal.toText(caller) # " bought " # debug_show(tokenAmount) # " tokens");
             
             #ok(purchase)
           };
@@ -366,7 +354,6 @@ persistent actor Self {
           farm.tokenDecimals
         );
         
-        Debug.print("Calculated token amount: " # debug_show(tokenAmount) # " for " # debug_show(icpAmount) # " ICP");
         
         // Calculate USD equivalent for investment limit check
         let usdEquivalent = (icpAmount * icpPriceUSD) / 100_000_000;
@@ -411,7 +398,6 @@ persistent actor Self {
           return #err("Insufficient allowance. Please approve " # debug_show(icpAmount) # " ICP spending first. Currently approved: " # debug_show(allowance.allowance));
         };
         
-        Debug.print("Allowance verified: " # debug_show(allowance.allowance) # " ICP approved");
         
         // ICRC-2: Pull payment from investor to farmer
         let farmerAccount : Payment.Account = {
@@ -442,7 +428,6 @@ persistent actor Self {
           case (#ok(blockIdx)) { blockIdx };
         };
         
-        Debug.print("Payment successful! " # debug_show(icpAmount) # " ICP transferred at block " # debug_show(paymentBlockIndex));
         
         // Transfer farm tokens from IFO escrow to investor
         let tokenTransferResult = await Payment.transferTokensToInvestor(
@@ -465,7 +450,6 @@ persistent actor Self {
               timestamp = Time.now();
             };
             
-            Debug.print("Purchase successful! Investor " # Principal.toText(caller) # " bought " # debug_show(tokenAmount) # " tokens with ICP");
             
             #ok(purchase)
           };
@@ -474,9 +458,9 @@ persistent actor Self {
     };
   };
 
-  // ==============================
+  // ---
   // TOKEN LAUNCH
-  // ==============================
+  // ---
   
   public query func isTokenLaunchEnabled() : async Bool {
     ENABLE_TOKEN_LAUNCH
@@ -498,13 +482,12 @@ persistent actor Self {
           case null {};
         };
 
-        // Call token_factory to create the ICRC-1 ledger with proper equity distribution
-        // NOTE: For now, using backend's own canister principal for platform & escrow
-        // TODO: Replace with dedicated escrow and treasury canisters
-        let backendPrincipal = Principal.fromActor(Self); // Use current canister's principal (works on both local & mainnet)
+        // Create ICRC-1 ledger with equity distribution
+        // Platform and escrow use backend principal (architecture decision for MVP)
+        let backendPrincipal = Principal.fromActor(Self);
         let platformPrincipal = backendPrincipal;
-        let ifoEscrowPrincipal = backendPrincipal; // TODO: Use dedicated IFO escrow canister
-        let farmTreasuryPrincipal = farm.owner; // TODO: Create dedicated farm treasury account
+        let ifoEscrowPrincipal = backendPrincipal;
+        let farmTreasuryPrincipal = farm.owner;
         
         let tokenParams = {
           token_name = farm.tokenName;
@@ -534,8 +517,6 @@ persistent actor Self {
               };
               farmStore.put(farmId, updatedFarm);
               
-              Debug.print("Token launched for farm " # farmId # ": " # Principal.toText(ledgerCanisterId));
-              Debug.print("Equity distribution: Farmer 75%, Platform 5%, IFO 20%");
               #ok(ledgerCanisterId)
             };
             case (#Err(msg)) {
@@ -549,9 +530,9 @@ persistent actor Self {
     }
   };
 
-  // ==============================
+  // ---
   // FARMER ACTIONS
-  // ==============================
+  // ---
   public shared ({ caller }) func toggleFarmInvestmentStatus(
     farmId : Text,
     newStatus : Bool
@@ -582,9 +563,9 @@ persistent actor Self {
     }
   };
 
-  // ==============================
+  // ---
   // INVESTOR ACTIONS
-  // ==============================
+  // ---
   public shared ({ caller }) func investInFarm(
     farmId : Text,
     amount : Nat
@@ -622,9 +603,9 @@ persistent actor Self {
     removed
   };
 
-  // ==============================
+  // ---
   // UPGRADE HOOKS
-  // ==============================
+  // ---
   public shared func pre_upgrade() : async () {
     stableFarmKeys := Iter.toArray(farmStore.keys());
     stableFarmValues := Iter.toArray(farmStore.vals());
