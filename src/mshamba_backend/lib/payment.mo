@@ -208,20 +208,26 @@ module {
     // ICP has 8 decimals, farm tokens typically have 8
     // icpPriceUSD is in cents (e.g., 1000 = $10.00 per ICP)
     public func calculateTokenAmountFromICP(icpAmount: Nat, tokenPriceInCents: Nat, icpPriceUSD: Nat, tokenDecimals: Nat8) : Nat {
-        // Convert ICP to USD value: icpAmount (e8) * icpPriceUSD (cents) / 1e8
-        // Then divide by token price to get token amount
-        // Result: tokens = (icpAmount * icpPriceUSD) / (tokenPriceInCents * 1e8) * 10^tokenDecimals
+        // Step 1: Convert ICP amount to USD value in cents
+        // icpAmount is in e8 (8 decimals), icpPriceUSD is in cents
+        // usdValueCents = (icpAmount * icpPriceUSD) / 100_000_000
+        let usdValueCents = (icpAmount * icpPriceUSD) / 100_000_000;
         
-        let usdValueCents = (icpAmount * icpPriceUSD) / 100_000_000; // ICP e8 to cents
-        let tokensBase = (usdValueCents * 100) / tokenPriceInCents;
-        
-        // Adjust for token decimals (assuming calculation gives us e6 equivalent)
+        // Step 2: Calculate how many tokens this USD buys
+        // We want the result in the token's native decimal format
+        // For 8 decimal tokens: need to scale up from cents to e8
         if (tokenDecimals == 8) {
-            tokensBase * 100
+            // usdValueCents is in cents (no decimals)
+            // tokenPriceInCents is in cents per token
+            // Result: (usdValueCents / tokenPriceInCents) * 10^8
+            // Reorder to avoid precision loss: (usdValueCents * 10^8) / tokenPriceInCents
+            (usdValueCents * 100_000_000) / tokenPriceInCents
         } else if (tokenDecimals == 6) {
-            tokensBase
+            // Scale to 6 decimals: (usdValueCents * 10^6) / tokenPriceInCents
+            (usdValueCents * 1_000_000) / tokenPriceInCents
         } else {
-            tokensBase
+            // No decimals: just divide
+            usdValueCents / tokenPriceInCents
         }
     };
     
