@@ -393,7 +393,7 @@ use ic_cdk::api::management_canister::main::{
 use candid::{CandidType, Principal};
 
 // Embedded ICRC-1 ledger WASM
-static ICRC1_LEDGER_WASM: &[u8] = include_bytes!("../wasm/icrc1_ledger.wasm.gz");
+const ICRC1_LEDGER_WASM: &[u8] = include_bytes!("assets/icrc1_ledger.wasm.gz");
 
 #[derive(CandidType)]
 pub struct TokenParams {
