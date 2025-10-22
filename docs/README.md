@@ -11,6 +11,7 @@ Developer and operational guides for working with the platform:
 - **[Deployment Guide](guides/deployment.md)** - Mainnet deployment checklist and procedures
 - **[Token Factory](guides/token-factory.md)** - Dynamic ICRC-1 token creation for farms
 - **[Payment Integration](guides/payments.md)** - ckUSDT and ICP payment system
+- **[Payment System Status](guides/payment-system-status.md)** - Implementation status: Backend vs Frontend
 - **[Authentication](guides/authentication.md)** - Internet Identity 2.0 integration
 - **[Wallet System](guides/wallet-system.md)** - Four-wallet escrow and fund management
 - **[Mobile Wallets](guides/mobile-wallets.md)** - Mobile authentication support
@@ -36,9 +37,10 @@ Business model, economics, and market documentation:
 Start here if you're building on or deploying Mshamba:
 
 1. Read [Technical Architecture](architecture/technical-architecture.md) for system overview
-2. Follow [Deployment Guide](guides/deployment.md) for mainnet deployment
-3. Check [Token Factory](guides/token-factory.md) for farm token creation
-4. Review [Payment Integration](guides/payments.md) for investor flows
+2. Check [Payment System Status](guides/payment-system-status.md) to understand what's implemented
+3. Follow [Deployment Guide](guides/deployment.md) for mainnet deployment
+4. Review [Token Factory](guides/token-factory.md) for farm token creation
+5. Study [Payment Integration](guides/payments.md) for technical implementation details
 
 ### For Business/Product
 
@@ -72,8 +74,15 @@ When updating docs:
 4. Update this README if adding new docs
 5. Follow the existing folder structure
 
+## Implementation Status
+
+**Backend:** ✅ Production Ready  
+**Frontend:** ⚠️ Partial Implementation (Payment UI pending)
+
+See [Payment System Status](guides/payment-system-status.md) for detailed breakdown.
+
 ## Version
 
 Documentation version: 2.0  
-Last updated: October 2025  
-Platform status: Production Ready
+Last updated: October 22, 2025  
+Platform status: Backend Complete, Frontend In Development
