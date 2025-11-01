@@ -134,8 +134,16 @@ module {
     };
     
     // Get ckUSDT ledger actor
-    public func getCkUSDTLedger() : ICRC1Ledger {
-        actor(ckUSDT_LEDGER_CANISTER) : ICRC1Ledger
+    public func getCkUSDTLedger(is_local : ?Bool) : ICRC1Ledger {
+        let local = switch (is_local) {
+            case (?l) { l };
+            case null { false };
+        };
+        if (local) {
+            LocalICPLedger
+        } else {
+            actor(ckUSDT_LEDGER_CANISTER) : ICRC1Ledger
+        }
     };
     
     // Get ICP ledger actor

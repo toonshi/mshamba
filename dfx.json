@@ -1,13 +1,24 @@
 {
   "canisters": {
     "internet_identity": {
-      "type": "pull",
-      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "shrink": false,
+      "remote": {
+        "candid": "internet_identity.did",
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      },
+      "hostname": "internet_identity.localhost",
+      "origin": "http://internet_identity.localhost:4943"
     },
     "local_icp_ledger": {
       "type": "custom",
       "candid": "ic-icrc1-ledger.did",
-      "wasm": "ic-icrc1-ledger.wasm.gz"
+      "wasm": "ic-icrc1-ledger.wasm.gz",
+      "init_arg": "(variant { Init = record {\n        minting_account = record { owner = principal \"ufxgi-4p777-77774-qaadq-cai\"; subaccount = null };\n        transfer_fee = 10_000;\n        token_symbol = \"ICP\";\n        token_name = \"Internet Computer\";\n        metadata = vec {};\n        initial_balances = vec {};\n        archive_options = record {\n          num_blocks_to_archive = 10_000;\n          trigger_threshold = 20_000;\n          controller_id = principal \"ufxgi-4p777-77774-qaadq-cai\";\n          cycles_for_archive_creation = opt 4_000_000_000_000;\n          max_transactions_per_response = null;\n          max_message_size_bytes = null;\n          node_max_memory_size_bytes = null;\n          more_controller_ids = null;\n        };\n        fee_collector_account = null;\n        decimals = null;\n        max_memo_length = null;\n        feature_flags = null;\n        index_principal = null;\n      } })"
     },
     "token_factory": {
       "type": "rust",
