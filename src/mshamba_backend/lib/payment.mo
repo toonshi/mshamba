@@ -1,10 +1,13 @@
 // Payment Module - ckUSDT Integration for Farm Token Purchases
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
+import Nat64 "mo:base/Nat64";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 import Error "mo:base/Error";
 import Text "mo:base/Text";
+import Time "mo:base/Time";
+import LocalICPLedger "canister:local_icp_ledger";
 
 module {
     // Ledger Canisters on ICP Mainnet
@@ -136,8 +139,16 @@ module {
     };
     
     // Get ICP ledger actor
-    public func getICPLedger() : ICRC1Ledger {
-        actor(ICP_LEDGER_CANISTER) : ICRC1Ledger
+    public func getICPLedger(is_local : ?Bool) : ICRC1Ledger {
+        let local = switch (is_local) {
+            case (?l) { l };
+            case null { false };
+        };
+        if (local) {
+            LocalICPLedger
+        } else {
+            actor(ICP_LEDGER_CANISTER) : ICRC1Ledger
+        }
     };
     
     // For backwards compatibility
@@ -153,9 +164,10 @@ module {
                 subaccount = null;
             });
             
-            if (balance >= requiredAmount) {
+             if (balance >= requiredAmount) {
                 #ok(true)
-            } else {
+            }
+             else {
                 #err("Insufficient " # assetName # " balance. Have: " # debug_show(balance) # ", Need: " # debug_show(requiredAmount))
             }
         } catch (e) {
@@ -170,7 +182,7 @@ module {
     
     // Verify investor has sufficient ICP balance
     public func checkICPBalance(investor: Principal, requiredAmount: Nat) : async Result.Result<Bool, Text> {
-        await checkBalanceOnLedger(getICPLedger(), investor, requiredAmount, "ICP")
+        await checkBalanceOnLedger(getICPLedger(null), investor, requiredAmount, "ICP")
     };
     
     // Get ckUSDT transfer fee
@@ -264,7 +276,7 @@ module {
                 amount = amount;
                 fee = null;  // Use default
                 memo = ?Text.encodeUtf8(memo);
-                created_at_time = null;
+                created_at_time = ?Nat64.fromIntWrap(Time.now());
             };
             
             let result = await ledger.icrc2_transfer_from(transferFromArgs);
@@ -304,7 +316,7 @@ module {
                 amount = tokenAmount;
                 fee = null;  // Use default
                 memo = null;
-                created_at_time = null;
+                created_at_time = ?Nat64.fromIntWrap(Time.now());
             };
             
             // Note: This requires the backend canister to be authorized to transfer from escrow

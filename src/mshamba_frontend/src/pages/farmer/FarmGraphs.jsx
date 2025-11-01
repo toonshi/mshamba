@@ -1,7 +1,68 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart3, TrendingUp, Calendar, DollarSign } from 'lucide-react';
+import { mshamba_backend } from 'declarations/mshamba_backend';
 
 const FarmGraphs = () => {
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ToDo: Dynamically get farmId from URL params or context
+  const farmId = "farm-123"; // Placeholder for now
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await mshamba_backend.getFarmAnalytics(farmId);
+        setAnalyticsData(data);
+      } catch (err) {
+        console.error("Failed to fetch farm analytics:", err);
+        setError("Failed to load farm analytics. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [farmId]); // Re-fetch if farmId changes
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 text-center text-gray-500">
+        Loading farm analytics...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 text-center text-red-500">
+        Error: {error}
+      </div>
+    );
+  }
+
+  if (!analyticsData) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 text-center text-gray-500">
+        No analytics data available for this farm.
+      </div>
+    );
+  }
+
+  // Helper to format numbers (e.g., 425000 -> Ksh425K)
+  const formatKsh = (amount) => {
+    if (amount >= 1_000_000) {
+      return `Ksh${(amount / 1_000_000).toFixed(1)}M`;
+    }
+    if (amount >= 1_000) {
+      return `Ksh${(amount / 1_000).toFixed(0)}K`;
+    }
+    return `Ksh${amount}`;
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6">
       {/* Header */}
@@ -18,7 +79,7 @@ const FarmGraphs = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Revenue This Year</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">Ksh425K</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{formatKsh(Number(analyticsData.revenueThisYear))}</p>
               <p className="text-sm text-green-600 mt-1">+18.5% vs last year</p>
             </div>
             <div className="bg-green-100 p-3 rounded-lg">
@@ -31,7 +92,7 @@ const FarmGraphs = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Yield Per Acre</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">2,800 lbs</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{Number(analyticsData.yieldPerAcre)} lbs</p>
               <p className="text-sm text-green-600 mt-1">+12.3% vs last year</p>
             </div>
             <div className="bg-blue-100 p-3 rounded-lg">
@@ -44,7 +105,7 @@ const FarmGraphs = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Production</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">700,000 lbs</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{Number(analyticsData.totalProduction)} lbs</p>
               <p className="text-sm text-orange-600 mt-1">+8.7% vs last year</p>
             </div>
             <div className="bg-orange-100 p-3 rounded-lg">
@@ -57,7 +118,7 @@ const FarmGraphs = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Operating Costs</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">Ksh 285K</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{formatKsh(Number(analyticsData.operatingCosts))}</p>
               <p className="text-sm text-red-600 mt-1">+5.2% vs last year</p>
             </div>
             <div className="bg-purple-100 p-3 rounded-lg">

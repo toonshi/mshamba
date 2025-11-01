@@ -4,6 +4,11 @@
       "type": "pull",
       "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
     },
+    "local_icp_ledger": {
+      "type": "custom",
+      "candid": "ic-icrc1-ledger.did",
+      "wasm": "ic-icrc1-ledger.wasm.gz"
+    },
     "token_factory": {
       "type": "rust",
       "package": "token_factory",
@@ -14,7 +19,8 @@
       "type": "motoko",
       "build": ["--enhanced-orthogonal-persistence"],
       "dependencies": [
-        "token_factory"
+        "token_factory",
+        "local_icp_ledger"
       ]
     },
     "mshamba_frontend": {

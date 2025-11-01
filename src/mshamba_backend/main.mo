@@ -1,6 +1,7 @@
 import FarmModule "lib/farms";
 import UserProfileModule "lib/userProfiles";
 import Payment "lib/payment";
+
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
 import Nat "mo:base/Nat";
@@ -20,6 +21,7 @@ persistent actor Self {
   type Profile = UserProfileModule.Profile;
 
   stable var ENABLE_TOKEN_LAUNCH : Bool = true;
+  stable var is_local_test : Bool = false;
 
   system func postupgrade() {
     ENABLE_TOKEN_LAUNCH := true;
@@ -35,20 +37,19 @@ persistent actor Self {
   transient var farmStore : HashMap.HashMap<Text, FarmModule.Farm> = FarmModule.newFarmStore();
   transient var profileStore : HashMap.HashMap<Principal, UserProfileModule.Profile> = UserProfileModule.newProfileStore();
 
-  // ---
+  
   // HELPERS
-  // ---
-  func getFarmerProfile(caller: Principal) : ?UserProfileModule.Profile {
+    func getFarmerProfile(caller: Principal) : ?UserProfileModule.Profile {
     switch (UserProfileModule.getProfile(profileStore, caller)) {
       case (?(p)) {
         if (UserProfileModule.hasRole(p, #Farmer)) { ?p } else { null }
       };
+      case null { null };
     }
   };
 
-  // ---
+  
   // PROFILES
-  // ---
   public shared ({ caller }) func createProfile(
     name : Text,
     bio : Text,
@@ -103,12 +104,33 @@ persistent actor Self {
     switch (getFarmerProfile(caller)) {
       case (?_) { 
         FarmModule.createFarm(
-          caller, farmStore, name, description, location, fundingGoal, 
-          size, crop, duration, expectedYield, expectedROI, farmerName, 
-          experience, phone, email, imageContent, imageContentType, 
+          caller,
+          farmStore,
+          name,
+          description,
+          location,
+          fundingGoal, 
+          size,
+          crop,
+          duration,
+          expectedYield,
+          expectedROI,
+          farmerName, 
+          experience,
+          phone,
+          email,
+          imageContent,
+          imageContentType, 
           null, // ledgerCanister will be set when token is launched
-          tokenName, tokenSymbol, tokenSupply, tokenDecimals, tokenTransferFee, tokenLogo,
-          tokenPrice, ifoEndDate, maxInvestmentPerUser
+          tokenName,
+          tokenSymbol,
+          tokenSupply,
+          tokenDecimals,
+          tokenTransferFee,
+          tokenLogo,
+          tokenPrice,
+          ifoEndDate,
+          maxInvestmentPerUser
         ) 
       };
       case null { #err("Only farmers can create farms or profile not found") };
@@ -123,10 +145,8 @@ persistent actor Self {
     FarmModule.listFarms(farmStore)
   };
 
-  // ---
-  // INVESTMENT & TOKEN PURCHASE (ckUSDT Payment Integration)
-  // ---
   
+  // INVESTMENT & TOKEN PURCHASE (ckUSDT Payment Integration)
   // Buy farm tokens with ckUSDT payment
   public shared ({ caller }) func buyFarmTokens(
     farmId: Text,
@@ -217,9 +237,7 @@ persistent actor Self {
         let ckusdtAmountDisplay = ckusdtAmount / 1_000_000; // ckUSDT has 6 decimals
         let priceDisplay = farm.tokenPrice;
         
-        let memo = "Buy " # debug_show(tokenAmountDisplay) # " " # farm.tokenSymbol # 
-                   " @$" # debug_show(priceDisplay) # " w/" # debug_show(ckusdtAmountDisplay) # 
-                   " USDT | " # farm.name;
+        let memo = debug_show(tokenAmountDisplay) # " " # farm.tokenSymbol # " | " # farm.name;
         // Example: "Buy 1000 GAFT @$10 w/100 USDT | Green Acres Farm"
         
         let paymentResult = await Payment.pullPayment(
@@ -369,7 +387,7 @@ persistent actor Self {
         };
         
         // ICRC-2: Check allowance (investor must have approved spending)
-        let icpLedger = Payment.getICPLedger();
+        let icpLedger = Payment.getICPLedger(?is_local_test);
         let backendPrincipal = Principal.fromActor(Self);
         
         let investorAccount : Payment.Account = {
@@ -394,12 +412,6 @@ persistent actor Self {
           case (#ok(allow)) { allow };
         };
         
-        if (allowance.allowance < icpAmount) {
-          return #err("Insufficient allowance. Please approve " # debug_show(icpAmount) # " ICP spending first. Currently approved: " # debug_show(allowance.allowance));
-        };
-        
-        
-        // ICRC-2: Pull payment from investor to farmer
         let farmerAccount : Payment.Account = {
           owner = farm.owner;
           subaccount = null;
@@ -410,9 +422,7 @@ persistent actor Self {
         let icpAmountDisplay = icpAmount / 100_000_000;
         let priceDisplay = farm.tokenPrice;
         
-        let memo = "Buy " # debug_show(tokenAmountDisplay) # " " # farm.tokenSymbol # 
-                   " @$" # debug_show(priceDisplay) # " w/" # debug_show(icpAmountDisplay) # 
-                   " ICP | " # farm.name;
+        let memo = debug_show(tokenAmountDisplay) # " " # farm.tokenSymbol # " | " # farm.name;
         // Example: "Buy 1000 GAFT @$10 w/100 ICP | Green Acres Farm"
         
         let paymentResult = await Payment.pullPayment(
@@ -458,7 +468,7 @@ persistent actor Self {
     };
   };
 
-  // ---
+
   // TOKEN LAUNCH
   // ---
   
@@ -563,9 +573,9 @@ persistent actor Self {
     }
   };
 
-  // ---
+  
   // INVESTOR ACTIONS
-  // ---
+
   public shared ({ caller }) func investInFarm(
     farmId : Text,
     amount : Nat
@@ -590,6 +600,21 @@ persistent actor Self {
     out
   };
 
+  public query func getFarmAnalytics(farmId: Text) : async {
+    revenueThisYear: Nat;
+    yieldPerAcre: Nat;
+    totalProduction: Nat;
+    operatingCosts: Nat;
+  } {
+    // ToDo: Replace with real data lookup
+    return {
+      revenueThisYear = 425_000;
+      yieldPerAcre = 2_800;
+      totalProduction = 700_000;
+      operatingCosts = 285_000;
+    };
+  };
+
   public shared ({ caller }) func adminClearAllFarms(secret : Text) : async Nat {
     if (secret != "CONFIRM_NUKE_FARMS") {
       return 0;
@@ -603,10 +628,9 @@ persistent actor Self {
     removed
   };
 
-  // ---
+  
   // UPGRADE HOOKS
-  // ---
-  public shared func pre_upgrade() : async () {
+    public shared func pre_upgrade() : async () {
     stableFarmKeys := Iter.toArray(farmStore.keys());
     stableFarmValues := Iter.toArray(farmStore.vals());
     stableProfileKeys := Iter.toArray(profileStore.keys());
