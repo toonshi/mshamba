@@ -161,7 +161,7 @@ module {
     
     // For backwards compatibility
     public func getLedger() : ICRC1Ledger {
-        getCkUSDTLedger()
+        getCkUSDTLedger(null)
     };
     
     // Verify investor has sufficient balance on a specific ledger
@@ -185,13 +185,10 @@ module {
     
     // Verify investor has sufficient ckUSDT balance
     public func checkBalance(investor: Principal, requiredAmount: Nat) : async Result.Result<Bool, Text> {
-        await checkBalanceOnLedger(getCkUSDTLedger(), investor, requiredAmount, "ckUSDT")
+        await checkBalanceOnLedger(getCkUSDTLedger(null), investor, requiredAmount, "ckUSDT")
     };
     
-    // Verify investor has sufficient ICP balance
-    public func checkICPBalance(investor: Principal, requiredAmount: Nat) : async Result.Result<Bool, Text> {
-        await checkBalanceOnLedger(getICPLedger(null), investor, requiredAmount, "ICP")
-    };
+
     
     // Get ckUSDT transfer fee
     public func getTransferFee() : async Result.Result<Nat, Text> {

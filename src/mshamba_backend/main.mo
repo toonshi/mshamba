@@ -196,7 +196,7 @@ persistent actor Self {
         };
         
         // ICRC-2: Check allowance (investor must have approved spending)
-        let ckusdtLedger = Payment.getCkUSDTLedger();
+        let ckusdtLedger = Payment.getCkUSDTLedger(?is_local_test);
         let backendPrincipal = Principal.fromActor(Self);
         
         let investorAccount : Payment.Account = {
