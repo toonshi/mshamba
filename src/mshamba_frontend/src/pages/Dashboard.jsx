@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { AuthClient } from '@dfinity/auth-client';
-import { mshamba_backend } from 'declarations/mshamba_backend';
+import { useAuth } from '../hooks/useAuth';
 import { Sprout, TrendingUp, User, Edit, Search, ArrowRight, Download, Rocket } from 'lucide-react';
 import { CreateFarmForm } from '../components/CreateFarmForm';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const { actor, identity } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
   const [myFarms, setMyFarms] = useState([]);
   const [allFarms, setAllFarms] = useState([]);
@@ -15,22 +15,23 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const fetchMyFarms = useCallback(async () => {
-    const userFarms = await mshamba_backend.myFarms();
+    if (!actor) return;
+    const userFarms = await actor.myFarms();
     setMyFarms(userFarms);
-  }, []);
+  }, [actor]);
 
   const fetchAllFarms = useCallback(async () => {
-    const farms = await mshamba_backend.listFarms();
+    if (!actor) return;
+    const farms = await actor.listFarms();
     setAllFarms(farms);
-  }, []);
+  }, [actor]);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!actor || !identity) return;
       try {
-        const authClient = await AuthClient.create();
-        const identity = authClient.getIdentity();
         const principal = identity.getPrincipal();
-        const profileResult = await mshamba_backend.getProfile(principal);
+        const profileResult = await actor.getProfile(principal);
 
         if (profileResult.Ok) {
           const profile = profileResult.Ok;
@@ -51,12 +52,13 @@ const Dashboard = () => {
     };
 
     fetchProfile();
-  }, [fetchMyFarms, fetchAllFarms]);
+  }, [actor, identity, fetchMyFarms, fetchAllFarms]);
 
   const handleCreateFarm = async (farmData) => {
+    if (!actor) return;
     setIsCreatingFarm(true);
     try {
-      const result = await mshamba_backend.createFarm(
+      const result = await actor.createFarm(
         farmData.name,
         farmData.description,
         farmData.location,
@@ -75,8 +77,9 @@ const Dashboard = () => {
   };
 
   const handleToggleInvestmentStatus = async (farmId, newStatus) => {
+    if (!actor) return;
     try {
-      const result = await mshamba_backend.toggleFarmInvestmentStatus(farmId, newStatus);
+      const result = await actor.toggleFarmInvestmentStatus(farmId, newStatus);
       if (result.Ok) {
         fetchMyFarms(); // Refresh the list of farms to show updated status
       } else {

@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@dfinity/agent": "^3.2.4",
-    "@dfinity/auth-client": "^3.2.4",
     "@dfinity/principal": "^3.2.4",
+    "@icp-sdk/auth": "^4.2.0",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

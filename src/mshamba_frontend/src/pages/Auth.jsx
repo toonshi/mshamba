@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AuthClient } from '@dfinity/auth-client';
+import { AuthClient } from '@icp-sdk/auth/client';
 import { ArrowLeft, Shield, User, TrendingUp, Moon, Sun } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';

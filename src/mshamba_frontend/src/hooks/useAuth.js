@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AuthClient } from "@dfinity/auth-client";
+import { AuthClient } from "@icp-sdk/auth/client";
 import { HttpAgent, Actor } from "@dfinity/agent";
 import { Principal } from "@dfinity/principal";
 import { canisterId as mshambaBackendCanisterId, createActor as createMshambaBackendActor } from "declarations/mshamba_backend";
@@ -71,7 +71,7 @@ export function useAuth() {
       // Internet Identity (default)
       identityProvider = isLocal
         ? `http://${process.env.CANISTER_ID_INTERNET_IDENTITY}.localhost:4943/`
-        : "https://identity.ic0.app";
+        : "https://id.ai/";
     }
     
     // For production, set derivationOrigin to support alternative origins
