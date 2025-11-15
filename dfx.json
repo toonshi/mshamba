@@ -37,7 +37,7 @@
     "mshamba_frontend": {
       "type": "assets",
       "source": ["src/mshamba_frontend/dist"],
-      "build": "cd src/mshamba_frontend && npm install && npm run build",
+      "build": "dfx generate mshamba_backend && cd src/mshamba_frontend && npm install && npm run build",
       "dependencies": [
         "mshamba_backend"
       ]
