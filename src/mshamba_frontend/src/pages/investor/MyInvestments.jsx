@@ -2,68 +2,14 @@ import React, { useState } from 'react';
 import { ArrowLeft, TrendingUp, DollarSign, Calendar, BarChart3, Eye, Download } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, AreaChart, Area } from 'recharts';
 
+import { myInvestments, investmentData } from '../../data/mockFarmData';
+
 export const MyInvestments = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const myInvestments = [
-    {
-      id: 1,
-      farmName: 'Green Valley Farm',
-      location: 'Nakuru, Kenya',
-      invested: 12000,
-      currentValue: 14160,
-      tokens: 1200,
-      tokenSymbol: 'GVFT',
-      roi: 18,
-      status: 'Active',
-      duration: '6 months',
-      startDate: '2024-06-15',
-      expectedHarvest: '2024-12-15',
-      farmer: 'John Kamau',
-      crop: 'Maize & Beans'
-    },
-    {
-      id: 2,
-      farmName: 'Sunrise Coffee Estate',
-      location: 'Kiambu, Kenya',
-      invested: 8000,
-      currentValue: 9760,
-      tokens: 800,
-      tokenSymbol: 'SCET',
-      roi: 22,
-      status: 'Harvesting',
-      duration: '12 months',
-      startDate: '2024-01-10',
-      expectedHarvest: '2025-01-10',
-      farmer: 'Mary Wanjiku',
-      crop: 'Coffee'
-    },
-    {
-      id: 3,
-      farmName: 'Fresh Harvest Gardens',
-      location: 'Meru, Kenya',
-      invested: 5000,
-      currentValue: 5750,
-      tokens: 500,
-      tokenSymbol: 'FHGT',
-      roi: 15,
-      status: 'Growing',
-      duration: '4 months',
-      startDate: '2024-08-01',
-      expectedHarvest: '2024-12-01',
-      farmer: 'Peter Mwangi',
-      crop: 'Vegetables'
-    }
-  ];
+  // The myInvestments array is now imported from mockFarmData.js
+  // The performanceData array is now imported as investmentData from mockFarmData.js
 
-  const performanceData = [
-    { month: 'Jun', value: 25000 },
-    { month: 'Jul', value: 26200 },
-    { month: 'Aug', value: 27100 },
-    { month: 'Sep', value: 28300 },
-    { month: 'Oct', value: 29200 },
-    { month: 'Nov', value: 29670 },
-  ];
 
   const totalInvested = myInvestments.reduce((sum, inv) => sum + inv.invested, 0);
   const totalCurrentValue = myInvestments.reduce((sum, inv) => sum + inv.currentValue, 0);
@@ -140,7 +86,7 @@ export const MyInvestments = ({ onBack }) => {
             <h3 className="text-lg font-semibold mb-6">Portfolio Performance</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={performanceData}>
+                <AreaChart data={investmentData}>
                   <defs>
                     <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>

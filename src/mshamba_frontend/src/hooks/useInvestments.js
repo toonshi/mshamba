@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { farmListings, myInvestments, investmentData, cropYieldData } from '../data/farmData';
+import { farmListings, myInvestments, investmentData, cropYieldData } from '../data/mockFarmData';
 
 export const useInvestments = () => {
   const [activeTimeframe, setActiveTimeframe] = useState('6M');
